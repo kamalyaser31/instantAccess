@@ -27,10 +27,10 @@ Features include background execution, verbosity levels, command line arguments,
 	
 	# روابط (غيرها برابط مستودعك الحقيقي)
 	addon_url="https://github.com/kamalyaser31/instantAccess",
-	addon_sourceURL="https://github.com/kamalyaser31/qinstantAccess",
+	addon_sourceURL="https://github.com/kamalyaser31/instantAccess",
 	
 	# اسم ملف التوثيق
-	addon_docFileName="readme.md",
+	addon_docFileName="readme.html",
 	
 	# أقل إصدار NVDA مدعوم
 	addon_minimumNVDAVersion="2019.3.0",
