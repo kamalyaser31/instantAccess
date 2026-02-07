@@ -36,7 +36,7 @@ Features include background execution, verbosity levels, command line arguments,
 	addon_minimumNVDAVersion="2019.3.0",
 	
 	# آخر إصدار تم اختباره عليه
-	addon_lastTestedNVDAVersion="2025.3.0",
+	addon_lastTestedNVDAVersion="2026.1",
 	
 	addon_updateChannel=None,
 	addon_license=None,
