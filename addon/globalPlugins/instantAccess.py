@@ -38,7 +38,7 @@ TYPE_LABELS = [_("Website"), _("Program"), _("Folder"), _("File")]
 RESERVED_GESTURES = {"kb:escape", "kb:nvda+e"}
 # Translators: Category name for the instant Access add-on.
 CATEGORY_LABEL = _("instant Access")
-# Translators: Description for the toggle quick mode command in Input Gestures.
+# Translators: Description for the toggle instant mode command in Input Gestures.
 TOGGLE_DESCRIPTION = _("Toggle instant Access mode.")
 # Translators: Caption for error message dialogs.
 ERROR_CAPTION = _("Error")
@@ -210,7 +210,7 @@ def queueMessage(message):
 		wx.CallAfter(ui.message, message)
 
 
-def executeQuickItem(itemType, path, arguments=""):
+def executeInstantItem(itemType, path, arguments=""):
 	if itemType == "Websites":
 		url = (path or "").strip()
 		if not url:
@@ -831,7 +831,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 		self.executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="instantAccess")
 		self.verbosityLevel = VERBOSITY_VALUES[0]
-		self.quickMode = False
+		self.instantMode = False
 		self.gestureToItem = {}
 		self.loadedCommandCount = 0
 		configPath = os.path.join(globalVars.appArgs.configPath, "instantAccess", "config.ini")
@@ -852,14 +852,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 		instantAccessSettingsPanel.onRunItem = None
 		instantAccessSettingsPanel.onVerbosityChanged = None
-		self.deactivateQuickMode(speak=False)
+		self.deactivateInstantMode(speak=False)
 		self.executor.shutdown(wait=False, cancel_futures=True)
 
 	def onConfigChanged(self):
-		if not hasattr(self, "quickMode"):
+		if not hasattr(self, "instantMode"):
 			return
-		if self.quickMode:
-			self.activateQuickMode(speak=False)
+		if self.instantMode:
+			self.activateInstantMode(speak=False)
 
 	def setVerbosityLevel(self, value):
 		if value not in VERBOSITY_VALUES:
@@ -881,19 +881,19 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		commandName = (item.get("name", "") or "").strip()
 		if commandName:
 			wx.CallAfter(ui.message, commandName)
-		executeQuickItem(
+		executeInstantItem(
 			itemType=item.get("type", ""),
 			path=item.get("path", ""),
 			arguments=item.get("arguments", ""),
 		)
 
 	def getScript(self, gesture):
-		if not self.quickMode:
+		if not self.instantMode:
 			return globalPluginHandler.GlobalPlugin.getScript(self, gesture)
 		script = globalPluginHandler.GlobalPlugin.getScript(self, gesture)
 		if not script:
 			script = self.script_invalidKey
-		return wrapFinally(script, self.finishQuickLayer)
+		return wrapFinally(script, self.finishInstantLayer)
 
 	def getToggleGestures(self):
 		try:
@@ -906,7 +906,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 		return ["kb:NVDA+e"]
 
-	def buildQuickGestures(self):
+	def buildInstantGestures(self):
 		items = self.configManager.getItems()
 		self.gestureToItem = {}
 		for item in items:
@@ -914,27 +914,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				for expanded in expandGestureLayouts(gesture):
 					self.gestureToItem[expanded.lower()] = item
 		self.loadedCommandCount = len({item["name"] for item in self.gestureToItem.values()})
-		quickGestures = {}
+		instantGestures = {}
 		for gesture in self.gestureToItem.keys():
-			quickGestures[gesture] = "runQuickItem"
+			instantGestures[gesture] = "runInstantItem"
 		for gesture in self.getToggleGestures():
-			quickGestures[gesture] = "toggleQuickMode"
-		quickGestures["kb:escape"] = "exitQuickMode"
-		return quickGestures
+			instantGestures[gesture] = "toggleInstantMode"
+		instantGestures["kb:escape"] = "exitInstantMode"
+		return instantGestures
 
-	def activateQuickMode(self, speak=True):
-		quickGestures = self.buildQuickGestures()
+	def activateInstantMode(self, speak=True):
+		instantGestures = self.buildInstantGestures()
 		if self.loadedCommandCount <= 0:
-			self.quickMode = False
+			self.instantMode = False
 			self.clearGestureBindings()
-			self.bindGestures({gesture: "toggleQuickMode" for gesture in self.getToggleGestures()})
+			self.bindGestures({gesture: "toggleInstantMode" for gesture in self.getToggleGestures()})
 			if speak:
 				# Translators: Message announced when trying to enable instant Access mode with no configured commands.
 				ui.message(_("No commands configured."))
 			return
-		self.quickMode = True
+		self.instantMode = True
 		self.clearGestureBindings()
-		self.bindGestures(quickGestures)
+		self.bindGestures(instantGestures)
 		if speak:
 			if self.isAdvancedVerbosity():
 				# Translators: Short message announced in advanced verbosity when instant Access mode is enabled.
@@ -944,12 +944,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				# Translators: Message announced when instant Access mode is enabled. {count} is the number of commands.
 				ui.message(_("instant Access On. {count} commands loaded").format(count=count))
 
-	def deactivateQuickMode(self, speak=True):
-		if not self.quickMode:
+	def deactivateInstantMode(self, speak=True):
+		if not self.instantMode:
 			return
-		self.quickMode = False
+		self.instantMode = False
 		self.clearGestureBindings()
-		self.bindGestures({gesture: "toggleQuickMode" for gesture in self.getToggleGestures()})
+		self.bindGestures({gesture: "toggleInstantMode" for gesture in self.getToggleGestures()})
 		if speak:
 			if self.isAdvancedVerbosity():
 				# Translators: Short message announced in advanced verbosity when instant Access mode is disabled.
@@ -958,9 +958,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				# Translators: Message announced when instant Access mode is disabled.
 				ui.message(_("instant Access Off"))
 
-	def finishQuickLayer(self):
-		if self.quickMode:
-			self.deactivateQuickMode(speak=False)
+	def finishInstantLayer(self):
+		if self.instantMode:
+			self.deactivateInstantMode(speak=False)
 
 	def script_invalidKey(self, gesture):
 		if self.isAdvancedVerbosity():
@@ -975,16 +975,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=TOGGLE_DESCRIPTION,
 		gesture="kb:NVDA+e",
 	)
-	def script_toggleQuickMode(self, gesture):
-		if self.quickMode:
-			self.deactivateQuickMode()
+	def script_toggleInstantMode(self, gesture):
+		if self.instantMode:
+			self.deactivateInstantMode()
 		else:
-			self.activateQuickMode()
+			self.activateInstantMode()
 
-	def script_exitQuickMode(self, gesture):
-		self.deactivateQuickMode()
+	def script_exitInstantMode(self, gesture):
+		self.deactivateInstantMode()
 
-	def script_runQuickItem(self, gesture):
+	def script_runInstantItem(self, gesture):
 		identifiers = []
 		if hasattr(gesture, "identifiers") and gesture.identifiers:
 			identifiers.extend(gesture.identifiers)
