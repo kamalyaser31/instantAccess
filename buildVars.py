@@ -26,7 +26,7 @@ Features include background execution, verbosity levels, command line arguments,
 	addon_author="Kamal Yaser <kamalyaser31@gmail.com>",
 	
 	# روابط (غيرها برابط مستودعك الحقيقي)
-	addon_url="https://github.com/kamalyaser31/qinstantAccess",
+	addon_url="https://github.com/kamalyaser31/instantAccess",
 	addon_sourceURL="https://github.com/kamalyaser31/qinstantAccess",
 	
 	# اسم ملف التوثيق
