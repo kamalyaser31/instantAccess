@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: instantAccess 2026.1\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
 "POT-Creation-Date: 2026-02-07 14:08+0000\n"
-"PO-Revision-Date: 2026-02-07 14:20+0200\n"
+"PO-Revision-Date: 2026-02-10 14:30+0200\n"
 "Last-Translator: Kamal Yaser <kamalyaser31@gmail.com>\n"
 "Language-Team: Arabic <LL@li.org>\n"
 "Language: ar\n"
@@ -15,7 +15,7 @@ msgstr ""
 #. Translators: Item types for instant Access entries.
 #: addon/globalPlugins/instantAccess.py:37
 msgid "Website"
-msgstr "موقع إلكتروني"
+msgstr "موقع ويب"
 
 #: addon/globalPlugins/instantAccess.py:37
 msgid "Program"
@@ -55,7 +55,7 @@ msgstr "تأكيد"
 #. Translators: Wildcard for selecting any file in the file picker.
 #: addon/globalPlugins/instantAccess.py:48
 msgid "All files (*.*)|*.*"
-msgstr "كل الملفات (*.*)|*.*"
+msgstr "كافة الملفات (*.*)|*.*"
 
 #. Translators: Label for beginner verbosity level.
 #: addon/globalPlugins/instantAccess.py:50
@@ -75,7 +75,7 @@ msgstr "خطأ: الرابط فارغ"
 #. Translators: Error message when a website cannot be opened.
 #: addon/globalPlugins/instantAccess.py:226
 msgid "Error: Could not open the website"
-msgstr "خطأ: تعذر فتح الموقع الإلكتروني"
+msgstr "خطأ: تعذر فتح الموقع"
 
 #. Translators: Error message when a file or folder is missing.
 #: addon/globalPlugins/instantAccess.py:231
@@ -96,7 +96,7 @@ msgstr "خطأ: تعذر فتح الملف"
 #. Translators: Error message when a program cannot be started.
 #: addon/globalPlugins/instantAccess.py:260
 msgid "Error: Could not start the program"
-msgstr "خطأ: تعذر بدء البرنامج"
+msgstr "خطأ: تعذر تشغيل البرنامج"
 
 #. Translators: Title of the dialog used to capture a shortcut key.
 #: addon/globalPlugins/instantAccess.py:409
@@ -106,7 +106,7 @@ msgstr "تعيين اختصار"
 #. Translators: Instructions in the shortcut capture dialog.
 #: addon/globalPlugins/instantAccess.py:413
 msgid "Press the desired shortcut key. Escape cancels."
-msgstr "اضغط مفتاح الاختصار المطلوب. اضغط Escape للإلغاء."
+msgstr "اضغط على مفتاح الاختصار المطلوب. اضغط Escape للإلغاء."
 
 #. Translators: Label for the name field in the add/edit dialog.
 #. Translators: Column label for item name in the list.
@@ -135,7 +135,7 @@ msgstr "تصفح"
 #. Translators: Label for optional command line arguments in the add/edit dialog.
 #: addon/globalPlugins/instantAccess.py:459
 msgid "Arguments (optional)"
-msgstr "وسائط (اختياري)"
+msgstr "الوسائط (اختياري)"
 
 #. Translators: Label for the shortcut section in the add/edit dialog.
 #. Translators: Column label for shortcut in the list.
@@ -147,12 +147,12 @@ msgstr "الاختصار"
 #. Translators: Label for the OK button in the add/edit dialog.
 #: addon/globalPlugins/instantAccess.py:471
 msgid "&OK"
-msgstr "موافق"
+msgstr "&موافق"
 
 #. Translators: Label for the Cancel button in the add/edit dialog.
 #: addon/globalPlugins/instantAccess.py:473
 msgid "&Cancel"
-msgstr "إلغاء"
+msgstr "إل&غاء"
 
 #. Translators: Label for the shortcut button when a shortcut is set. {gesture} is the assigned key.
 #: addon/globalPlugins/instantAccess.py:503
@@ -195,12 +195,12 @@ msgstr "مفتاح الاختصار غير صالح."
 #. Translators: Error shown when required fields are missing.
 #: addon/globalPlugins/instantAccess.py:578
 msgid "All fields are required."
-msgstr "جميع الحقول مطلوبة."
+msgstr "كافة الحقول مطلوبة."
 
 #. Translators: Error shown when a name is already in use.
 #: addon/globalPlugins/instantAccess.py:596
 msgid "This name already exists."
-msgstr "هذا الاسم موجود بالفعل."
+msgstr "هذا الاسم مستخدم بالفعل."
 
 #. Translators: Error shown when a shortcut is already assigned.
 #: addon/globalPlugins/instantAccess.py:603
@@ -260,7 +260,7 @@ msgstr "تحرير عنصر"
 #. Translators: Confirmation prompt when deleting an item.
 #: addon/globalPlugins/instantAccess.py:751
 msgid "Are you sure you would like to delete the selected item?"
-msgstr "هل أنت متأكد أنك تريد حذف العنصر المحدد؟"
+msgstr "هل أنت متأكد من رغبتك في حذف العنصر المحدد؟"
 
 #. Translators: Title of the export settings dialog.
 #: addon/globalPlugins/instantAccess.py:778
@@ -285,7 +285,7 @@ msgstr "تعذر استيراد الإعدادات."
 #. Translators: Message announced when trying to enable instant Access mode with no configured commands.
 #: addon/globalPlugins/instantAccess.py:933
 msgid "No commands configured."
-msgstr "لم يتم تكوين أي أوامر."
+msgstr "لم يتم إعداد أي أوامر."
 
 #. Translators: Short message announced in advanced verbosity when instant Access mode is enabled.
 #: addon/globalPlugins/instantAccess.py:941
@@ -296,7 +296,7 @@ msgstr "تشغيل"
 #: addon/globalPlugins/instantAccess.py:945
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
-msgstr "تم تشغيل الوصول الفوري. تم تحميل {count} أوامر"
+msgstr "تم تشغيل الوصول الفوري. تم تحميل {count} من الأوامر"
 
 #. Translators: Short message announced in advanced verbosity when instant Access mode is disabled.
 #: addon/globalPlugins/instantAccess.py:956
@@ -311,7 +311,7 @@ msgstr "تم إيقاف الوصول الفوري"
 #. Translators: Message announced when a pressed key has no assigned command in instant Access mode.
 #: addon/globalPlugins/instantAccess.py:970
 msgid "This gesture has no command assigned."
-msgstr "ليس لهذا الاختصار أمر مخصص."
+msgstr "لم يتم تخصيص أمر لهذا الاختصار."
 
 #. الوصف الكامل
 #: buildVars.py:16
@@ -321,8 +321,8 @@ msgid ""
 "Features include background execution, verbosity levels, command line "
 "arguments, and settings import/export."
 msgstr ""
-"أداة إنتاجية قوية لتشغيل المواقع والملفات والمجلدات والبرامج بسرعة باستخدام طبقة مخصصة.\n"
-"تتضمن الميزات التنفيذ في الخلفية، مستويات الإسهاب، وسائط سطر الأوامر، واستيراد/تصدير الإعدادات."
+"أداة إنتاجية قوية لتشغيل مواقع الويب، والملفات، والمجلدات، والبرامج بسرعة باستخدام طبقة مخصصة.\n"
+"تتضمن الميزات: التنفيذ في الخلفية، ومستويات الإسهاب، ووسائط سطر الأوامر، واستيراد وتصدير الإعدادات."
 
 #. سجل التغييرات
 #: buildVars.py:23
