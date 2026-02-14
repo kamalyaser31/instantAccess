@@ -2,7 +2,6 @@
 # instantAccess.py
 # instant Access add-on for NVDA
 # Copyright (C) 2026 Kamal Yaser
-# Copyright (C) 2026 Kamal Yaser
 # Copyright (C) 2015 wafiq taher
 # it under the terms of the GNU General Public License as published by
 # You should have received a copy of the GNU General Public License
@@ -968,7 +967,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 		# Translators: Message announced when a pressed key has no assigned command in instant Access mode.
 		ui.message(_("This gesture has no command assigned."))
-		tones.beep(250, 50)
+		tones.beep(200, 50)
 
 	@scriptHandler.script(
 		category=CATEGORY_LABEL,
