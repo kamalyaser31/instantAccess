@@ -9,6 +9,19 @@
 
 instant Access is an NVDA add-on for building your own shortcut layer. You press one gesture to enter instant Access mode, then press the shortcut you assigned to run an item. That item can run one action or multiple actions in sequence, so you can build simple launches or full mini-workflows.
 
+The add-on supports websites, programs, folders, files, NVDA commands, and text snippets. A single shortcut can run multiple actions in sequence, with a shared interval between actions and an optional per-action delay.
+
+## What It Can Do
+
+You can build shortcuts that launch apps, open links, run NVDA and add-on commands, or insert reusable text. Text snippets can be typed, copied, or pasted, and typing mode supports a custom typing delay.
+
+Shortcuts can also be scoped to specific apps. This lets you reuse the same gesture differently across applications while still keeping global shortcuts for everywhere else.
+
+## Configuration
+
+Settings are stored in JSON and can be exported or imported from the settings panel. The interface includes command picking for NVDA scripts, action ordering controls, and direct testing from the item list.
+
+
 ## Built-In Shortcuts
 
 - `NVDA+E`: Toggle instant Access mode on or off.
@@ -88,3 +101,8 @@ You can export the full configuration to a JSON file and import it later on the 
 ## Notes and Limits
 
 Reserved gestures are blocked from assignment because they are used internally by instant Access. If no items are configured, toggling instant Access reports that no commands are available.
+
+## License
+
+Copyright (C) 2026 Kamal Yaser.
+Released under the GNU General Public License version 2.
