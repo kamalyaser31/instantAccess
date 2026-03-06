@@ -6,14 +6,12 @@ from gui.settingsDialogs import SettingsPanel
 import shutil
 import wx
 
-from .config_io import ensureConfigParser, saveConfig
+from .config_io import loadConfigFromPathStrict, saveConfig
 from .constants import (
 	ALL_FILES_WILDCARD,
-	CONFIG_SECTIONS,
 	CONFIRM_CAPTION,
 	ERROR_CAPTION,
 	TEXT_SNIPPET_ACTION_TO_LABEL,
-	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 	VERBOSITY_ADVANCED,
 	VERBOSITY_BEGINNER,
@@ -23,18 +21,43 @@ from .gestures import formatGestureForDisplay
 from .item_dialog import InstantAccessItemDialog
 
 
-def _getPathDisplay(item):
-	itemType = item.get("type", "")
-	if itemType == "NvdaCommands":
-		return item.get("commandLabel", "") or item.get("path", "")
+def _getActionSummary(action):
+	itemType = action.get("type", "")
 	if itemType == "TextSnippets":
-		text = item.get("path", "") or ""
-		action = TEXT_SNIPPET_ACTION_TO_LABEL.get(item.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"])
+		text = action.get("path", "") or ""
+		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"])
 		text = text.replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
 		if len(text) > 70:
 			text = text[:67] + "..."
-		return _("{action}: {preview}").format(action=action, preview=text)
-	return item.get("path", "")
+		return _("{action}: {preview}").format(action=actionLabel, preview=text)
+	if itemType == "NvdaCommands":
+		return action.get("commandLabel", "") or action.get("path", "")
+	details = action.get("path", "")
+	if itemType == "Programs" and action.get("arguments", "").strip():
+		details = f"{details} {action.get('arguments', '').strip()}"
+	return details
+
+
+def _getItemTypeLabel(item):
+	actions = item.get("actions", [])
+	if not actions:
+		return ""
+	if len(actions) == 1:
+		itemType = actions[0].get("type", "")
+		return TYPE_TO_LABEL.get(itemType, itemType).replace("&", "")
+	# Translators: Type label for shortcut items containing multiple actions.
+	return _("Multiple actions")
+
+
+def _getItemDetails(item):
+	actions = item.get("actions", [])
+	if not actions:
+		return ""
+	first = _getActionSummary(actions[0])
+	if len(actions) == 1:
+		return first
+	# Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
+	return _("{first} (+{count} more)").format(first=first, count=len(actions) - 1)
 
 
 class InstantAccessSettingsPanel(SettingsPanel):
@@ -110,12 +133,12 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		self.items = self.configManager.getItems() if self.configManager else []
 		selectedIndex = -1
 		for index, item in enumerate(self.items):
-			typeLabel = TYPE_TO_LABEL.get(item["type"], item["type"]).replace("&", "")
+			typeLabel = _getItemTypeLabel(item)
 			gestureText = ", ".join([formatGestureForDisplay(g) for g in item.get("gestures", [])])
 			self.listCtrl.InsertItem(index, item["name"])
 			self.listCtrl.SetItem(index, 1, typeLabel)
 			self.listCtrl.SetItem(index, 2, gestureText)
-			self.listCtrl.SetItem(index, 3, _getPathDisplay(item))
+			self.listCtrl.SetItem(index, 3, _getItemDetails(item))
 			if selectName and item["name"] == selectName:
 				selectedIndex = index
 		if selectedIndex >= 0:
@@ -140,12 +163,10 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			result = dialog.result
 			self.configManager.addItem(
 				result["name"],
-				result["type"],
-				result["path"],
 				result["gesture"],
-				result.get("arguments", ""),
-				result.get("textAction", "type"),
-				result.get("commandLabel", ""),
+				result.get("actions", []),
+				result.get("interval", 0.0),
+				result.get("appName", ""),
 			)
 			self.refreshList(selectName=result["name"])
 			if self.onConfigChanged:
@@ -164,12 +185,10 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			self.configManager.updateItem(
 				item["name"],
 				result["name"],
-				result["type"],
-				result["path"],
 				result["gesture"],
-				result.get("arguments", ""),
-				result.get("textAction", "type"),
-				result.get("commandLabel", ""),
+				result.get("actions", []),
+				result.get("interval", 0.0),
+				result.get("appName", ""),
 			)
 			self.refreshList(selectName=result["name"])
 			if self.onConfigChanged:
@@ -212,7 +231,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			wildcard=ALL_FILES_WILDCARD,
 			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
 		)
-		dialog.SetFilename("config.ini")
+		dialog.SetFilename("config.json")
 		if dialog.ShowModal() == wx.ID_OK:
 			destinationPath = dialog.GetPath()
 			try:
@@ -234,12 +253,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		if dialog.ShowModal() == wx.ID_OK:
 			sourcePath = dialog.GetPath()
 			try:
-				testConfig = ensureConfigParser()
-				with open(sourcePath, "r", encoding="utf-8") as handle:
-					testConfig.read_file(handle)
-				for section in CONFIG_SECTIONS:
-					if not testConfig.has_section(section):
-						testConfig.add_section(section)
+				testConfig = loadConfigFromPathStrict(sourcePath)
 				saveConfig(self.configManager.getConfigPath(), testConfig)
 				self.refreshList()
 				currentVerbosity = self.configManager.getVerbosityLevel()

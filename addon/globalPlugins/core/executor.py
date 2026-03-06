@@ -3,6 +3,7 @@
 import api
 import os
 import subprocess
+import time
 import ui
 import webbrowser
 import wx
@@ -35,9 +36,15 @@ def _setClipboardText(text):
 	return False
 
 
-def _executeTextSnippet(path, action):
+def _executeTextSnippet(path, action, typingDelay=0.05):
 	text = path or ""
 	action = (action or "type").strip().lower()
+	try:
+		typingDelay = float(typingDelay)
+	except Exception:
+		typingDelay = 0.05
+	if typingDelay < 0:
+		typingDelay = 0.05
 	if not text:
 		queueMessage(_("Error: Text snippet is empty"))
 		return
@@ -64,12 +71,12 @@ def _executeTextSnippet(path, action):
 		queueMessage(_("Error: Keyboard library is not available"))
 		return
 	try:
-		keyboard.write(text, delay=0.02)
+		keyboard.write(text, delay=typingDelay)
 	except Exception:
 		queueMessage(_("Error: Could not type text snippet"))
 
 
-def executeInstantItem(itemType, path, arguments="", textAction="type"):
+def executeInstantAction(itemType, path, arguments="", textAction="type", typingDelay=0.05):
 	if itemType == "Websites":
 		url = (path or "").strip()
 		if not url:
@@ -88,7 +95,7 @@ def executeInstantItem(itemType, path, arguments="", textAction="type"):
 		return
 
 	if itemType == "TextSnippets":
-		_executeTextSnippet(path, textAction)
+		_executeTextSnippet(path, textAction, typingDelay=typingDelay)
 		return
 
 	resolvedPath = expandPath(path or "")
@@ -122,3 +129,31 @@ def executeInstantItem(itemType, path, arguments="", textAction="type"):
 				subprocess.Popen([resolvedPath], cwd=workingDir)
 		except Exception:
 			queueMessage(_("Error: Could not start the program"))
+
+
+def executeInstantItem(item):
+	if not item:
+		return
+	actions = item.get("actions", [])
+	try:
+		interval = float(item.get("interval", 0.0) or 0.0)
+	except Exception:
+		interval = 0.0
+	if interval < 0:
+		interval = 0.0
+	for index, action in enumerate(actions):
+		try:
+			delay = float(action.get("delay", 0.0) or 0.0)
+		except Exception:
+			delay = 0.0
+		if delay > 0:
+			time.sleep(delay)
+		executeInstantAction(
+			itemType=action.get("type", ""),
+			path=action.get("path", ""),
+			arguments=action.get("arguments", ""),
+			textAction=action.get("textAction", "type"),
+			typingDelay=action.get("typingDelay", 0.05),
+		)
+		if index < len(actions) - 1 and interval > 0:
+			time.sleep(interval)

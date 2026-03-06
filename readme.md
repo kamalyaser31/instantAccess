@@ -1,88 +1,108 @@
-# instant Access for NVDA
+# instant Access
 
-* **Author:** Kamal Yaser
-* **Version:** 2026.1
-* **Compatibility:** NVDA 2019.3 and later
+## Overview
 
-**instant Access** is a productivity add-on for NVDA that allows you to launch websites, programs, files, and folders using a dedicated "Quick Layer." Instead of memorizing complex global shortcuts for every application, you simply enter "Quick Mode" and press a single key.
+**Author:** Kamal Yaser  
+**Version:** 2026.1  
+**Compatibility:** NVDA 2019.3 and later (last tested with 2025.3.2)  
+**License:** GNU General Public License v2 or later
 
-## What's New in this Release
+instant Access is an NVDA add-on for building your own shortcut layer. You press one gesture to enter instant Access mode, then press the shortcut you assigned to run an item. That item can run one action or multiple actions in sequence, so you can build simple launches or full mini-workflows.
 
-This version brings significant improvements for power users and stability:
+The add-on supports websites, programs, folders, files, NVDA commands, and text snippets. A single shortcut can run multiple actions in sequence, with a shared interval between actions and an optional per-action delay.
 
-* **Command Line Arguments:** You can now add flags to programs (e.g., launch a browser in Incognito/Private mode).
-* **Universal File Support:** The "Programs" category has been expanded to "Files." You can now launch images, PDFs, or text documents in their default viewer.
-* **No More Freezing:** All file and URL launching now happens in the background. NVDA will no longer pause or freeze while waiting for a slow network drive or browser to open.
-* **Verbosity Levels:** Choose between helpful spoken descriptions (Beginner) or fast, minimal beeps (Advanced).
-* **Settings Management:** Easily backup and restore your shortcuts with the new Import/Export feature.
+## What It Can Do
 
-## Getting Started
+You can build shortcuts that launch apps, open links, run NVDA and add-on commands, or insert reusable text. Text snippets can be typed, copied, or pasted, and typing mode supports a custom typing delay.
 
-1. Open the **NVDA Menu** (`NVDA + N`).
-2. Navigate to **Preferences** -> **Settings**.
-3. Scroll down to the **instant Access** category.
+Shortcuts can also be scoped to specific apps. This lets you reuse the same gesture differently across applications while still keeping global shortcuts for everywhere else.
 
-## Managing Items
+## Configuration
 
-In the settings panel, you can Add, Edit, or Delete your shortcuts.
-
-### Adding a New Item
-
-1. Click **Add**.
-2. **Name:** Enter a name for the item (e.g., "Google" or "Notes").
-3. **Type:** Choose one of the following:
-* **Website:** Opens a URL in your default browser.
-* **Program:** Executable files (`.exe`). Supports command line arguments.
-* **Folder:** Opens a directory in File Explorer.
-* **File:** Opens any document (`.txt`, `.pdf`, `.docx`) in its default application.
+Settings are stored in JSON and can be exported or imported from the settings panel. The interface includes command picking for NVDA scripts, action ordering controls, and direct testing from the item list.
 
 
-4. **Path:** Paste the path/URL or use the **Browse** button to locate it.
-5. **Arguments (Optional):** (Only for Programs) Enter flags like `-incognito` or `/safe`.
-6. **Shortcut:** Click the button and press the key you want to use (e.g., `G` for Google).
+## Built-In Shortcuts
 
-## How to Use
+- `NVDA+E`: Toggle instant Access mode on or off.
+- `NVDA+Shift+E`: Report the currently focused app name.
+- `NVDA+Shift+E` pressed twice quickly: Copy the focused app name to clipboard and announce that it was copied.
+- `Escape` (while instant Access mode is active): Exit instant Access mode.
 
-1. **Enter Quick Mode:** Press **`NVDA + E`**.
-* *Beginner Mode:* NVDA says: "instant Access On. X commands loaded."
-* *Advanced Mode:* NVDA says: "On" (or beeps).
+## Where to Configure It
 
+Open NVDA menu, then go to Preferences, Settings, and choose **instant Access**. The settings panel shows your configured items with name, type summary, shortcut, and a short action preview.
 
-2. **Launch an Item:** Press the key you assigned (e.g., press `G`).
-* The item will launch immediately.
-* Quick Mode automatically closes after the command executes.
+From the same panel you can add, edit, delete, and test items. You can also import and export settings, and choose the verbosity level.
 
+## How Items Work
 
-3. **Cancel:** Press **Escape** or **`NVDA + E`** again to exit without launching anything.
+An item is the unit bound to a shortcut. Each item has a name, a gesture, optional app restriction, interval between actions, and an action list.
 
-## Advanced Configuration
+When the item runs, actions are executed in order from top to bottom. You can reorder actions with Move up and Move down, and you can define delay at two levels: a delay before each action and an interval between actions.
 
-### Verbosity Levels
+## Creating a New Item
 
-You can customize how chatty the add-on is via the Settings panel:
+Press **Add** in the settings panel. Enter the item name, assign a shortcut, and decide whether the item should be restricted to a specific app. If restriction is enabled, enter the app name exactly as reported by `NVDA+Shift+E`.
 
-* **Beginner (Default):** Provides full spoken feedback. Useful when learning your shortcuts.
-* *Example:* "instant Access On," "This gesture has no command assigned."
+After that, build the actions list. At least one action is required. You can add as many actions as you need and tune delays for each one.
 
+## Action Types
 
-* **Advanced:** Designed for speed. Uses short phrases and beeps.
-* *Example:* "On," "Off," or a simple error beep if you press a wrong key.
+### Website
 
+Use this action to open a URL in the default web browser. The path field stores the URL and runs it directly.
 
+### Program
 
-### Import / Export
+Use this action to launch an executable file. You can also provide optional command-line arguments for startup flags or profile-specific behavior.
 
-You can now share your setup between computers or back up your configuration.
+### Folder
 
-* **Export Settings:** Saves your current list of shortcuts and settings to a `.ini` file.
-* **Import Settings:** Loads a configuration file. **Note:** This will overwrite your current list.
+Use this action to open a folder path in File Explorer.
 
-## Troubleshooting
+### File
 
-* **"Error: File not found":** Ensure the path is correct. If the file is on a network drive, ensure you are connected to the network.
-* **Program doesn't open correctly:** Some programs require a specific "Working Directory." This add-on automatically handles this for you, but ensure you have permissions to access the folder.
+Use this action to open a file using the default associated application.
+
+### NVDA Command
+
+Use this action to run an NVDA script or an active add-on script. Choose **Select command** to open the command picker, browse by category, filter commands, and select one command to store in the action.
+
+### Text Snippet
+
+Use this action for reusable text blocks such as template replies, signatures, or frequent command text. Text snippets support three modes:
+
+- **Type:** Simulate typing the text.
+- **Copy:** Put the text in clipboard.
+- **Paste:** Paste the text through simulated keyboard paste.
+
+If mode is **Type**, you can set **Typing delay** (default `0.05`) to control how fast characters are injected.
+
+## App-Restricted Shortcuts
+
+Shortcuts can be global or app-specific. An app-specific shortcut is only active when that app is focused.
+
+Conflict handling is scope-aware. A global shortcut can reuse the same gesture as an app-specific shortcut without conflict. A conflict is blocked only when the same gesture is duplicated in the same scope: global with global, or same-app with same-app.
+
+When both exist for the same gesture, instant Access prefers the matching app-specific item for the focused app. If there is no matching app-specific item, it falls back to the global one.
+
+## Verbosity
+
+Two verbosity levels are available:
+
+- **Beginner:** fuller spoken feedback.
+- **Advanced:** shorter feedback with tones where appropriate.
+
+## Import and Export
+
+You can export the full configuration to a JSON file and import it later on the same or another machine. Import replaces the current configuration.
+
+## Notes and Limits
+
+Reserved gestures are blocked from assignment because they are used internally by instant Access. If no items are configured, toggling instant Access reports that no commands are available.
 
 ## License
 
 Copyright (C) 2026 Kamal Yaser.
-This add-on is released under the GNU General Public License (GPL) version 2 or later.
+Released under the GNU General Public License version 2.

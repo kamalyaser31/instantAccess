@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .config_io import ensureConfigFile, loadConfigSafe, saveConfig
-from .constants import CONFIG_SECTIONS, TYPE_SECTIONS, VERBOSITY_VALUES
+from .constants import TYPE_SECTIONS, VERBOSITY_VALUES
 
 
 class ConfigManager:
@@ -10,11 +10,7 @@ class ConfigManager:
 		ensureConfigFile(self.configPath)
 
 	def loadOrCreateConfig(self):
-		config = loadConfigSafe(self.configPath)
-		for section in CONFIG_SECTIONS:
-			if not config.has_section(section):
-				config.add_section(section)
-		return config
+		return loadConfigSafe(self.configPath)
 
 	def saveConfig(self, config):
 		saveConfig(self.configPath, config)
@@ -22,156 +18,177 @@ class ConfigManager:
 	def getConfigPath(self):
 		return self.configPath
 
-	def _removeOptionIfSectionExists(self, config, section, name):
-		if config.has_section(section):
-			config.remove_option(section, name)
+	def _actionToPublic(self, storedAction):
+		itemType = storedAction.get("type", "")
+		data = storedAction.get("data", {})
+		if not isinstance(data, dict):
+			data = {}
+		path = ""
+		arguments = ""
+		textAction = "type"
+		typingDelay = 0.05
+		commandLabel = ""
+		if itemType == "Websites":
+			path = data.get("url", "")
+		elif itemType in ("Programs", "Folders", "Files"):
+			path = data.get("path", "")
+			if itemType == "Programs":
+				arguments = data.get("arguments", "")
+		elif itemType == "NvdaCommands":
+			path = data.get("commandId", "")
+			commandLabel = data.get("commandLabel", "")
+		elif itemType == "TextSnippets":
+			path = data.get("text", "")
+			textAction = data.get("action", "type")
+			try:
+				typingDelay = float(data.get("typingDelay", 0.05) or 0.05)
+			except Exception:
+				typingDelay = 0.05
+			if typingDelay < 0:
+				typingDelay = 0.05
+		return {
+			"type": itemType,
+			"path": path if isinstance(path, str) else "",
+			"arguments": arguments if isinstance(arguments, str) else "",
+			"textAction": textAction if isinstance(textAction, str) else "type",
+			"typingDelay": typingDelay,
+			"commandLabel": commandLabel if isinstance(commandLabel, str) else "",
+			"delay": float(storedAction.get("delay", 0.0) or 0.0),
+		}
+
+	def _toPublicItem(self, storedItem):
+		actions = [self._actionToPublic(action) for action in storedItem.get("actions", [])]
+		gesture = (storedItem.get("gesture", "") or "").strip().lower()
+		return {
+			"name": storedItem.get("name", ""),
+			"appName": (storedItem.get("appName", "") or "").strip().lower(),
+			"interval": float(storedItem.get("interval", 0.0) or 0.0),
+			"actions": actions,
+			"gestures": [gesture] if gesture else [],
+		}
+
+	def _buildStoredAction(self, action):
+		itemType = action.get("type", "")
+		if itemType not in TYPE_SECTIONS:
+			itemType = TYPE_SECTIONS[0]
+		delay = action.get("delay", 0.0)
+		try:
+			delay = float(delay)
+		except Exception:
+			delay = 0.0
+		if delay < 0:
+			delay = 0.0
+		if itemType == "Websites":
+			data = {"url": action.get("path", "")}
+		elif itemType in ("Programs", "Folders", "Files"):
+			data = {"path": action.get("path", "")}
+			if itemType == "Programs" and (action.get("arguments", "") or "").strip():
+				data["arguments"] = action.get("arguments", "").strip()
+		elif itemType == "NvdaCommands":
+			data = {"commandId": action.get("path", "")}
+			if (action.get("commandLabel", "") or "").strip():
+				data["commandLabel"] = action.get("commandLabel", "").strip()
+		else:
+			try:
+				typingDelay = float(action.get("typingDelay", 0.05) or 0.05)
+			except Exception:
+				typingDelay = 0.05
+			if typingDelay < 0:
+				typingDelay = 0.05
+			data = {
+				"text": action.get("path", ""),
+				"action": (action.get("textAction", "type") or "").strip().lower(),
+				"typingDelay": typingDelay,
+			}
+		return {"type": itemType, "data": data, "delay": delay}
+
+	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName=""):
+		try:
+			interval = float(interval)
+		except Exception:
+			interval = 0.0
+		if interval < 0:
+			interval = 0.0
+		storedActions = [self._buildStoredAction(action) for action in actions]
+		item = {
+			"name": name,
+			"gesture": (gesture or "").strip().lower(),
+			"interval": interval,
+			"actions": storedActions,
+		}
+		normalizedAppName = (appName or "").strip().lower()
+		if normalizedAppName:
+			item["appName"] = normalizedAppName
+		return item
 
 	def getItems(self):
 		config = self.loadOrCreateConfig()
-		gestureMap = {}
-		argumentMap = {}
-		textActionMap = {}
-		commandLabelMap = {}
-		if config.has_section("Gestures"):
-			for gesture, name in config.items("Gestures"):
-				gestureMap.setdefault(name, []).append(gesture)
-		if config.has_section("Arguments"):
-			for name, argumentText in config.items("Arguments"):
-				argumentMap[name] = argumentText
-		if config.has_section("TextSnippetActions"):
-			for name, action in config.items("TextSnippetActions"):
-				textActionMap[name] = action
-		if config.has_section("CommandLabels"):
-			for name, label in config.items("CommandLabels"):
-				commandLabelMap[name] = label
 		items = []
-		for section in TYPE_SECTIONS:
-			if not config.has_section(section):
-				continue
-			for name, path in config.items(section):
-				items.append(
-					{
-						"name": name,
-						"type": section,
-						"path": path,
-						"arguments": argumentMap.get(name, ""),
-						"textAction": textActionMap.get(name, "type"),
-						"commandLabel": commandLabelMap.get(name, ""),
-						"gestures": gestureMap.get(name, []),
-					},
-				)
+		for storedItem in config.get("items", []):
+			items.append(self._toPublicItem(storedItem))
 		return items
 
 	def getAllNames(self):
-		config = self.loadOrCreateConfig()
-		allNames = set()
-		for section in TYPE_SECTIONS:
-			if not config.has_section(section):
-				continue
-			for name, _value in config.items(section):
-				allNames.add(name)
-		return allNames
+		return {item.get("name", "") for item in self.getItems()}
 
 	def getGestureToNameMap(self):
-		config = self.loadOrCreateConfig()
 		gestureMap = {}
-		if config.has_section("Gestures"):
-			for gesture, name in config.items("Gestures"):
-				gestureMap[gesture.lower()] = name
+		for item in self.getItems():
+			name = item.get("name", "")
+			for gesture in item.get("gestures", []):
+				normalized = (gesture or "").strip().lower()
+				if normalized and normalized not in gestureMap:
+					gestureMap[normalized] = name
 		return gestureMap
 
-	def removeGesturesForName(self, config, name):
-		if not config.has_section("Gestures"):
-			return
-		toRemove = []
-		for gesture, mappedName in config.items("Gestures"):
-			if mappedName == name:
-				toRemove.append(gesture)
-		for gesture in toRemove:
-			config.remove_option("Gestures", gesture)
+	def findGestureConflict(self, gesture, appName="", excludeName=""):
+		normalizedGesture = (gesture or "").strip().lower()
+		normalizedAppName = (appName or "").strip().lower()
+		if not normalizedGesture:
+			return None
+		for item in self.getItems():
+			if excludeName and item.get("name", "") == excludeName:
+				continue
+			itemAppName = (item.get("appName", "") or "").strip().lower()
+			for itemGesture in item.get("gestures", []):
+				if (itemGesture or "").strip().lower() != normalizedGesture:
+					continue
+				if itemAppName == normalizedAppName:
+					return item
+		return None
 
-	def addItem(self, name, itemType, path, gesture, arguments="", textAction="type", commandLabel=""):
+	def addItem(self, name, gesture, actions, interval=0.0, appName=""):
 		config = self.loadOrCreateConfig()
-		if not config.has_section(itemType):
-			config.add_section(itemType)
-		config.set(itemType, name, path)
-		self.removeGesturesForName(config, name)
-
-		self._removeOptionIfSectionExists(config, "Arguments", name)
-		self._removeOptionIfSectionExists(config, "TextSnippetActions", name)
-		self._removeOptionIfSectionExists(config, "CommandLabels", name)
-
-		if itemType == "Programs" and arguments.strip():
-			config.set("Arguments", name, arguments.strip())
-		if itemType == "TextSnippets":
-			config.set("TextSnippetActions", name, (textAction or "type").strip().lower())
-		if itemType == "NvdaCommands" and commandLabel.strip():
-			config.set("CommandLabels", name, commandLabel.strip())
-		if gesture:
-			config.set("Gestures", gesture, name)
+		items = [item for item in config.get("items", []) if item.get("name", "") != name]
+		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
+		config["items"] = items
 		self.saveConfig(config)
 
-	def updateItem(
-		self,
-		oldName,
-		name,
-		itemType,
-		path,
-		gesture,
-		arguments="",
-		textAction="type",
-		commandLabel="",
-	):
+	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName=""):
 		config = self.loadOrCreateConfig()
-		for section in TYPE_SECTIONS:
-			if config.has_section(section) and config.has_option(section, oldName):
-				config.remove_option(section, oldName)
-		if not config.has_section(itemType):
-			config.add_section(itemType)
-		config.set(itemType, name, path)
-
-		for section in ("Arguments", "TextSnippetActions", "CommandLabels"):
-			self._removeOptionIfSectionExists(config, section, oldName)
-			self._removeOptionIfSectionExists(config, section, name)
-
-		if itemType == "Programs" and arguments.strip():
-			config.set("Arguments", name, arguments.strip())
-		if itemType == "TextSnippets":
-			config.set("TextSnippetActions", name, (textAction or "type").strip().lower())
-		if itemType == "NvdaCommands" and commandLabel.strip():
-			config.set("CommandLabels", name, commandLabel.strip())
-
-		self.removeGesturesForName(config, oldName)
-		self.removeGesturesForName(config, name)
-		if gesture:
-			config.set("Gestures", gesture, name)
+		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
+		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
+		config["items"] = items
 		self.saveConfig(config)
 
 	def deleteItem(self, name):
 		config = self.loadOrCreateConfig()
-		for section in TYPE_SECTIONS:
-			if config.has_section(section):
-				config.remove_option(section, name)
-		for section in ("Arguments", "TextSnippetActions", "CommandLabels"):
-			self._removeOptionIfSectionExists(config, section, name)
-		self.removeGesturesForName(config, name)
+		config["items"] = [item for item in config.get("items", []) if item.get("name", "") != name]
 		self.saveConfig(config)
 
 	def getVerbosityLevel(self):
 		config = self.loadOrCreateConfig()
-		if not config.has_section("Settings"):
-			config.add_section("Settings")
-		value = config.get("Settings", "verbosity", fallback=VERBOSITY_VALUES[0]).strip().lower()
+		settings = config.get("settings", {})
+		value = (settings.get("verbosity", VERBOSITY_VALUES[0]) or "").strip().lower()
 		if value not in VERBOSITY_VALUES:
 			value = VERBOSITY_VALUES[0]
 		return value
 
 	def setVerbosityLevel(self, value):
 		config = self.loadOrCreateConfig()
-		if not config.has_section("Settings"):
-			config.add_section("Settings")
 		value = (value or "").strip().lower()
 		if value not in VERBOSITY_VALUES:
 			value = VERBOSITY_VALUES[0]
-		config.set("Settings", "verbosity", value)
+		config.setdefault("settings", {})
+		config["settings"]["verbosity"] = value
 		self.saveConfig(config)

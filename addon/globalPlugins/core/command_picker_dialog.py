@@ -27,6 +27,8 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		self._itemToCommandId = {}
 		self._isDestroyed = False
 		self._loadFuture = None
+		self._filterCallLater = None
+		self._isPopulatingTree = False
 
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		sizerHelper = guiHelper.BoxSizerHelper(self, wx.VERTICAL)
@@ -54,8 +56,6 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onTreeSelectionChanged)
 		self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onTreeItemActivated)
 		self.tree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.onTreeItemExpanding)
-		self.tree.Bind(wx.EVT_TREE_KEY_DOWN, self.onTreeKeyDown)
-		self.tree.Bind(wx.EVT_LEFT_UP, self.onTreeMouseUp)
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
 		self.Bind(wx.EVT_WINDOW_DESTROY, self.onDestroy)
 
@@ -69,14 +69,29 @@ class NvdaCommandPickerDialog(wx.Dialog):
 
 	def onDestroy(self, event):
 		self._isDestroyed = True
+		if self._filterCallLater is not None:
+			try:
+				self._filterCallLater.Stop()
+			except Exception:
+				pass
+			self._filterCallLater = None
 		event.Skip()
+
+	def _isTreeAlive(self):
+		if self._isDestroyed or not hasattr(self, "tree"):
+			return False
+		try:
+			self.tree.GetId()
+			return True
+		except Exception:
+			return False
 
 	def _loadCommandsAsync(self):
 		self._loadFuture = _COMMAND_LOADER.submit(getAllActiveNvdaCommands)
 		self._loadFuture.add_done_callback(lambda future: wx.CallAfter(self._onCommandsLoaded, future))
 
 	def _onCommandsLoaded(self, future):
-		if self._isDestroyed:
+		if not self._isTreeAlive():
 			return
 		try:
 			self.commands = future.result()
@@ -98,6 +113,9 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		return grouped
 
 	def populateTree(self, preferredCommandId=""):
+		if not self._isTreeAlive():
+			return
+		self._isPopulatingTree = True
 		self.tree.Freeze()
 		try:
 			self.tree.DeleteAllItems()
@@ -112,14 +130,35 @@ class NvdaCommandPickerDialog(wx.Dialog):
 			self.tree.CollapseAll()
 		finally:
 			self.tree.Thaw()
+			self._isPopulatingTree = False
 		self.selectedCommandId = ""
 		self.okButton.Enable(False)
 
 	def onFilterChange(self, event):
+		if not self._isTreeAlive():
+			return
+		if self._filterCallLater is not None:
+			try:
+				self._filterCallLater.Stop()
+			except Exception:
+				pass
+		self._filterCallLater = wx.CallLater(120, self._applyFilter)
+
+	def _applyFilter(self):
+		if not self._isTreeAlive():
+			return
+		hadFilterFocus = self.FindFocus() == self.filterCtrl
+		insertionPoint = self.filterCtrl.GetInsertionPoint()
+		selectionStart, selectionEnd = self.filterCtrl.GetSelection()
 		self.populateTree(self.selectedCommandId)
-		self._updateSelectionState()
+		if hadFilterFocus and self.filterCtrl:
+			self.filterCtrl.SetFocus()
+			self.filterCtrl.SetInsertionPoint(insertionPoint)
+			self.filterCtrl.SetSelection(selectionStart, selectionEnd)
 
 	def onTreeItemExpanding(self, event):
+		if not self._isTreeAlive():
+			return
 		item = event.GetItem()
 		if not item or not item.IsOk():
 			return
@@ -141,24 +180,24 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		self._updateSelectionState()
 
 	def onTreeSelectionChanged(self, event):
+		if not self._isTreeAlive():
+			return
+		if self._isPopulatingTree:
+			return
 		self._updateSelectionState(event.GetItem())
 
 	def onTreeItemActivated(self, event):
+		if not self._isTreeAlive():
+			return
 		item = event.GetItem()
 		commandId = self._getCommandIdForItem(item)
 		if commandId:
 			self.selectedCommandId = commandId
 			self.onOk(event)
 
-	def onTreeKeyDown(self, event):
-		event.Skip()
-		wx.CallAfter(self._updateSelectionState)
-
-	def onTreeMouseUp(self, event):
-		event.Skip()
-		wx.CallAfter(self._updateSelectionState)
-
 	def _updateSelectionState(self, item=None):
+		if not self._isTreeAlive():
+			return
 		if item is None or not item.IsOk():
 			item = self.tree.GetSelection()
 		if (item is None or not item.IsOk()) and hasattr(self.tree, "GetFocusedItem"):
@@ -175,6 +214,8 @@ class NvdaCommandPickerDialog(wx.Dialog):
 			self.okButton.Enable(False)
 
 	def _getCommandIdForItem(self, item):
+		if not self._isTreeAlive():
+			return ""
 		if not item or not item.IsOk():
 			return ""
 		commandId = self._itemToCommandId.get(item.GetID(), "")

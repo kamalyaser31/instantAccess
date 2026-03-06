@@ -3,6 +3,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 
+import api
 import globalPluginHandler
 import globalVars
 import gui
@@ -13,7 +14,7 @@ import ui
 import wx
 
 from .config_manager import ConfigManager
-from .constants import CATEGORY_LABEL, TOGGLE_DESCRIPTION, VERBOSITY_VALUES
+from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION, VERBOSITY_VALUES
 from .executor import executeInstantItem
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
@@ -37,9 +38,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="instantAccess")
 		self.verbosityLevel = VERBOSITY_VALUES[0]
 		self.instantMode = False
-		self.gestureToItem = {}
+		self.gestureToItems = {}
 		self.loadedCommandCount = 0
-		configPath = os.path.join(globalVars.appArgs.configPath, "instantAccess", "config.ini")
+		configPath = os.path.join(globalVars.appArgs.configPath, "instantAccess", "config.json")
 		self.configManager = ConfigManager(configPath)
 		self.setVerbosityLevel(self.configManager.getVerbosityLevel())
 		InstantAccessSettingsPanel.configManager = self.configManager
@@ -86,12 +87,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		commandName = (item.get("name", "") or "").strip()
 		if commandName:
 			wx.CallAfter(ui.message, commandName)
-		executeInstantItem(
-			itemType=item.get("type", ""),
-			path=item.get("path", ""),
-			arguments=item.get("arguments", ""),
-			textAction=item.get("textAction", "type"),
-		)
+		executeInstantItem(item)
 
 	def getScript(self, gesture):
 		if not self.instantMode:
@@ -112,19 +108,41 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 		return ["kb:NVDA+e"]
 
+	def getReportAppNameGestures(self):
+		try:
+			mappings = inputCore.manager.getAllGestureMappings()
+			categoryMap = mappings.get(CATEGORY_LABEL, {})
+			scriptInfo = categoryMap.get(REPORT_APP_NAME_DESCRIPTION)
+			if scriptInfo and getattr(scriptInfo, "gestures", None):
+				return list(scriptInfo.gestures)
+		except Exception:
+			pass
+		return ["kb:NVDA+shift+e"]
+
+	def getCurrentAppName(self):
+		try:
+			focus = api.getFocusObject()
+			appModule = getattr(focus, "appModule", None)
+			appName = getattr(appModule, "appName", "")
+			return (appName or "").strip().lower()
+		except Exception:
+			return ""
+
 	def buildInstantGestures(self):
 		items = self.configManager.getItems()
-		self.gestureToItem = {}
+		self.gestureToItems = {}
 		for item in items:
 			for gesture in item.get("gestures", []):
 				for expanded in expandGestureLayouts(gesture):
-					self.gestureToItem[expanded.lower()] = item
-		self.loadedCommandCount = len({item["name"] for item in self.gestureToItem.values()})
+					self.gestureToItems.setdefault(expanded.lower(), []).append(item)
+		self.loadedCommandCount = len({item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture})
 		instantGestures = {}
-		for gesture in self.gestureToItem.keys():
+		for gesture in self.gestureToItems.keys():
 			instantGestures[gesture] = "runInstantItem"
 		for gesture in self.getToggleGestures():
 			instantGestures[gesture] = "toggleInstantMode"
+		for gesture in self.getReportAppNameGestures():
+			instantGestures[gesture] = "reportCurrentAppName"
 		instantGestures["kb:escape"] = "exitInstantMode"
 		return instantGestures
 
@@ -133,7 +151,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.loadedCommandCount <= 0:
 			self.instantMode = False
 			self.clearGestureBindings()
-			self.bindGestures({gesture: "toggleInstantMode" for gesture in self.getToggleGestures()})
+			bindings = {gesture: "toggleInstantMode" for gesture in self.getToggleGestures()}
+			for gesture in self.getReportAppNameGestures():
+				bindings[gesture] = "reportCurrentAppName"
+			self.bindGestures(bindings)
 			if speak:
 				ui.message(_("No commands configured."))
 			return
@@ -152,7 +173,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 		self.instantMode = False
 		self.clearGestureBindings()
-		self.bindGestures({gesture: "toggleInstantMode" for gesture in self.getToggleGestures()})
+		bindings = {gesture: "toggleInstantMode" for gesture in self.getToggleGestures()}
+		for gesture in self.getReportAppNameGestures():
+			bindings[gesture] = "reportCurrentAppName"
+		self.bindGestures(bindings)
 		if speak:
 			if self.isAdvancedVerbosity():
 				ui.message(_("Off"))
@@ -190,12 +214,44 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			identifiers.extend(gesture.identifiers)
 		elif hasattr(gesture, "identifier"):
 			identifiers.append(gesture.identifier)
-		item = None
+		candidateItems = []
 		for gestureId in identifiers:
 			normalized = normalizeGestureIdentifier(gestureId)
-			item = self.gestureToItem.get(normalized)
-			if item:
+			items = self.gestureToItems.get(normalized, [])
+			if items:
+				candidateItems.extend(items)
+		if not candidateItems:
+			return
+		currentAppName = self.getCurrentAppName()
+		item = None
+		for candidate in candidateItems:
+			itemAppName = (candidate.get("appName", "") or "").strip().lower()
+			if itemAppName and itemAppName == currentAppName:
+				item = candidate
 				break
-		if not item:
+		if item is None:
+			for candidate in candidateItems:
+				if not (candidate.get("appName", "") or "").strip():
+					item = candidate
+					break
+		if item is None:
 			return
 		self.queueRunItemExecution(item)
+
+	@scriptHandler.script(
+		category=CATEGORY_LABEL,
+		description=REPORT_APP_NAME_DESCRIPTION,
+		gesture="kb:NVDA+shift+e",
+	)
+	def script_reportCurrentAppName(self, gesture):
+		appName = self.getCurrentAppName()
+		if not appName:
+			return
+		if scriptHandler.getLastScriptRepeatCount() > 0:
+			if hasattr(api, "setClipText"):
+				api.setClipText(appName)
+			elif hasattr(api, "copyToClip"):
+				api.copyToClip(appName, notify=False)
+			ui.message(_("App name copied to clipboard."))
+			return
+		ui.message(appName)

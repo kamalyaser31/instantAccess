@@ -11,6 +11,7 @@ CONFIG_SECTIONS = [
 	"Arguments",
 	"TextSnippetActions",
 	"CommandLabels",
+	"RestrictedApps",
 	"Settings",
 ]
 
@@ -35,13 +36,16 @@ TEXT_SNIPPET_ACTION_LABELS = [_("Type the text"), _("Copy"), _("Paste")]
 
 TEXT_SNIPPET_ACTION_TO_LABEL = dict(zip(TEXT_SNIPPET_ACTION_VALUES, TEXT_SNIPPET_ACTION_LABELS))
 
-RESERVED_GESTURES = {"kb:escape", "kb:nvda+e"}
+RESERVED_GESTURES = {"kb:escape", "kb:nvda+e", "kb:nvda+shift+e"}
 
 # Translators: Category name for the instant Access add-on.
 CATEGORY_LABEL = _("instant Access")
 
 # Translators: Description for the toggle instant mode command in Input Gestures.
 TOGGLE_DESCRIPTION = _("Toggle instant Access mode.")
+
+# Translators: Description for reporting the currently focused application name.
+REPORT_APP_NAME_DESCRIPTION = _("Report current app name.")
 
 # Translators: Caption for error message dialogs.
 ERROR_CAPTION = _("Error")
