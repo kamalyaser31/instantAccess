@@ -18,42 +18,15 @@ class ConfigManager:
 	def getConfigPath(self):
 		return self.configPath
 
-	def _buildStoredItem(self, name, itemType, path, gesture, arguments="", textAction="type", commandLabel="", appName=""):
-		normalizedType = itemType if itemType in TYPE_SECTIONS else TYPE_SECTIONS[0]
-		data = {}
-		if normalizedType == "Websites":
-			data["url"] = path
-		elif normalizedType in ("Programs", "Folders", "Files"):
-			data["path"] = path
-			if normalizedType == "Programs" and arguments.strip():
-				data["arguments"] = arguments.strip()
-		elif normalizedType == "NvdaCommands":
-			data["commandId"] = path
-			if commandLabel.strip():
-				data["commandLabel"] = commandLabel.strip()
-		elif normalizedType == "TextSnippets":
-			data["text"] = path
-			data["action"] = (textAction or "type").strip().lower()
-
-		item = {
-			"name": name,
-			"type": normalizedType,
-			"gesture": (gesture or "").strip().lower(),
-			"data": data,
-		}
-		normalizedAppName = (appName or "").strip().lower()
-		if normalizedAppName:
-			item["appName"] = normalizedAppName
-		return item
-
-	def _toPublicItem(self, storedItem):
-		itemType = storedItem.get("type", "")
-		data = storedItem.get("data", {})
+	def _actionToPublic(self, storedAction):
+		itemType = storedAction.get("type", "")
+		data = storedAction.get("data", {})
 		if not isinstance(data, dict):
 			data = {}
 		path = ""
 		arguments = ""
 		textAction = "type"
+		typingDelay = 0.05
 		commandLabel = ""
 		if itemType == "Websites":
 			path = data.get("url", "")
@@ -67,16 +40,86 @@ class ConfigManager:
 		elif itemType == "TextSnippets":
 			path = data.get("text", "")
 			textAction = data.get("action", "type")
+			try:
+				typingDelay = float(data.get("typingDelay", 0.05) or 0.05)
+			except Exception:
+				typingDelay = 0.05
+			if typingDelay < 0:
+				typingDelay = 0.05
 		return {
-			"name": storedItem.get("name", ""),
 			"type": itemType,
 			"path": path if isinstance(path, str) else "",
 			"arguments": arguments if isinstance(arguments, str) else "",
 			"textAction": textAction if isinstance(textAction, str) else "type",
+			"typingDelay": typingDelay,
 			"commandLabel": commandLabel if isinstance(commandLabel, str) else "",
-			"appName": (storedItem.get("appName", "") or "").strip().lower(),
-			"gestures": [storedItem.get("gesture", "")] if storedItem.get("gesture", "") else [],
+			"delay": float(storedAction.get("delay", 0.0) or 0.0),
 		}
+
+	def _toPublicItem(self, storedItem):
+		actions = [self._actionToPublic(action) for action in storedItem.get("actions", [])]
+		gesture = (storedItem.get("gesture", "") or "").strip().lower()
+		return {
+			"name": storedItem.get("name", ""),
+			"appName": (storedItem.get("appName", "") or "").strip().lower(),
+			"interval": float(storedItem.get("interval", 0.0) or 0.0),
+			"actions": actions,
+			"gestures": [gesture] if gesture else [],
+		}
+
+	def _buildStoredAction(self, action):
+		itemType = action.get("type", "")
+		if itemType not in TYPE_SECTIONS:
+			itemType = TYPE_SECTIONS[0]
+		delay = action.get("delay", 0.0)
+		try:
+			delay = float(delay)
+		except Exception:
+			delay = 0.0
+		if delay < 0:
+			delay = 0.0
+		if itemType == "Websites":
+			data = {"url": action.get("path", "")}
+		elif itemType in ("Programs", "Folders", "Files"):
+			data = {"path": action.get("path", "")}
+			if itemType == "Programs" and (action.get("arguments", "") or "").strip():
+				data["arguments"] = action.get("arguments", "").strip()
+		elif itemType == "NvdaCommands":
+			data = {"commandId": action.get("path", "")}
+			if (action.get("commandLabel", "") or "").strip():
+				data["commandLabel"] = action.get("commandLabel", "").strip()
+		else:
+			try:
+				typingDelay = float(action.get("typingDelay", 0.05) or 0.05)
+			except Exception:
+				typingDelay = 0.05
+			if typingDelay < 0:
+				typingDelay = 0.05
+			data = {
+				"text": action.get("path", ""),
+				"action": (action.get("textAction", "type") or "").strip().lower(),
+				"typingDelay": typingDelay,
+			}
+		return {"type": itemType, "data": data, "delay": delay}
+
+	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName=""):
+		try:
+			interval = float(interval)
+		except Exception:
+			interval = 0.0
+		if interval < 0:
+			interval = 0.0
+		storedActions = [self._buildStoredAction(action) for action in actions]
+		item = {
+			"name": name,
+			"gesture": (gesture or "").strip().lower(),
+			"interval": interval,
+			"actions": storedActions,
+		}
+		normalizedAppName = (appName or "").strip().lower()
+		if normalizedAppName:
+			item["appName"] = normalizedAppName
+		return item
 
 	def getItems(self):
 		config = self.loadOrCreateConfig()
@@ -114,29 +157,17 @@ class ConfigManager:
 					return item
 		return None
 
-	def addItem(self, name, itemType, path, gesture, arguments="", textAction="type", commandLabel="", appName=""):
+	def addItem(self, name, gesture, actions, interval=0.0, appName=""):
 		config = self.loadOrCreateConfig()
-		items = config.get("items", [])
-		items = [item for item in items if item.get("name", "") != name]
-		items.append(self._buildStoredItem(name, itemType, path, gesture, arguments, textAction, commandLabel, appName))
+		items = [item for item in config.get("items", []) if item.get("name", "") != name]
+		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
 		config["items"] = items
 		self.saveConfig(config)
 
-	def updateItem(
-		self,
-		oldName,
-		name,
-		itemType,
-		path,
-		gesture,
-		arguments="",
-		textAction="type",
-		commandLabel="",
-		appName="",
-	):
+	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName=""):
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
-		items.append(self._buildStoredItem(name, itemType, path, gesture, arguments, textAction, commandLabel, appName))
+		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
 		config["items"] = items
 		self.saveConfig(config)
 

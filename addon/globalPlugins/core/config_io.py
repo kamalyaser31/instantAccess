@@ -9,65 +9,94 @@ from .constants import TEXT_SNIPPET_ACTION_VALUES, TYPE_SECTIONS, VERBOSITY_VALU
 
 def _defaultConfig():
 	return {
-		"version": 2,
+		"version": 3,
 		"settings": {"verbosity": VERBOSITY_VALUES[0]},
 		"items": [],
 	}
+
+
+def _toNonNegativeFloat(value, defaultValue=0.0):
+	try:
+		number = float(value)
+		if number < 0:
+			return defaultValue
+		return number
+	except Exception:
+		return defaultValue
+
+
+def _normalizeActionData(itemType, rawData):
+	if not isinstance(rawData, dict):
+		rawData = {}
+	if itemType == "Websites":
+		url = rawData.get("url", "")
+		if not isinstance(url, str):
+			url = ""
+		return {"url": url}
+	if itemType in ("Programs", "Folders", "Files"):
+		path = rawData.get("path", "")
+		if not isinstance(path, str):
+			path = ""
+		data = {"path": path}
+		if itemType == "Programs":
+			arguments = rawData.get("arguments", "")
+			if isinstance(arguments, str) and arguments.strip():
+				data["arguments"] = arguments.strip()
+		return data
+	if itemType == "NvdaCommands":
+		commandId = rawData.get("commandId", "")
+		if not isinstance(commandId, str):
+			commandId = ""
+		data = {"commandId": commandId}
+		commandLabel = rawData.get("commandLabel", "")
+		if isinstance(commandLabel, str) and commandLabel.strip():
+			data["commandLabel"] = commandLabel.strip()
+		return data
+	if itemType == "TextSnippets":
+		text = rawData.get("text", "")
+		if not isinstance(text, str):
+			text = ""
+		action = (rawData.get("action", TEXT_SNIPPET_ACTION_VALUES[0]) or "").strip().lower()
+		if action not in TEXT_SNIPPET_ACTION_VALUES:
+			action = TEXT_SNIPPET_ACTION_VALUES[0]
+		typingDelay = _toNonNegativeFloat(rawData.get("typingDelay", 0.05), 0.05)
+		return {"text": text, "action": action, "typingDelay": typingDelay}
+	return {}
+
+
+def _normalizeAction(rawAction):
+	if not isinstance(rawAction, dict):
+		return None
+	itemType = (rawAction.get("type", "") or "").strip()
+	if itemType not in TYPE_SECTIONS:
+		return None
+	delay = _toNonNegativeFloat(rawAction.get("delay", 0.0), 0.0)
+	data = _normalizeActionData(itemType, rawAction.get("data", {}))
+	return {"type": itemType, "data": data, "delay": delay}
 
 
 def _normalizeItem(rawItem):
 	if not isinstance(rawItem, dict):
 		return None
 	name = (rawItem.get("name", "") or "").strip()
-	itemType = (rawItem.get("type", "") or "").strip()
 	gesture = (rawItem.get("gesture", "") or "").strip().lower()
 	appName = (rawItem.get("appName", "") or "").strip().lower()
-	data = rawItem.get("data", {})
-	if itemType not in TYPE_SECTIONS:
-		return None
+	interval = _toNonNegativeFloat(rawItem.get("interval", 0.0), 0.0)
 	if not name or not gesture:
 		return None
-	if not isinstance(data, dict):
-		data = {}
-
-	normalizedData = {}
-	if itemType == "Websites":
-		url = data.get("url", "")
-		if not isinstance(url, str):
-			url = ""
-		normalizedData["url"] = url
-	elif itemType in ("Programs", "Folders", "Files"):
-		path = data.get("path", "")
-		if not isinstance(path, str):
-			path = ""
-		normalizedData["path"] = path
-		if itemType == "Programs":
-			arguments = data.get("arguments", "")
-			if isinstance(arguments, str) and arguments.strip():
-				normalizedData["arguments"] = arguments.strip()
-	elif itemType == "NvdaCommands":
-		commandId = data.get("commandId", "")
-		if not isinstance(commandId, str):
-			commandId = ""
-		normalizedData["commandId"] = commandId
-		commandLabel = data.get("commandLabel", "")
-		if isinstance(commandLabel, str) and commandLabel.strip():
-			normalizedData["commandLabel"] = commandLabel.strip()
-	elif itemType == "TextSnippets":
-		text = data.get("text", "")
-		if not isinstance(text, str):
-			text = ""
-		action = (data.get("action", TEXT_SNIPPET_ACTION_VALUES[0]) or "").strip().lower()
-		if action not in TEXT_SNIPPET_ACTION_VALUES:
-			action = TEXT_SNIPPET_ACTION_VALUES[0]
-		normalizedData["text"] = text
-		normalizedData["action"] = action
-
+	rawActions = rawItem.get("actions", [])
+	if not isinstance(rawActions, list):
+		rawActions = []
+	actions = []
+	for rawAction in rawActions:
+		action = _normalizeAction(rawAction)
+		if action is not None:
+			actions.append(action)
 	normalizedItem = {
 		"name": name,
-		"type": itemType,
 		"gesture": gesture,
-		"data": normalizedData,
+		"interval": interval,
+		"actions": actions,
 	}
 	if appName:
 		normalizedItem["appName"] = appName
@@ -91,11 +120,7 @@ def _normalizeConfig(rawConfig):
 		item = _normalizeItem(rawItem)
 		if item is not None:
 			items.append(item)
-	return {
-		"version": 2,
-		"settings": {"verbosity": verbosity},
-		"items": items,
-	}
+	return {"version": 3, "settings": {"verbosity": verbosity}, "items": items}
 
 
 def ensureConfigFile(configPath):

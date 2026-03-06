@@ -87,12 +87,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		commandName = (item.get("name", "") or "").strip()
 		if commandName:
 			wx.CallAfter(ui.message, commandName)
-		executeInstantItem(
-			itemType=item.get("type", ""),
-			path=item.get("path", ""),
-			arguments=item.get("arguments", ""),
-			textAction=item.get("textAction", "type"),
-		)
+		executeInstantItem(item)
 
 	def getScript(self, gesture):
 		if not self.instantMode:
