@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="../style.css" media="screen">
+<title>الوصول الفوري 2026.2</title>
+</head>
+<body>
+
+<h1>الوصول الفوري لـ NVDA</h1>
+<ul>
+<li><strong>المؤلف:</strong> كمال ياسر</li>
+<li><strong>الإصدار:</strong> 2026.2</li>
+<li><strong>التوافقية:</strong> NVDA 2019.3 والإصدارات الأحدث</li>
+</ul>
+<h2>نظرة عامة</h2>
+<p><strong>الوصول الفوري</strong> هي أداة إنتاجية قوية لتشغيل مواقع الويب، والملفات، والمجلدات، والبرامج بسرعة باستخدام طبقة مخصصة. بدلاً من حفظ عشرات الاختصارات المعقدة في الذاكرة، يمكنك تفعيل "وضع الوصول الفوري" بضغطة مفتاح واحد، ثم اضغط على اختصار بسيط لتشغيل التطبيقات أو تشغيل سير العمل البسيطة أو إدراج النصوص والمزيد.</p>
+<p>تتجاوز هذه الإضافة البرامج المساعدة البسيطة بالسماح لك بربط عدة <strong>إجراءات</strong> في <strong>عنصر</strong> واحد متسلسل، مما يحول اختصار واحد إلى ماكرو قوي.</p>
+<h2>الميزات الرئيسية</h2>
+<ul>
+<li><strong>عناصر متعددة الإجراءات:</strong> حدد سلسلة من الإجراءات لاختصار واحد.</li>
+<li><strong>التحكم في التوقيت:</strong> قم بتعيين تأخير مخصص قبل كل إجراء وفاصل زمني مشترك بين جميع الإجراءات في عنصر.</li>
+<li><strong>اختصارات خاصة بالتطبيقات:</strong> اجعل الاختصار عام أو قيده على تطبيق معين.</li>
+<li><strong>نطاق واسع من الإجراءات:</strong>
+<ul>
+<li>تشغيل المواقع والبرامج والمجلدات والملفات.</li>
+<li>تنفيذ أوامر NVDA من قائمة قابلة للتصفية.</li>
+<li>إدراج أو نسخ أو لصق أجزاء النصوص القابلة لإعادة الاستخدام.</li>
+</ul>
+</li>
+<li><strong>إدارة مركزية:</strong> لوحة إعدادات شاملة لإضافة وتحرير واختبار وتنظيم عناصرك.</li>
+<li><strong>الاستيراد والتصدير:</strong> قم بعمل نسخة احتياطية والمشاركة في الإعدادات بتنسيق JSON.</li>
+<li><strong>مستويات الإطناب:</strong> اختر بين الملاحظات التفصيلية (المبتدئين) أو النبرات الموجزة (المتقدمين).</li>
+</ul>
+<h2>الاختصارات المدمجة</h2>
+<ul>
+<li><code>NVDA+E</code>: تبديل وضع الوصول الفوري تشغيل أو إيقاف.</li>
+<li><code>NVDA+Shift+E</code>: إعلان اسم التطبيق المركز حالياً. هذا مفيد لإنشاء اختصارات خاصة بالتطبيقات.</li>
+<li><code>NVDA+Shift+E</code> (اضغط مرتين بسرعة): تم نسخ اسم التطبيق إلى الحافظة.</li>
+<li><code>Escape</code> (أثناء تفعيل وضع الوصول الفوري): إلغاء الوضع دون تشغيل أمر.</li>
+</ul>
+<h2>الإعدادات</h2>
+<p>يمكنك تكوين الإضافة من لوحة إعدادات NVDA:</p>
+<ol>
+<li>افتح <strong>قائمة NVDA</strong> (<code>NVDA+N</code>).</li>
+<li>انتقل إلى <strong>التفضيلات</strong> -> <strong>الإعدادات</strong>.</li>
+<li>حدد فئة <strong>الوصول الفوري</strong>.</li>
+</ol>
+<p>تعرض لوحة الإعدادات الرئيسية جميع عناصرك المكونة، مع عرض اسمها والنوع والاختصار وملخص إجراءاتها. من هنا، يمكنك <strong>إضافة</strong> و<strong>تحرير</strong> و<strong>حذف</strong> و<strong>اختبار</strong> عناصرك.</p>
+<h2>فهم العناصر والإجراءات</h2>
+<p>تم بناء الإضافة حول مفهومين أساسيين: <strong>العناصر</strong> و<strong>الإجراءات</strong>.</p>
+<ul>
+<li><strong>العنصر</strong> هو الوحدة الرئيسية التي تنشئها. لها اسم واختصار (اختصار) وقائمة بواحد أو أكثر من الإجراءات المراد تنفيذها. يمكن أيضاً تقييده على تطبيق والحصول على فاصل زمني بين إجراءاته.</li>
+<li><strong>الإجراء</strong> هو خطوة واحدة ضمن عنصر. عند تشغيل عنصر، فإنه ينفذ إجراءاته بالترتيب.</li>
+</ul>
+<h3>إنشاء وتحرير عنصر</h3>
+<p>عند إضافة أو تحرير عنصر، يظهر حوار به الخيارات التالية:</p>
+<ul>
+<li><strong>الاسم:</strong> اسم فريد وصفي لعنصرك.</li>
+<li><strong>قائمة الإجراءات:</strong> قائمة بجميع الإجراءات التي سيؤديها هذا العنصر. يمكنك <strong>إضافة</strong> و<strong>تحرير</strong> و<strong>حذف</strong> و<strong>تحريك لأعلى</strong> و<strong>تحريك لأسفل</strong> الإجراءات لتحديد التسلسل.</li>
+<li><strong>الفاصل الزمني بين الإجراءات (ثانية):</strong> توقف (بالثواني) يحدث <em>بعد</em> كل إجراء في التسلسل (ما عدا الأخير).</li>
+<li><strong>تقييد هذا الاختصار...:</strong> خانة اختيار لجعل الاختصار خاص بالتطبيق.
+<ul>
+<li><strong>اسم التطبيق:</strong> إذا تم فحص التقييد، يجب عليك تقديم اسم التطبيق الدقيق (استخدم <code>NVDA+Shift+E</code> للعثور عليه).</li>
+</ul>
+</li>
+<li><strong>الاختصار:</strong> زر لالتقاط مزيج المفاتيح لهذا العنصر.</li>
+</ul>
+<h3>أنواع الإجراءات</h3>
+<p>عند إضافة أو تحرير إجراء، يمكنك الاختيار من عدة أنواع:</p>
+<ul>
+<li><strong>الموقع:</strong> فتح عنوان URL في متصفح الويب الافتراضي الخاص بك.</li>
+<li><strong>البرنامج:</strong> تشغيل ملف تنفيذي (<code>.exe</code>). يمكنك أيضاً تقديم <strong>الوسائط</strong> الاختيارية.</li>
+<li><strong>المجلد:</strong> فتح مجلد في مستكشف الملفات.</li>
+<li><strong>الملف:</strong> افتح أي ملف باستخدام التطبيق المرتبط به بشكل افتراضي.</li>
+<li><strong>اختصار nvda:</strong> تنفيذ سكريبت NVDA. يظهر حوار يسمح لك بتصفية واختيار من جميع أوامر NVDA والإضافات المتاحة.</li>
+<li><strong>نص:</strong> إدراج نص قابل لإعادة الاستخدام. هذا الإجراء له ثلاث أنماط:
+<ul>
+<li><strong>كتابة:</strong> محاكاة كتابة النص. يمكنك تعيين <strong>تأخير الكتابة</strong> المخصص (بالثواني) بين الأحرف.</li>
+<li><strong>نسخ:</strong> ضع النص على الحافظة.</li>
+<li><strong>لصق:</strong> ضع النص على الحافظة ثم محاكاة لصق <code>Ctrl+V</code>.</li>
+</ul>
+</li>
+<li><strong>التأخير قبل تنفيذ هذا الإجراء:</strong> توقف (بالثواني) يحدث <em>قبل</em> هذا الإجراء المحدد.</li>
+</ul>
+<h2>أمثلة للاستخدام</h2>
+<p>فيما يلي بعض الأمثلة لإلهامك وإظهار كيفية دمج الإجراءات في سير عمل قوي.</p>
+<h3>مثال 1: ملخص الأخبار الصباحية</h3>
+<p>يفتح هذا العنصر ثلاثة من مواقع الأخبار المفضلة لديك بالتسلسل، مع توقف قصير بين كل واحد.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>أخبار الصباح</code></li>
+<li><strong>الاختصار:</strong> <code>N</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>1.5</code> (ثانية)</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> <code>الموقع</code>, <strong>المسار:</strong> <code>https://www.bbc.com/news</code></li>
+<li><strong>النوع:</strong> <code>الموقع</code>, <strong>المسار:</strong> <code>https://www.reuters.com</code></li>
+<li><strong>النوع:</strong> <code>الموقع</code>, <strong>المسار:</strong> <code>https://www.apnews.com</code></li>
+</ol>
+</li>
+</ul>
+<p>عند تشغيل هذا العنصر (على سبيل المثال، <code>NVDA+E</code>، ثم <code>N</code>)، سيفتح موقع BBC News، وينتظر 1.5 ثانية، وفتح رويترز، وانتظر 1.5 ثانية أخرى، وأخيراً افتح أسوشيتيد برس.</p>
+<h3>مثال 2: سير عمل بدء المشروع</h3>
+<p>يجهزك هذا العنصر للترميز من خلال فتح مجلد مشروعك وملف الكود الرئيسي في محررك وخادم التطوير المحلي في متصفح.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>ابدأ المشروع X</code></li>
+<li><strong>الاختصار:</strong> <code>P</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>3</code> (ثواني، لإعطاء التطبيقات وقتاً للتحميل)</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> <code>المجلد</code>, <strong>المسار:</strong> <code>C:\dev\project-x</code></li>
+<li><strong>النوع:</strong> <code>البرنامج</code>, <strong>المسار:</strong> <code>C:\Users\YourName\AppData\Local\Programs\Microsoft VS Code\Code.exe</code>, <strong>الوسائط:</strong> <code>C:\dev\project-x\src\main.js</code></li>
+<li><strong>النوع:</strong> <code>الموقع</code>, <strong>المسار:</strong> <code>http://localhost:3000</code></li>
+</ol>
+</li>
+</ul>
+<p>يوفر هذا سير عمل بيئة تطوير مجهز بالكامل باستخدام أمر واحد.</p>
+<h3>مثال 3: لصق رد قياسي</h3>
+<p>هذا العنصر لصق سريع لاستجابة شائعة في نافذة بريد إلكتروني أو دردشة. يستخدم هذا المثال اختصار خاص بالتطبيق لـ Microsoft Teams.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>تحية الفريق</code></li>
+<li><strong>الاختصار:</strong> <code>G</code></li>
+<li><strong>تقييد التطبيق:</strong> نعم، <strong>اسم التطبيق:</strong> <code>teams</code></li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> <code>نص</code>
+<ul>
+<li><strong>إجراء النص:</strong> <code>لصق</code></li>
+<li><strong>النص:</strong> <code>مرحبا بالفريق، سأكون متاحاً لمراجعة هذا بعد الساعة 2 مساءً. شكراً!</code></li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p>الآن، عندما تكون في Microsoft Teams، يمكنك الضغط على <code>NVDA+E</code> ثم <code>G</code> لصق فوري لتلك الرسالة في الدردشة. يمكن استخدام نفس الاختصار (<code>G</code>) لعنصر عام مختلف أو عنصر في تطبيق آخر.</p>
+<h3>مثال 4: إعداد اختبار الوصول السريع</h3>
+<p>يحضر هذا العنصر بيئتك لاختبار المواقع والتطبيقات باستخدام أدوات الوصول.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>مجموعة اختبار A11y</code></li>
+<li><strong>الاختصار:</strong> <code>A</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>1.5</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://wave.webaim.org</code></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://www.axe-core.org</code></li>
+<li><strong>النوع:</strong> المجلد, <strong>المسار:</strong> <code>C:\Users\YourName\Documents\A11yTests</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+اضغط على <code>NVDA+E</code> ثم <code>A</code> لفتح فوري لمدقق وصول WAVE وتوثيق axe DevTools ومجلد ملاحظات الاختبار في إجراء واحد.</p>
+<h3>مثال 5: فتح أدوات التدريس (للدروس عبر الإنترنت)</h3>
+<p>يحضر هذا العنصر بيئة التدريس من خلال فتح عدة أدوات مستخدمة أثناء الفصل الدراسي عبر الإنترنت.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>ابدأ جلسة التدريس</code></li>
+<li><strong>الاختصار:</strong> <code>T</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>2</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <a href="https://zoom.us">https://zoom.us</a></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <a href="https://wordwall.net">https://wordwall.net</a></li>
+<li><strong>النوع:</strong> المجلد, <strong>المسار:</strong> <code>C:\Users\Teacher\Documents\LessonNotes</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+باستخدام أمر واحد، تفتح منصة الاجتماع وموقع نشاطك التفاعلي ومواد الدرس الخاصة بك.</p>
+<h3>مثال 6: أدرج عبارة مستخدمة بشكل متكرر</h3>
+<p>يكتب هذا العنصر عبارة تستخدمها بشكل متكرر في التواصل.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>رسالة شكر</code></li>
+<li><strong>الاختصار:</strong> <code>Y</code></li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> نص
+<ul>
+<li><strong>إجراء النص:</strong> كتابة</li>
+<li><strong>تأخير الكتابة:</strong> 0.02 ثانية</li>
+<li><strong>النص:</strong><br>
+شكراً على رسالتك. سأراجعها وسأرد قريباً.</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+اضغط على <code>NVDA+E</code> ثم <code>Y</code> لكتابة الرسالة فوراً في أي حقل نصي.</p>
+<h3>مثال 7: مشغل أداة النظام</h3>
+<p>يفتح هذا العنصر عدة أدوات نظام Windows المستخدمة لحل المشاكل.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>أدوات النظام</code></li>
+<li><strong>الاختصار:</strong> <code>U</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>1</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Windows\System32\taskmgr.exe</code></li>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Windows\System32\control.exe</code></li>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Windows\System32\cmd.exe</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+هذا يفتح بسرعة <strong>مدير المهام</strong> و<strong>لوحة التحكم</strong> و<strong>موجه الأوامر</strong>.</p>
+<h3>مثال 8: إعداد وضع التركيز</h3>
+<p>يحضر هذا العنصر بيئة عمل خالية من الملهيات.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>وضع التركيز</code></li>
+<li><strong>الاختصار:</strong> <code>F</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>2</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Program Files\Notepad++\notepad++.exe</code></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <a href="https://pomofocus.io">https://pomofocus.io</a></li>
+<li><strong>النوع:</strong> اختصار nvda
+<ul><li>الأمر: <em>toggleSpeechMode</em></li></ul></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+يفتح المحرر الخاص بك وينطلق مؤقت بومودورو ويعدل إعدادات النطق في NVDA للعمل المركز.</p>
+<h2>أمثلة عملية إضافية</h2>
+<h3>مثال 9: إعداد إنتاجية البريد الإلكتروني</h3>
+<p>يفتح هذا العنصر حسابك البريدي وأدوات الإنتاجية بالتسلسل.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>محطة البريد الإلكتروني</code></li>
+<li><strong>الاختصار:</strong> <code>E</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>1</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://mail.google.com</code></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://calendar.google.com</code></li>
+<li><strong>النوع:</strong> المجلد, <strong>المسار:</strong> <code>C:\Users\YourName\Documents\EmailTemplates</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+اضغط على <code>NVDA+E</code> ثم <code>E</code> لفتح Gmail وتقويم Google ومجلد قوالب البريد الإلكتروني الخاص بك.</p>
+<hr>
+<h3>مثال 10: فحص حالة النسخ الاحتياطية السريعة</h3>
+<p>يتحقق هذا العنصر من حالة النسخة الاحتياطية ويفتح أدوات النسخ الاحتياطي ذات الصلة.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>فحص النسخ الاحتياطية</code></li>
+<li><strong>الاختصار:</strong> <code>K</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>2</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> المجلد, <strong>المسار:</strong> <code>C:\Users\YourName\AppData\Local\Packages</code></li>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Windows\System32\control.exe</code></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://myaccount.google.com/security</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+افتح مواقع النسخ الاحتياطي وإعدادات لوحة التحكم وأمان حساب Google باستخدام أمر واحد.</p>
+<hr>
+<h3>مثال 11: ابدأ التوثيق السريع لسير عمل الكود</h3>
+<p>يحضر هذا العنصر منطقة عمل التوثيق الخاصة بك لمشاريع البرمجة.</p>
+<ul>
+<li><strong>الاسم:</strong> <code>جلسة التوثيق</code></li>
+<li><strong>الاختصار:</strong> <code>O</code></li>
+<li><strong>الفاصل الزمني بين الإجراءات:</strong> <code>2</code> ثانية</li>
+<li><strong>الإجراءات:</strong>
+<ol>
+<li><strong>النوع:</strong> البرنامج, <strong>المسار:</strong> <code>C:\Users\YourName\AppData\Local\Programs\Microsoft VS Code\Code.exe</code></li>
+<li><strong>النوع:</strong> الموقع, <strong>المسار:</strong> <code>https://github.com</code></li>
+<li><strong>النوع:</strong> المجلد, <strong>المسار:</strong> <code>C:\Users\YourName\Documents\ProjectDocs</code></li>
+</ol>
+</li>
+</ul>
+<p><strong>النتيجة:</strong><br>
+شغل VS Code و GitHub ومجلد التوثيق الخاص بك لعمل البرمجة التعاونية.</p>
+<hr>
+<h2>الاختصارات الخاصة بالتطبيق</h2>
+<p>يمكنك جعل الاختصار يتصرف بشكل مختلف اعتماداً على التطبيق الذي تستخدمه.</p>
+<ul>
+<li><strong>اختصار عام</strong> بدون قيود التطبيق ويعمل في كل مكان.</li>
+<li><strong>اختصار خاص بالتطبيق</strong> نشط فقط عندما يكون التطبيق الهدف مركزاً.</li>
+</ul>
+<p>لإنشاء اختصار خاص بالتطبيق:</p>
+<ol>
+<li>تحقق من مربع "تقييد هذا الاختصار..." في حوار العنصر.</li>
+<li>انتقل إلى التطبيق الهدف.</li>
+<li>اضغط على <code>NVDA+Shift+E</code> مرتين بسرعة لنسخ اسمه إلى الحافظة.</li>
+<li>الصق الاسم في حقل "اسم التطبيق".</li>
+</ol>
+<p>إذا كان الاختصار العام والاختصار الخاص بالتطبيق يستخدمان نفس الاختصار، فإن <strong>الاختصار الخاص بالتطبيق سيأخذ الأولوية دائماً</strong> عندما يكون تطبيقه نشطاً.</p>
+<h2>مستويات الإطناب</h2>
+<p>يمكنك تغيير كمية الملاحظات التي تقدمها الإضافة من لوحة الإعدادات الرئيسية:</p>
+<ul>
+<li><strong>المبتدئين (الافتراضي):</strong> يوفر رسائل كاملة منطوقة (مثل "الوصول الفوري تشغيل. تم تحميل 10 أوامر").</li>
+<li><strong>متقدم:</strong> يستخدم الأصوات والنبرات القصيرة للسرعة والكفاءة (مثل "نقرة" للتشغيل/الإيقاف).</li>
+</ul>
+<h2>الاستيراد والتصدير</h2>
+<p>يمكنك عمل نسخة احتياطية من إعداداتك الكاملة أو نقلها إلى جهاز كمبيوتر آخر باستخدام أزرار <strong>استيراد الإعدادات</strong> و<strong>تصدير الإعدادات</strong>. تُخزن الإعدادات في ملف <code>config.json</code>.<br>
+<strong>ملاحظة:</strong> استيراد الإعدادات سيستبدل الإعدادات الموجودة لديك.</p>
+<h2>وصفات المستخدم المتقدم (سير العمل المدفوع بالوسائط)</h2>
+<p>يدعم الوصول الفوري <strong>تمرير وسائط سطر الأوامر إلى التطبيقات</strong>، مما يسمح بالأتمتة المتقدمة. هذا يمكّن المستخدمين من فتح ملفات معينة أو تشغيل ميزات البرنامج أو تشغيل السكريبتات أو تنفيذ مهام النظام مباشرة من اختصار.</p>
+<p>توضح الأمثلة التالية سير عمل عملي متخصص يعرض أنماط حجج مختلفة:</p>
+<hr>
+<h3>1. ابدأ موقع الويب في "وضع التطبيق"</h3>
+<p>يمكن لمتصفحات Chromium عديدة فتح موقع كـ <strong>نافذة تطبيق مستقلة</strong> بدون واجهة مستخدم المتصفح.</p>
+<p><strong>الاسم:</strong> فتح تطبيق WhatsApp Web<br>
+<strong>الاختصار:</strong> W</p>
+<p><strong>البرنامج</strong></p>
+<p><strong>المسار:</strong></p>
+<pre><code>C:\Program Files\Google\Chrome\Application\chrome.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>--app=https://web.whatsapp.com</code></pre>
+<p><strong>النتيجة:</strong><br>
+الموقع يفتح مثل <strong>تطبيق سطح مكتب أصلي</strong>.</p>
+<hr>
+<h3>2. افتح مستكشف الملفات مع تمييز ملف معين</h3>
+<p>يمكن لـ Windows Explorer أن يختار <strong>ملف مباشرة</strong> عند فتحه.</p>
+<p><strong>الاسم:</strong> حدد موقع إعدادات المشروع<br>
+<strong>الاختصار:</strong> L</p>
+<p><strong>البرنامج</strong></p>
+<p><strong>المسار:</strong></p>
+<pre><code>explorer.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/select,"C:\dev\project-x\config.json"</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح مستكشف الملفات المجلد ويركز على الملف.</p>
+<hr>
+<h3>3. قم بتشغيل تنظيف قرص Windows تلقائياً</h3>
+<p>قم بتشغيل التنظيف بدون فتح الواجهة الكاملة.</p>
+<p><strong>الاسم:</strong> تنظيف القرص السريع<br>
+<strong>الاختصار:</strong> C</p>
+<p><strong>البرنامج</strong></p>
+<p><strong>المسار:</strong></p>
+<pre><code>cleanmgr.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/verylowdisk</code></pre>
+<p><strong>النتيجة:</strong><br>
+يقوم بتشغيل تنظيف القرص تلقائياً.</p>
+<hr>
+<h3>4. شغل Firefox في الوضع الخاص</h3>
+<p>افتح جلسة تصفح آمنة على الفور.</p>
+<p><strong>الاسم:</strong> المتصفح الخاص<br>
+<strong>الاختصار:</strong> P</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Program Files\Mozilla Firefox\firefox.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>-private-window</code></pre>
+<p><strong>النتيجة:</strong><br>
+يبدأ Firefox مباشرة في <strong>التصفح الخاص</strong>.</p>
+<hr>
+<h3>5. افتح مجلد في VS Code</h3>
+<p><strong>الغرض:</strong> شغل Visual Studio Code مباشرة داخل مجلد المشروع.</p>
+<p><strong>الاسم:</strong> افتح المشروع في VS Code<br>
+<strong>الاختصار:</strong> V</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Users\YourName\AppData\Local\Programs\Microsoft VS Code\Code.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>C:\dev\myproject</code></pre>
+<p><strong>النتيجة:</strong><br>
+يتم تشغيل VS Code مع مجلد المشروع المحدد المحمل بالفعل.</p>
+<hr>
+<h3>6. افتح موجه الأوامر في مجلد معين</h3>
+<p><strong>الغرض:</strong> ابدأ المحطة الطرفية بالفعل موجودة في دليل المشروع.</p>
+<p><strong>الاسم:</strong> محطة التطوير<br>
+<strong>الاختصار:</strong> T</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\cmd.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/k cd C:\dev\project-x</code></pre>
+<p><strong>النتيجة:</strong><br>
+يتم فتح موجه الأوامر وتغيير المجلد تلقائياً إلى مجلد المشروع.</p>
+<hr>
+<h3>7. قم بتشغيل أتمتة سكريبت PowerShell</h3>
+<p><strong>الغرض:</strong> تنفيذ سكريبت PowerShell يؤدي مهام مأتمتة.</p>
+<p><strong>الاسم:</strong> قم بتشغيل سكريبت النسخ الاحتياطية<br>
+<strong>الاختصار:</strong> B</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>-ExecutionPolicy Bypass -File "C:\Scripts\backup.ps1"</code></pre>
+<p><strong>النتيجة:</strong><br>
+يقوم بتشغيل سكريبت أتمتة النسخ الاحتياطية المحدد مسبقاً.</p>
+<hr>
+<h3>8. شغّل صفحات إعدادات Windows</h3>
+<p>يمكن فتح صفحات إعدادات Windows باستخدام حجج <strong>ms-settings</strong>.</p>
+<p><strong>الاسم:</strong> افتح إعدادات Bluetooth<br>
+<strong>الاختصار:</strong> S</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>explorer.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>ms-settings:bluetooth</code></pre>
+<p><strong>أمثلة أخرى:</strong></p>
+<pre><code>ms-settings:display
+ms-settings:network
+ms-settings:sound
+ms-settings:windowsupdate
+</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح فوراً صفحة الإعدادات المحددة.</p>
+<hr>
+<h3>9. فتح علامات تبويب متعددة في المتصفح للبحث</h3>
+<p><strong>الغرض:</strong> ابدأ Firefox مع عدة علامات تبويب في نفس الوقت لسير عمل البحث.</p>
+<p><strong>الاسم:</strong> جلسة البحث<br>
+<strong>الاختصار:</strong> R</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Program Files\Mozilla Firefox\firefox.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>https://scholar.google.com https://arxiv.org https://github.com</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح Firefox مع ثلاث موارد بحث في علامات تبويب منفصلة.</p>
+<hr>
+<h3>10. افتح محرر سجل Windows مع مفتاح معين</h3>
+<p><strong>الغرض:</strong> شغّل محرر السجل مباشرة إلى موقع معين.</p>
+<p><strong>الاسم:</strong> افتح إعدادات سجل NVDA<br>
+<strong>الاختصار:</strong> O</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\regedit.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/m</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح محرر السجل في وضع القراءة فقط للتصفح الآمن.</p>
+<hr>
+<h3>11. شغّل عارض سجل أحداث النظام</h3>
+<p><strong>الغرض:</strong> افتح Event Viewer مباشرة لتشخيص النظام.</p>
+<p><strong>الاسم:</strong> عرض أحداث النظام<br>
+<strong>الاختصار:</strong> E</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\eventvwr.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/c system</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح Event Viewer مركزاً على أحداث النظام لاستكشاف الأخطاء.</p>
+<hr>
+<h3>12. قم بتشغيل ملف دفعي مع امتيازات المسؤول</h3>
+<p><strong>الغرض:</strong> قم بتنفيذ سكريبت دفعي يتطلب امتيازات مرفوعة.</p>
+<p><strong>الاسم:</strong> سكريبت دفعي للمسؤول<br>
+<strong>الاختصار:</strong> H</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\cmd.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/c call C:\Scripts\system_maintenance.bat</code></pre>
+<p><strong>النتيجة:</strong><br>
+قم بتنفيذ سكريبت دفعي لمهام صيانة النظام.</p>
+<hr>
+<h3>13. شغّل Git Bash في مجلد المشروع</h3>
+<p><strong>الغرض:</strong> افتح محطة Git Bash في مجلد مشروع معين.</p>
+<p><strong>الاسم:</strong> محطة مشروع Git<br>
+<strong>الاختصار:</strong> G</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Program Files\Git\git-bash.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>--cd=C:\dev\my-repo</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح Git Bash في مجلد المشروع الخاص بك، جاهز لأوامر التحكم في الإصدار.</p>
+<hr>
+<h3>14. افتح مراقب الأداء في Windows</h3>
+<p><strong>الغرض:</strong> شغّل Performance Monitor لمراقبة النظام.</p>
+<p><strong>الاسم:</strong> مراقب الأداء<br>
+<strong>الاختصار:</strong> M</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Windows\System32\perfmon.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>/res</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح Performance Monitor في Reliability Monitor لتتبع الموارد.</p>
+<hr>
+<h3>15. شغّل مشغل وسائط VLC مع مجلد معين</h3>
+<p><strong>الغرض:</strong> افتح VLC مع مجلد الوسائط.</p>
+<p><strong>الاسم:</strong> مكتبة الموسيقى<br>
+<strong>الاختصار:</strong> U</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>C:\Program Files\VideoLAN\VLC\vlc.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>C:\Users\YourName\Music</code></pre>
+<p><strong>النتيجة:</strong><br>
+يتم تشغيل VLC مع مكتبة الموسيقى الخاصة بك جاهزة للتشغيل.</p>
+<hr>
+<h3>16. افتح إعدادات شبكة Windows</h3>
+<p><strong>الغرض:</strong> وصول سريع لتكوين الشبكة.</p>
+<p><strong>الاسم:</strong> إعدادات الشبكة<br>
+<strong>الاختصار:</strong> I</p>
+<p><strong>البرنامج</strong></p>
+<pre><code>explorer.exe</code></pre>
+<p><strong>الوسائط:</strong></p>
+<pre><code>ms-settings:network-wifi</code></pre>
+<p><strong>النتيجة:</strong><br>
+يفتح إعدادات شبكة Windows لتكوين Wi-Fi.</p>
+<hr>
+<h2>أفضل الممارسات</h2>
+<p>توضح سير العمل هذه أنماط أتمتة مختلفة:</p>
+<table>
+<thead>
+<tr>
+<th>النمط</th>
+<th>الغرض</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>وضع التطبيق</td>
+<td>تحويل المواقع إلى تطبيقات مستقلة</td>
+</tr>
+<tr>
+<td>اختيار الملف</td>
+<td>التنقل إلى واختيار ملفات معينة</td>
+</tr>
+<tr>
+<td>أدوات صامتة</td>
+<td>تشغيل أدوات الصيانة بدون واجهة</td>
+</tr>
+<tr>
+<td>أوضاع المتصفح</td>
+<td>فتح المتصفحات مع ميزات محددة</td>
+</tr>
+<tr>
+<td>إعداد التطوير</td>
+<td>شغّل IDE مع مجلد المشروع</td>
+</tr>
+<tr>
+<td>تنفيذ السكريبت</td>
+<td>أتمتة مهام النظام باستخدام PowerShell</td>
+</tr>
+<tr>
+<td>صفحات الإعدادات</td>
+<td>افتح تكوين Windows محدد</td>
+</tr>
+<tr>
+<td>ارتباطات الملفات</td>
+<td>فتح الملفات مباشرة في التطبيقات الهدف</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>البحث عن وسائط خاصة بك</h2>
+<p>يمكن أن تأتي وسائط سطر الأوامر من مصادر عديدة:</p>
+<ul>
+<li>توثيق التطبيق أو صفحات المساعدة</li>
+<li><code>--help</code> أو <code>/?</code> مخرجات الأوامر</li>
+<li>أوامر shell في Windows والتوثيق</li>
+<li>مواصفات أوامر PowerShell</li>
+<li>أنظمة URI (<code>ms-settings:</code>, <code>shell:</code>, إلخ)</li>
+</ul>
+<p>جرب هذه الوسائط لإنشاء سير عمل مخصص مصمم لاحتياجاتك المحددة!</p>
+<h2>الترخيص</h2>
+<p>حقوق الطبع والنشر (C) 2026 كمال ياسر.<br>
+تُرخص هذه الإضافة بموجب رخصة GNU General Public License (GPL) الإصدار 2 أو أي إصدار أحدث.</p>
+
+</body>
+</html>
