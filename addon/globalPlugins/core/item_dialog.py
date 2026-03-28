@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
 import gui
 from gui import guiHelper, nvdaControls
 import wx
@@ -17,6 +18,8 @@ from .constants import (
 	TYPE_TO_LABEL,
 )
 from .gestures import buildGestureNameFromEvent, formatGestureForDisplay, normalizeGesture, validateGestureName
+
+addonHandler.initTranslation()
 
 
 def _formatDelay(delayValue):

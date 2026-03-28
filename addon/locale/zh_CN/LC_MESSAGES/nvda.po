@@ -1,0 +1,416 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: instantAccess 2026.4\n"
+"Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
+"POT-Creation-Date: 2026-07-07 08:55+0300\n"
+"PO-Revision-Date: 2026-07-13 00:00+0800\n"
+"Last-Translator: cary-rowen <manchen_0528@outlook.com>\n"
+"Language-Team: Chinese Simplified\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. Translators: Title of the dialog used to select an NVDA command.
+msgid "Select NVDA command"
+msgstr "选择 NVDA 命令"
+
+#. Translators: Label for filter field in NVDA command selection dialog.
+msgid "Filter"
+msgstr "查找"
+
+#. Translators: Label for OK button in NVDA command selection dialog.
+msgid "&OK"
+msgstr "确定(&O)"
+
+#. Translators: Label for Cancel button in NVDA command selection dialog.
+msgid "&Cancel"
+msgstr "取消(&C)"
+
+msgid "Please select an NVDA command."
+msgstr "请选择 NVDA 命令。"
+
+msgid "Website"
+msgstr "网站"
+
+msgid "Program"
+msgstr "程序"
+
+msgid "Folder"
+msgstr "文件夹"
+
+msgid "File"
+msgstr "文件"
+
+msgid "NVDA command"
+msgstr "NVDA 命令"
+
+msgid "Text snippet"
+msgstr "文本片段"
+
+msgid "Keystrokes"
+msgstr "按键序列"
+
+#. Translators: Action labels for text snippet entries.
+msgid "Type the text"
+msgstr "输入文本"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Paste"
+msgstr "粘贴"
+
+#. Translators: Category name for the instant Access add-on.
+#. Translators: Title of the instant Access settings panel.
+msgid "instant Access"
+msgstr "instantAccess"
+
+#. Translators: Description for the toggle instant mode command in Input Gestures.
+msgid "Toggle instant Access mode."
+msgstr "开启或关闭 instantAccess 模式。"
+
+#. Translators: Description for reporting the currently focused application name.
+msgid "Report current app name."
+msgstr "读出当前应用程序名称。"
+
+#. Translators: Caption for error message dialogs.
+msgid "Error"
+msgstr "错误"
+
+#. Translators: Caption for confirmation dialogs.
+msgid "Confirm"
+msgstr "确认"
+
+#. Translators: Label for beginner verbosity level.
+msgid "Beginner"
+msgstr "初级"
+
+#. Translators: Label for advanced verbosity level.
+msgid "Advanced"
+msgstr "高级"
+
+msgid "Error: Text snippet is empty"
+msgstr "错误：文本片段不能为空"
+
+msgid "Error: Could not copy text snippet"
+msgstr "错误：无法复制文本片段"
+
+msgid "Error: Keyboard library is not available"
+msgstr "错误：键盘模拟组件不可用"
+
+msgid "Error: Could not paste text snippet"
+msgstr "错误：无法粘贴文本片段"
+
+msgid "Error: Could not type text snippet"
+msgstr "错误：无法输入文本片段"
+
+#, python-brace-format
+msgid "Error: Could not send keystroke: {key}"
+msgstr "错误：无法模拟按键：{key}"
+
+msgid "Error: URL is empty"
+msgstr "错误：网址不能为空"
+
+msgid "Error: Could not open the website"
+msgstr "错误：无法打开网站"
+
+msgid "Error: Keystrokes field is empty"
+msgstr "错误：按键序列不能为空"
+
+msgid "Error: File not found"
+msgstr "错误：找不到指定路径"
+
+msgid "Error: Could not open the item"
+msgstr "错误：无法打开文件夹"
+
+msgid "Error: Could not open the file"
+msgstr "错误：无法打开文件"
+
+msgid "Error: Could not start the program"
+msgstr "错误：无法启动程序"
+
+#, python-brace-format
+msgid "{action}: {preview}"
+msgstr "{action}：{preview}"
+
+msgid "Set shortcut"
+msgstr "设置快捷键"
+
+msgid "Press the desired shortcut key. Escape cancels."
+msgstr "请按下要设置的快捷键，按 Esc 取消。"
+
+#. Translators: Column label for item type in the list.
+msgid "Type"
+msgstr "类型"
+
+msgid "Delay before executing this action"
+msgstr "执行此操作前等待（秒）"
+
+msgid "Path or URL"
+msgstr "路径或网址"
+
+msgid "Browse"
+msgstr "浏览"
+
+msgid "Arguments (optional)"
+msgstr "参数（可选）"
+
+msgid "Select command"
+msgstr "选择命令"
+
+msgid "Snippet action"
+msgstr "文本片段操作"
+
+msgid "Typing delay"
+msgstr "字符输入间隔（秒）"
+
+msgid "Keystrokes (one per line, e.g. 'down 5')"
+msgstr "按键序列（每行一个，例如“down 5”）"
+
+msgid "Delay between keystrokes (seconds)"
+msgstr "按键间隔（秒）"
+
+msgid "Select a program"
+msgstr "选择程序"
+
+msgid "Select a folder"
+msgstr "选择文件夹"
+
+msgid "Select a file"
+msgstr "选择文件"
+
+msgid "All fields are required."
+msgstr "请填写必填项。"
+
+msgid "Delay must be a valid number."
+msgstr "延迟必须为有效数字。"
+
+msgid "Delay must be zero or greater."
+msgstr "延迟不能小于 0。"
+
+msgid "Typing delay must be a valid number."
+msgstr "字符输入间隔必须为有效数字。"
+
+msgid "Typing delay must be zero or greater."
+msgstr "字符输入间隔不能小于 0。"
+
+msgid "Delay between keystrokes must be a valid number."
+msgstr "按键间隔必须为有效数字。"
+
+msgid "Delay between keystrokes must be zero or greater."
+msgstr "按键间隔不能小于 0。"
+
+#. Translators: Column label for item name in the list.
+msgid "Name"
+msgstr "名称"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Delay"
+msgstr "延迟"
+
+msgid "Details"
+msgstr "详细信息"
+
+#. Translators: Label for the Add button in the settings panel.
+msgid "&Add"
+msgstr "添加(&A)"
+
+#. Translators: Label for the Edit button in the settings panel.
+msgid "&Edit"
+msgstr "编辑(&E)"
+
+#. Translators: Label for the Delete button in the settings panel.
+msgid "&Delete"
+msgstr "删除(&D)"
+
+msgid "Move &up"
+msgstr "上移(&U)"
+
+msgid "Move &down"
+msgstr "下移(&W)"
+
+msgid "Interval between actions (seconds)"
+msgstr "操作间隔（秒）"
+
+msgid "Restrict this shortcut to work in certain apps"
+msgstr "仅在指定应用程序中启用此快捷键"
+
+msgid "App name"
+msgstr "应用程序名称"
+
+#. Translators: Column label for shortcut in the list.
+msgid "Shortcut"
+msgstr "快捷键"
+
+#, python-brace-format
+msgid "Shortcut key: {gesture}"
+msgstr "快捷键：{gesture}"
+
+msgid "Shortcut key: Undefined"
+msgstr "快捷键：未设置"
+
+msgid "Add action"
+msgstr "添加操作"
+
+msgid "Edit action"
+msgstr "编辑操作"
+
+msgid "Are you sure you would like to delete the selected action?"
+msgstr "确定要删除选定的操作吗？"
+
+msgid "This shortcut is reserved for instant Access."
+msgstr "此快捷键是 instantAccess 的保留快捷键。"
+
+msgid "Invalid shortcut key."
+msgstr "快捷键无效。"
+
+msgid "At least one action is required."
+msgstr "请至少添加一个操作。"
+
+msgid "App name is required when app restriction is enabled."
+msgstr "启用应用程序限制时必须填写应用程序名称。"
+
+msgid "Interval must be a valid number."
+msgstr "操作间隔必须为有效数字。"
+
+msgid "Interval must be zero or greater."
+msgstr "操作间隔不能小于 0。"
+
+msgid "This name already exists."
+msgstr "该名称已存在。"
+
+msgid "This shortcut is already assigned for this app."
+msgstr "此快捷键已在该应用程序中使用。"
+
+msgid "This global shortcut is already assigned."
+msgstr "此全局快捷键已被占用。"
+
+#, python-brace-format
+msgid "{category}: {command}"
+msgstr "{category}：{command}"
+
+msgid "instant Access command"
+msgstr "instantAccess 命令"
+
+msgid "Error: Invalid NVDA command"
+msgstr "错误：无效的 NVDA 命令"
+
+msgid "Error: NVDA command is not currently available"
+msgstr "错误：该 NVDA 命令当前不可用"
+
+msgid "Error: Could not run NVDA command"
+msgstr "错误：无法运行 NVDA 命令"
+
+msgid "No commands configured."
+msgstr "尚未配置命令。"
+
+msgid "On"
+msgstr "开启"
+
+#, python-brace-format
+msgid "instant Access On. {count} commands loaded"
+msgstr "instantAccess 已开启，已加载 {count} 个命令。"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "instant Access Off"
+msgstr "instantAccess 已关闭。"
+
+msgid "This gesture has no command assigned."
+msgstr "没有为此手势分配命令。"
+
+msgid "App name copied to clipboard."
+msgstr "应用程序名称已复制到剪贴板。"
+
+#. Translators: Type label for shortcut items containing multiple actions.
+msgid "Multiple actions"
+msgstr "多项操作"
+
+#. Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
+#, python-brace-format
+msgid "{first} (+{count} more)"
+msgstr "{first}（另有 {count} 项操作）"
+
+#. Translators: Column label for path or URL in the list.
+msgid "Path"
+msgstr "路径"
+
+#. Translators: Label for the Test button in the settings panel.
+msgid "&Test"
+msgstr "测试(&T)"
+
+#. Translators: Label for the Export settings button.
+msgid "E&xport settings"
+msgstr "导出设置(&X)"
+
+#. Translators: Label for the Import settings button.
+msgid "I&mport settings"
+msgstr "导入设置(&M)"
+
+#. Translators: Label for verbosity level selection.
+msgid "Verbosity level"
+msgstr "详细程度"
+
+#. Translators: Title of the add item dialog.
+msgid "Add item"
+msgstr "添加项目"
+
+#. Translators: Title of the edit item dialog.
+msgid "Edit item"
+msgstr "编辑项目"
+
+msgid "Are you sure you would like to delete the selected item?"
+msgstr "确定要删除选定的项目吗？"
+
+msgid "Export settings"
+msgstr "导出设置"
+
+msgid "Could not export settings."
+msgstr "无法导出设置。"
+
+msgid "Import settings"
+msgstr "导入设置"
+
+msgid "Could not import settings."
+msgstr "无法导入设置。"
+
+msgid ""
+"A powerful productivity tool to launch websites, files, folders, and "
+"programs quickly using a dedicated layer.\n"
+"\tFeatures include background execution, verbosity levels, command line "
+"arguments, and settings import/export."
+msgstr ""
+"一款高效的快捷启动工具，可通过专用快捷键层快速打开网站、文件和文件夹，或启动程序。\n"
+"\t支持后台运行、反馈详细程度、命令行参数以及设置导入和导出。"
+
+msgid ""
+"\n"
+"- Version 2026.4:\n"
+"  - New Feature: Keystrokes macro simulation (allows advanced screen reader "
+"users to execute keyboard shortcut sequences with custom delays).\n"
+"  - Code Quality: Refactored core modules to improve maintainability and "
+"clean up code duplication.\n"
+"  - Documentation: Updated the documentation to detail the new Keystrokes "
+"feature and format.\n"
+"- Version 2026.3: Official release update.\n"
+"  - Add-on Loading Fix: Resolved a critical issue that prevented the add-on "
+"from loading correctly in certain NVDA environments.\n"
+"  - Documentation Updates: Fully updated the Arabic user guide to provide "
+"clearer instructions and information.\n"
+"  - General Stability: Internal refinements and cleanup to ensure smoother "
+"performance."
+msgstr ""
+"\n"
+"- 版本 2026.4：\n"
+"  - 新功能：新增按键序列宏，熟练使用屏幕阅读器的用户可按自定义间隔执行一系列快捷键。\n"
+"  - 代码质量：重构核心模块，提高可维护性并移除重复代码。\n"
+"  - 文档：补充按键序列功能及其格式说明。\n"
+"- 版本 2026.3：正式版更新。\n"
+"  - 插件加载：修复插件在某些 NVDA 环境中无法正常加载的严重问题。\n"
+"  - 文档：全面更新阿拉伯语用户指南，使说明更清晰、内容更完善。\n"
+"  - 稳定性：完成内部优化和代码清理，运行更流畅。"

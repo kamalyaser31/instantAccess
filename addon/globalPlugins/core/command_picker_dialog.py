@@ -4,12 +4,15 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from locale import strxfrm
 
+import addonHandler
 import gui
 from gui import guiHelper
 import wx
 
 from .constants import ERROR_CAPTION
 from .nvda_commands import getAllActiveNvdaCommands
+
+addonHandler.initTranslation()
 
 
 _COMMAND_LOADER = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantAccessCommandPicker")

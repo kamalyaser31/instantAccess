@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
 import api
 import logging
 import os
@@ -10,6 +11,8 @@ import webbrowser
 import wx
 
 from .nvda_commands import executeNvdaCommand
+
+addonHandler.initTranslation()
 
 try:
 	from . import keyboard
