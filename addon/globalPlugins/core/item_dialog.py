@@ -4,6 +4,7 @@ import gui
 from gui import guiHelper, nvdaControls
 import wx
 
+import addonHandler
 from .command_picker_dialog import NvdaCommandPickerDialog
 from .constants import (
 	ALL_FILES_WILDCARD,
@@ -18,7 +19,7 @@ from .constants import (
 )
 from .gestures import buildGestureNameFromEvent, formatGestureForDisplay, normalizeGesture, validateGestureName
 
-
+addonHandler.initTranslation()
 def _formatDelay(delayValue):
 	try:
 		number = float(delayValue)

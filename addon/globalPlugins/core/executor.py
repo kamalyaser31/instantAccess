@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
 import api
 import os
 import subprocess
@@ -10,6 +11,7 @@ import wx
 
 from .nvda_commands import executeNvdaCommand
 
+addonHandler.initTranslation()
 try:
 	from . import keyboard
 except Exception:
