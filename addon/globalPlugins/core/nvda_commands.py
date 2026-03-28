@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from locale import strxfrm
 
+import addonHandler
 import api
 import inputCore
 import keyboardHandler
@@ -10,7 +11,7 @@ import scriptHandler
 import ui
 import wx
 
-
+addonHandler.initTranslation()
 COMMAND_ID_SEPARATOR = "|"
 
 

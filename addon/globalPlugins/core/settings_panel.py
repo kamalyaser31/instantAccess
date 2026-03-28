@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
 import gui
 from gui import guiHelper, nvdaControls
 from gui.settingsDialogs import SettingsPanel
@@ -20,7 +21,7 @@ from .constants import (
 from .gestures import formatGestureForDisplay
 from .item_dialog import InstantAccessItemDialog
 
-
+addonHandler.initTranslation()
 def _getActionSummary(action):
 	itemType = action.get("type", "")
 	if itemType == "TextSnippets":

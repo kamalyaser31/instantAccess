@@ -3,6 +3,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 
+import addonHandler
 import api
 import globalPluginHandler
 import globalVars
@@ -19,6 +20,8 @@ from .executor import executeInstantItem
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
 
+
+addonHandler.initTranslation()
 
 def wrapFinally(func, final):
 	def wrapped(*args, **kwargs):
