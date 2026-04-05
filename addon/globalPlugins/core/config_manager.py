@@ -1,24 +1,35 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from .config_io import ensureConfigFile, loadConfigSafe, saveConfig
 from .constants import TYPE_SECTIONS, VERBOSITY_VALUES
 
+# Set up logging for better debugging
+log = logging.getLogger(__name__)
+
 
 class ConfigManager:
+	"""Manages the configuration for the instantAccess add-on."""
+	
 	def __init__(self, configPath):
+		"""Initialize the ConfigManager with a configuration file path."""
 		self.configPath = configPath
 		ensureConfigFile(self.configPath)
 
 	def loadOrCreateConfig(self):
+		"""Load the configuration from file or create a new one if it doesn't exist."""
 		return loadConfigSafe(self.configPath)
 
 	def saveConfig(self, config):
+		"""Save the configuration to file."""
 		saveConfig(self.configPath, config)
 
 	def getConfigPath(self):
+		"""Get the path to the configuration file."""
 		return self.configPath
 
 	def _actionToPublic(self, storedAction):
+		"""Convert a stored action to a public-facing format."""
 		itemType = storedAction.get("type", "")
 		data = storedAction.get("data", {})
 		if not isinstance(data, dict):
@@ -42,7 +53,7 @@ class ConfigManager:
 			textAction = data.get("action", "type")
 			try:
 				typingDelay = float(data.get("typingDelay", 0.05) or 0.05)
-			except Exception:
+			except (ValueError, TypeError):
 				typingDelay = 0.05
 			if typingDelay < 0:
 				typingDelay = 0.05
@@ -57,6 +68,7 @@ class ConfigManager:
 		}
 
 	def _toPublicItem(self, storedItem):
+		"""Convert a stored item to a public-facing format."""
 		actions = [self._actionToPublic(action) for action in storedItem.get("actions", [])]
 		gesture = (storedItem.get("gesture", "") or "").strip().lower()
 		return {
@@ -68,13 +80,14 @@ class ConfigManager:
 		}
 
 	def _buildStoredAction(self, action):
+		"""Build a stored action from a public-facing action dictionary."""
 		itemType = action.get("type", "")
 		if itemType not in TYPE_SECTIONS:
 			itemType = TYPE_SECTIONS[0]
 		delay = action.get("delay", 0.0)
 		try:
 			delay = float(delay)
-		except Exception:
+		except (ValueError, TypeError):
 			delay = 0.0
 		if delay < 0:
 			delay = 0.0
@@ -91,7 +104,7 @@ class ConfigManager:
 		else:
 			try:
 				typingDelay = float(action.get("typingDelay", 0.05) or 0.05)
-			except Exception:
+			except (ValueError, TypeError):
 				typingDelay = 0.05
 			if typingDelay < 0:
 				typingDelay = 0.05
@@ -103,9 +116,10 @@ class ConfigManager:
 		return {"type": itemType, "data": data, "delay": delay}
 
 	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName=""):
+		"""Build a stored item from public-facing item data."""
 		try:
 			interval = float(interval)
-		except Exception:
+		except (ValueError, TypeError):
 			interval = 0.0
 		if interval < 0:
 			interval = 0.0
@@ -122,16 +136,22 @@ class ConfigManager:
 		return item
 
 	def getItems(self):
+		"""Get all configured items."""
 		config = self.loadOrCreateConfig()
 		items = []
 		for storedItem in config.get("items", []):
-			items.append(self._toPublicItem(storedItem))
+			try:
+				items.append(self._toPublicItem(storedItem))
+			except Exception as e:
+				log.error("Error converting item to public format: %s", e)
 		return items
 
 	def getAllNames(self):
+		"""Get all configured item names."""
 		return {item.get("name", "") for item in self.getItems()}
 
 	def getGestureToNameMap(self):
+		"""Get a mapping of gestures to item names."""
 		gestureMap = {}
 		for item in self.getItems():
 			name = item.get("name", "")
@@ -142,6 +162,7 @@ class ConfigManager:
 		return gestureMap
 
 	def findGestureConflict(self, gesture, appName="", excludeName=""):
+		"""Find if a gesture conflicts with an existing item."""
 		normalizedGesture = (gesture or "").strip().lower()
 		normalizedAppName = (appName or "").strip().lower()
 		if not normalizedGesture:
@@ -158,6 +179,7 @@ class ConfigManager:
 		return None
 
 	def addItem(self, name, gesture, actions, interval=0.0, appName=""):
+		"""Add a new item to the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") != name]
 		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
@@ -165,6 +187,7 @@ class ConfigManager:
 		self.saveConfig(config)
 
 	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName=""):
+		"""Update an existing item in the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
 		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
@@ -172,11 +195,13 @@ class ConfigManager:
 		self.saveConfig(config)
 
 	def deleteItem(self, name):
+		"""Delete an item from the configuration."""
 		config = self.loadOrCreateConfig()
 		config["items"] = [item for item in config.get("items", []) if item.get("name", "") != name]
 		self.saveConfig(config)
 
 	def getVerbosityLevel(self):
+		"""Get the current verbosity level setting."""
 		config = self.loadOrCreateConfig()
 		settings = config.get("settings", {})
 		value = (settings.get("verbosity", VERBOSITY_VALUES[0]) or "").strip().lower()
@@ -185,6 +210,7 @@ class ConfigManager:
 		return value
 
 	def setVerbosityLevel(self, value):
+		"""Set the verbosity level setting."""
 		config = self.loadOrCreateConfig()
 		value = (value or "").strip().lower()
 		if value not in VERBOSITY_VALUES:

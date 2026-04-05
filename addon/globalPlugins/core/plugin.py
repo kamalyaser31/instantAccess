@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from concurrent.futures import ThreadPoolExecutor
+import logging
 import os
 
 import api
@@ -19,15 +20,8 @@ from .executor import executeInstantItem
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
 
-
-def wrapFinally(func, final):
-	def wrapped(*args, **kwargs):
-		try:
-			return func(*args, **kwargs)
-		finally:
-			final()
-
-	return wrapped
+# Set up logging for better debugging
+log = logging.getLogger(__name__)
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -54,16 +48,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 		try:
 			gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(InstantAccessSettingsPanel)
-		except Exception:
+		except ValueError:
+			# Item not in list, which is fine
 			pass
+		except Exception as e:
+			log.error("Error removing settings panel during termination: %s", e, exc_info=True)
+		
 		InstantAccessSettingsPanel.onRunItem = None
 		InstantAccessSettingsPanel.onVerbosityChanged = None
 		self.deactivateInstantMode(speak=False)
 		self.executor.shutdown(wait=False, cancel_futures=True)
 
 	def onConfigChanged(self):
-		if not hasattr(self, "instantMode"):
-			return
 		if self.instantMode:
 			self.activateInstantMode(speak=False)
 
@@ -95,7 +91,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		script = globalPluginHandler.GlobalPlugin.getScript(self, gesture)
 		if not script:
 			script = self.script_invalidKey
-		return wrapFinally(script, self.finishInstantLayer)
+		
+		# Wrap the script to ensure finishInstantLayer is called after execution
+		def wrappedScript(*args, **kwargs):
+			try:
+				return script(*args, **kwargs)
+			finally:
+				self.finishInstantLayer()
+		
+		return wrappedScript
 
 	def getToggleGestures(self):
 		try:
@@ -104,8 +108,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			scriptInfo = categoryMap.get(TOGGLE_DESCRIPTION)
 			if scriptInfo and getattr(scriptInfo, "gestures", None):
 				return list(scriptInfo.gestures)
-		except Exception:
+		except KeyError:
+			# Category or script not found
 			pass
+		except Exception as e:
+			log.warning("Error retrieving toggle gestures: %s", e)
 		return ["kb:NVDA+e"]
 
 	def getReportAppNameGestures(self):
@@ -115,8 +122,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			scriptInfo = categoryMap.get(REPORT_APP_NAME_DESCRIPTION)
 			if scriptInfo and getattr(scriptInfo, "gestures", None):
 				return list(scriptInfo.gestures)
-		except Exception:
+		except KeyError:
+			# Category or script not found
 			pass
+		except Exception as e:
+			log.warning("Error retrieving report app name gestures: %s", e)
 		return ["kb:NVDA+shift+e"]
 
 	def getCurrentAppName(self):
@@ -125,7 +135,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			appModule = getattr(focus, "appModule", None)
 			appName = getattr(appModule, "appName", "")
 			return (appName or "").strip().lower()
-		except Exception:
+		except Exception as e:
+			log.warning("Error getting current app name: %s", e)
 			return ""
 
 	def buildInstantGestures(self):
