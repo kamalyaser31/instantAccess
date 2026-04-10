@@ -5,7 +5,7 @@ Instant Access for NVDA
 
 *   **Author:** Kamal Yaser
 *   **Version:** 2026.2
-*   **Compatibility:** NVDA 2019.3 and later
+*   **Compatibility:** NVDA 2024.1 and later
 
 Overview
 --------
