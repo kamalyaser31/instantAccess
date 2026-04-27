@@ -436,6 +436,7 @@ msgid "Select a file to import"
 msgstr "Select a file to import"
 
 #: addon\globalPlugins\core\settings_panel.py:181
+#: addon\globalPlugins\core\settings_panel.py:196
 msgid "JSON files (*.json)|*.json"
 msgstr "JSON files (*.json)|*.json"
 
@@ -451,10 +452,6 @@ msgstr "Failed to import configuration."
 msgid "Select a location to export configuration"
 msgstr "Select a location to export configuration"
 
-#: addon\globalPlugins\core\settings_panel.py:196
-msgid "JSON files (*.json)|*.json"
-msgstr "JSON files (*.json)|*.json"
-
 #: addon\globalPlugins\core\settings_panel.py:202
 msgid "Configuration exported successfully."
 msgstr "Configuration exported successfully."
@@ -462,10 +459,6 @@ msgstr "Configuration exported successfully."
 #: addon\globalPlugins\core\settings_panel.py:206
 msgid "Failed to export configuration."
 msgstr "Failed to export configuration."
-
-#: buildVars.py:6
-msgid "instant Access"
-msgstr "instant Access"
 
 #: buildVars.py:7
 msgid "A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer. Features include background execution, verbosity levels, command line arguments, and settings import/export."
