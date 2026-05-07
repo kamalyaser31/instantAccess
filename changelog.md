@@ -1,4 +1,17 @@
-# Changelog - Changes Since "Updated Readme" (c1bf430)
+# Changelog
+
+## [2026.3] - 2026-05-07
+### Added
+- Official release update.
+- Fully updated the Arabic user guide to provide clearer instructions and information.
+
+### Fixed
+- Resolved a critical issue that prevented the add-on from loading correctly in certain NVDA environments.
+
+### Changed
+- Internal refinements and cleanup to ensure smoother performance.
+
+# Changes Since "Updated Readme" (c1bf430)
 
 This document outlines all technical and functional changes made to the **instantAccess** add-on since the commit `c1bf430` (updated readme).
 
