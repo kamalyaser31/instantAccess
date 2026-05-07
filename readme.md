@@ -1,10 +1,10 @@
-   Instant Access 2026.2
+   Instant Access 2026.3
 
 Instant Access for NVDA
 =======================
 
 *   **Author:** Kamal Yaser
-*   **Version:** 2026.2
+*   **Version:** 2026.3
 *   **Compatibility:** NVDA 2024.1 and later
 
 Overview
