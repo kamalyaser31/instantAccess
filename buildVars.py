@@ -6,8 +6,8 @@ addon_info = AddonInfo(
 	addon_summary=_("instant Access"),
 	addon_description=_("""A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer.
 	Features include background execution, verbosity levels, command line arguments, and settings import/export."""),
-	addon_version="2026.2",
-	addon_changelog=_("""Some minor improvements.
+	addon_version="2026.3",
+	addon_changelog=_("""
     -  Version 2026.3: Official release update.                                                                                                                 
 -  Add-on Loading Fix: Resolved a critical issue that prevented the add-on from loading correctly in certain NVDA environments.                             
 -  Documentation Updates: Fully updated the Arabic user guide to provide clearer instructions and information.                                              
@@ -17,7 +17,7 @@ addon_info = AddonInfo(
 	addon_sourceURL="https://github.com/kamalyaser31/instantAccess",
 	addon_docFileName="readme.html",
 	addon_minimumNVDAVersion="2024.1.0",
-	addon_lastTestedNVDAVersion="2026.1.",
+	addon_lastTestedNVDAVersion="2026.1",
 	addon_updateChannel=None,
 	addon_license="GPL v2",
 	addon_licenseURL=None,
