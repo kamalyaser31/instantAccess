@@ -24,12 +24,16 @@ from .item_dialog import InstantAccessItemDialog
 def _getActionSummary(action):
 	itemType = action.get("type", "")
 	if itemType == "TextSnippets":
-		text = action.get("path", "") or ""
+		text_preview = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
+		if len(text_preview) > 70:
+			text_preview = text_preview[:67] + "..."
 		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"])
-		text = text.replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
-		if len(text) > 70:
-			text = text[:67] + "..."
-		return _("{action}: {preview}").format(action=actionLabel, preview=text)
+		return _("{action}: {preview}").format(action=actionLabel, preview=text_preview)
+	if itemType == "Keystrokes":
+		first_keystroke = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		if len(first_keystroke) > 70:
+			first_keystroke = first_keystroke[:67] + "..."
+		return first_keystroke
 	if itemType == "NvdaCommands":
 		return action.get("commandLabel", "") or action.get("path", "")
 	details = action.get("path", "")

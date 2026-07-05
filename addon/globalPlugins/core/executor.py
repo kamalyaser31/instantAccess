@@ -89,7 +89,54 @@ def _executeTextSnippet(path, action, typingDelay=0.05):
 		queueMessage(_("Error: Could not type text snippet"))
 
 
-def executeInstantAction(itemType, path, arguments="", textAction="type", typingDelay=0.05):
+def _parseKeystrokeLine(raw_line):
+	"""Return (hotkey, repeat_count) from a single non-empty keystroke line.
+
+	Trailing integer suffix sets the repeat count (must be >= 1).
+	Unrecognised suffix is treated as part of the hotkey string, not as count.
+	Examples:
+	  'shift+f10'      -> ('shift+f10', 1)
+	  'down 5'         -> ('down', 5)
+	  'ctrl+alt+del 3' -> ('ctrl+alt+del', 3)
+	  'alt+f4 abc'     -> ('alt+f4 abc', 1)
+	"""
+	parts = raw_line.rsplit(None, 1)
+	if len(parts) == 2:
+		try:
+			count = int(parts[1])
+			if count >= 1:
+				return (parts[0].strip(), count)
+		except ValueError:
+			pass
+	return (raw_line, 1)
+
+
+def _sendKeystrokeSequence(keys_text, press_delay):
+	"""Send each line in keys_text as a keyboard hotkey, repeating if a count suffix is given.
+
+	Stops on the first send failure and notifies the user via NVDA speech.
+	Caller is responsible for checking keyboard availability and empty input.
+	"""
+	lines = keys_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+	for raw_line in lines:
+		line = raw_line.strip()
+		if not line or line.startswith("#"):
+			continue
+		hotkey, count = _parseKeystrokeLine(line)
+		for _ in range(count):
+			try:
+				keyboard.send(hotkey)
+			except Exception as e:
+				log.error("Keystroke send failed for '%s': %s", hotkey, e)
+				queueMessage(
+					_("Error: Could not send keystroke: {key}").format(key=hotkey)
+				)
+				return
+			if press_delay > 0:
+				time.sleep(press_delay)
+
+
+def executeInstantAction(itemType, path, arguments="", textAction="type", typingDelay=0.05, press_delay=0.05):
 	"""Execute a single instant action based on its type."""
 	if itemType == "Websites":
 		url = (path or "").strip()
@@ -111,6 +158,17 @@ def executeInstantAction(itemType, path, arguments="", textAction="type", typing
 
 	if itemType == "TextSnippets":
 		_executeTextSnippet(path, textAction, typingDelay=typingDelay)
+		return
+
+	if itemType == "Keystrokes":
+		if keyboard is None:
+			queueMessage(_("Error: Keyboard library is not available"))
+			return
+		keys_text = (path or "").strip()
+		if not keys_text:
+			queueMessage(_("Error: Keystrokes field is empty"))
+			return
+		_sendKeystrokeSequence(keys_text, press_delay)
 		return
 
 	resolvedPath = expandPath(path or "")
@@ -187,6 +245,7 @@ def executeInstantItem(item):
 			arguments=action.get("arguments", ""),
 			textAction=action.get("textAction", "type"),
 			typingDelay=action.get("typingDelay", 0.05),
+			press_delay=action.get("pressDelay", 0.05),
 		)
 		if index < len(actions) - 1 and interval > 0:
 			time.sleep(interval)

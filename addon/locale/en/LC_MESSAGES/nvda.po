@@ -463,3 +463,34 @@ msgstr "Failed to export configuration."
 #: buildVars.py:7
 msgid "A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer. Features include background execution, verbosity levels, command line arguments, and settings import/export."
 msgstr "A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer. Features include background execution, verbosity levels, command line arguments, and settings import/export."
+
+#. Translators: Item type label for keystrokes action entries.
+#: addon\globalPlugins\core\constants.py:28
+msgid "Keystrokes"
+msgstr "Keystrokes"
+
+#: addon\globalPlugins\core\executor.py
+msgid "Error: Keystrokes field is empty"
+msgstr "Error: Keystrokes field is empty"
+
+#: addon\globalPlugins\core\executor.py
+#, python-brace-format
+msgid "Error: Could not send keystroke: {key}"
+msgstr "Error: Could not send keystroke: {key}"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Keystrokes (one per line, e.g. 'down 5')"
+msgstr "Keystrokes (one per line, e.g. 'down 5')"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes (seconds)"
+msgstr "Delay between keystrokes (seconds)"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes must be a valid number."
+msgstr "Delay between keystrokes must be a valid number."
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes must be zero or greater."
+msgstr "Delay between keystrokes must be zero or greater."
+

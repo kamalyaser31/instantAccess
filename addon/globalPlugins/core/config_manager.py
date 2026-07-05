@@ -39,6 +39,7 @@ class ConfigManager:
 		textAction = "type"
 		typingDelay = 0.05
 		commandLabel = ""
+		pressDelay = 0.05
 		if itemType == "Websites":
 			path = data.get("url", "")
 		elif itemType in ("Programs", "Folders", "Files"):
@@ -57,6 +58,14 @@ class ConfigManager:
 				typingDelay = 0.05
 			if typingDelay < 0:
 				typingDelay = 0.05
+		elif itemType == "Keystrokes":
+			path = data.get("keys", "")
+			try:
+				pressDelay = float(data.get("pressDelay", 0.05) or 0.05)
+			except (ValueError, TypeError):
+				pressDelay = 0.05
+			if pressDelay < 0:
+				pressDelay = 0.05
 		return {
 			"type": itemType,
 			"path": path if isinstance(path, str) else "",
@@ -64,6 +73,7 @@ class ConfigManager:
 			"textAction": textAction if isinstance(textAction, str) else "type",
 			"typingDelay": typingDelay,
 			"commandLabel": commandLabel if isinstance(commandLabel, str) else "",
+			"pressDelay": pressDelay,
 			"delay": float(storedAction.get("delay", 0.0) or 0.0),
 		}
 
@@ -101,7 +111,8 @@ class ConfigManager:
 			data = {"commandId": action.get("path", "")}
 			if (action.get("commandLabel", "") or "").strip():
 				data["commandLabel"] = action.get("commandLabel", "").strip()
-		else:
+		elif itemType == "TextSnippets":
+			# TextSnippets was previously caught by a catch-all else — now explicit.
 			try:
 				typingDelay = float(action.get("typingDelay", 0.05) or 0.05)
 			except (ValueError, TypeError):
@@ -113,6 +124,20 @@ class ConfigManager:
 				"action": (action.get("textAction", "type") or "").strip().lower(),
 				"typingDelay": typingDelay,
 			}
+		elif itemType == "Keystrokes":
+			try:
+				pressDelay = float(action.get("pressDelay", 0.05) or 0.05)
+			except (ValueError, TypeError):
+				pressDelay = 0.05
+			if pressDelay < 0:
+				pressDelay = 0.05
+			data = {
+				"keys": action.get("path", ""),
+				"pressDelay": pressDelay,
+			}
+		else:
+			# Defensive fallback — TYPE_SECTIONS guard above should prevent reaching here.
+			data = {}
 		return {"type": itemType, "data": data, "delay": delay}
 
 	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName=""):

@@ -15,7 +15,7 @@ CONFIG_SECTIONS = [
 	"Settings",
 ]
 
-TYPE_SECTIONS = ["Websites", "Programs", "Folders", "Files", "NvdaCommands", "TextSnippets"]
+TYPE_SECTIONS = ["Websites", "Programs", "Folders", "Files", "NvdaCommands", "TextSnippets", "Keystrokes"]
 
 # Translators: Item types for instant Access entries.
 TYPE_LABELS = [
@@ -25,6 +25,7 @@ TYPE_LABELS = [
 	_("File"),
 	_("NVDA command"),
 	_("Text snippet"),
+	_("Keystrokes"),
 ]
 
 TYPE_TO_LABEL = dict(zip(TYPE_SECTIONS, TYPE_LABELS))

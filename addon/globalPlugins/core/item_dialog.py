@@ -43,6 +43,11 @@ def _getActionSummary(action):
 			action=TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]),
 			preview=firstLine,
 		)
+	elif itemType == "Keystrokes":
+		first_keystroke = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		if len(first_keystroke) > 50:
+			first_keystroke = first_keystroke[:47] + "..."
+		details = first_keystroke
 	elif itemType == "NvdaCommands":
 		details = action.get("commandLabel", "") or action.get("path", "")
 	else:
@@ -158,9 +163,9 @@ class InstantAccessActionDialog(wx.Dialog):
 
 	def _createSnippetRow(self):
 		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Text snippet"))
+		self.snippetLabel = wx.StaticText(self, wx.ID_ANY, _("Text snippet"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 120))
-		row.Add(label, 0, wx.ALIGN_TOP | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(self.snippetLabel, 0, wx.ALIGN_TOP | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		row.Add(ctrl, 1, wx.EXPAND)
 		return row, ctrl
 
@@ -175,9 +180,9 @@ class InstantAccessActionDialog(wx.Dialog):
 
 	def _createTypingDelayRow(self):
 		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Typing delay"))
+		self.typingDelayLabel = wx.StaticText(self, wx.ID_ANY, _("Typing delay"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(self.typingDelayLabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		row.Add(ctrl, 0)
 		return row, ctrl
 
@@ -196,11 +201,17 @@ class InstantAccessActionDialog(wx.Dialog):
 		self.selectedCommandLabel = action.get("commandLabel", "")
 		if self.selectedCommandLabel:
 			self.commandCtrl.SetValue(self.selectedCommandLabel)
-		self.snippetCtrl.SetValue(action.get("path", "") if itemType == "TextSnippets" else "")
+		if itemType in ("TextSnippets", "Keystrokes"):
+			self.snippetCtrl.SetValue(action.get("path", ""))
+		else:
+			self.snippetCtrl.SetValue("")
 		actionValue = (action.get("textAction", TEXT_SNIPPET_ACTION_VALUES[0]) or "").strip().lower()
 		if actionValue in TEXT_SNIPPET_ACTION_VALUES:
 			self.snippetActionChoice.SetSelection(TEXT_SNIPPET_ACTION_VALUES.index(actionValue))
-		self.typingDelayCtrl.SetValue(_formatDelay(action.get("typingDelay", 0.05)))
+		if itemType == "Keystrokes":
+			self.typingDelayCtrl.SetValue(_formatDelay(action.get("pressDelay", 0.05)))
+		else:
+			self.typingDelayCtrl.SetValue(_formatDelay(action.get("typingDelay", 0.05)))
 		self.delayCtrl.SetValue(_formatDelay(action.get("delay", 0.0)))
 
 	def updateTypeState(self):
@@ -208,15 +219,27 @@ class InstantAccessActionDialog(wx.Dialog):
 		showPath = itemType in ("Websites", "Programs", "Folders", "Files")
 		showArguments = itemType == "Programs"
 		showCommand = itemType == "NvdaCommands"
-		showSnippet = itemType == "TextSnippets"
-		showTypingDelay = showSnippet and TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()] == "type"
+		showSnippetArea = itemType in ("TextSnippets", "Keystrokes")
+		showSnippetActionChoice = itemType == "TextSnippets"
+		showDelayField = (
+			(itemType == "TextSnippets" and TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()] == "type")
+			or itemType == "Keystrokes"
+		)
+
+		# Labels change at runtime to match the currently selected action type.
+		if itemType == "Keystrokes":
+			self.snippetLabel.SetLabel(_("Keystrokes (one per line, e.g. 'down 5')"))
+			self.typingDelayLabel.SetLabel(_("Delay between keystrokes (seconds)"))
+		else:
+			self.snippetLabel.SetLabel(_("Text snippet"))
+			self.typingDelayLabel.SetLabel(_("Typing delay"))
 
 		self._setRowVisible(self.pathRow, showPath)
 		self._setRowVisible(self.argumentsRow, showArguments)
 		self._setRowVisible(self.commandRow, showCommand)
-		self._setRowVisible(self.snippetRow, showSnippet)
-		self._setRowVisible(self.snippetActionRow, showSnippet)
-		self._setRowVisible(self.typingDelayRow, showTypingDelay)
+		self._setRowVisible(self.snippetRow, showSnippetArea)
+		self._setRowVisible(self.snippetActionRow, showSnippetActionChoice)
+		self._setRowVisible(self.typingDelayRow, showDelayField)
 		self.browseButton.Enable(itemType in ("Programs", "Folders", "Files"))
 		self.Layout()
 
@@ -259,18 +282,14 @@ class InstantAccessActionDialog(wx.Dialog):
 		arguments = self.argumentsCtrl.GetValue().strip() if itemType == "Programs" else ""
 		textAction = TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()]
 
-		if itemType == "TextSnippets":
+		if itemType in ("TextSnippets", "Keystrokes"):
 			path = self.snippetCtrl.GetValue()
 		elif itemType == "NvdaCommands":
 			path = self.selectedCommandId.strip()
 		else:
 			path = self.pathCtrl.GetValue().strip()
 
-		if itemType == "TextSnippets":
-			if not path.strip():
-				gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
-				return None
-		elif not path:
+		if not path.strip():
 			gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 
@@ -284,15 +303,27 @@ class InstantAccessActionDialog(wx.Dialog):
 			return None
 
 		typingDelay = 0.05
+		pressDelay = 0.05
+
 		if itemType == "TextSnippets" and textAction == "type":
-			try:
-				typingDelay = float((self.typingDelayCtrl.GetValue() or "0.05").strip())
-			except Exception:
-				gui.messageBox(_("Typing delay must be a valid number."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			parsed = self._parseDelayField(
+				self.typingDelayCtrl.GetValue(),
+				_("Typing delay must be a valid number."),
+				_("Typing delay must be zero or greater."),
+			)
+			if parsed is None:
 				return None
-			if typingDelay < 0:
-				gui.messageBox(_("Typing delay must be zero or greater."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			typingDelay = parsed
+
+		elif itemType == "Keystrokes":
+			parsed = self._parseDelayField(
+				self.typingDelayCtrl.GetValue(),
+				_("Delay between keystrokes must be a valid number."),
+				_("Delay between keystrokes must be zero or greater."),
+			)
+			if parsed is None:
 				return None
+			pressDelay = parsed
 
 		return {
 			"type": itemType,
@@ -300,9 +331,26 @@ class InstantAccessActionDialog(wx.Dialog):
 			"arguments": arguments,
 			"textAction": textAction,
 			"typingDelay": typingDelay,
+			"pressDelay": pressDelay,
 			"commandLabel": self.selectedCommandLabel.strip(),
 			"delay": delay,
 		}
+
+	def _parseDelayField(self, raw_value, invalid_msg, negative_msg):
+		"""Parse a delay text field and show an error dialog on invalid input.
+
+		Centralises the duplicated float-parse + range-check pattern (DRY).
+		Returns the parsed float or None if validation fails.
+		"""
+		try:
+			value = float((raw_value or "0.05").strip())
+		except Exception:
+			gui.messageBox(invalid_msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			return None
+		if value < 0:
+			gui.messageBox(negative_msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			return None
+		return value
 
 	def onOk(self, event):
 		result = self.validate()

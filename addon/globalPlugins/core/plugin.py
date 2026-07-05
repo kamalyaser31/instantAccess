@@ -20,7 +20,6 @@ from .executor import executeInstantItem
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
 
-# Set up logging for better debugging
 log = logging.getLogger(__name__)
 
 
@@ -92,7 +91,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if not script:
 			script = self.script_invalidKey
 		
-		# Wrap the script to ensure finishInstantLayer is called after execution
 		def wrappedScript(*args, **kwargs):
 			try:
 				return script(*args, **kwargs)
@@ -101,33 +99,27 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		
 		return wrappedScript
 
-	def getToggleGestures(self):
+	def _getGesturesForScript(self, scriptDescription, fallback):
+		"""Return the gesture list bound to scriptDescription, or fallback if not found.
+
+		Reads gesture mappings at call time so changes via Input Gestures dialog are reflected immediately.
+		"""
 		try:
-			mappings = inputCore.manager.getAllGestureMappings()
-			categoryMap = mappings.get(CATEGORY_LABEL, {})
-			scriptInfo = categoryMap.get(TOGGLE_DESCRIPTION)
+			categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
+			scriptInfo = categoryMap.get(scriptDescription)
 			if scriptInfo and getattr(scriptInfo, "gestures", None):
 				return list(scriptInfo.gestures)
 		except KeyError:
-			# Category or script not found
 			pass
 		except Exception as e:
-			log.warning("Error retrieving toggle gestures: %s", e)
-		return ["kb:NVDA+e"]
+			log.warning("Error retrieving gestures for '%s': %s", scriptDescription, e)
+		return fallback
+
+	def getToggleGestures(self):
+		return self._getGesturesForScript(TOGGLE_DESCRIPTION, ["kb:NVDA+e"])
 
 	def getReportAppNameGestures(self):
-		try:
-			mappings = inputCore.manager.getAllGestureMappings()
-			categoryMap = mappings.get(CATEGORY_LABEL, {})
-			scriptInfo = categoryMap.get(REPORT_APP_NAME_DESCRIPTION)
-			if scriptInfo and getattr(scriptInfo, "gestures", None):
-				return list(scriptInfo.gestures)
-		except KeyError:
-			# Category or script not found
-			pass
-		except Exception as e:
-			log.warning("Error retrieving report app name gestures: %s", e)
-		return ["kb:NVDA+shift+e"]
+		return self._getGesturesForScript(REPORT_APP_NAME_DESCRIPTION, ["kb:NVDA+shift+e"])
 
 	def getCurrentAppName(self):
 		try:

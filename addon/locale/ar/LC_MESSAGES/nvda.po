@@ -505,6 +505,37 @@ msgid ""
 "\t- New: NVDA commands."
 msgstr "جديد: اختصارات nvda.\vجديد: نسخ وكتابة ولصق النصوص."
 
+#. Translators: Item type label for keystrokes action entries.
+#: addon\globalPlugins\core\constants.py:28
+msgid "Keystrokes"
+msgstr "ضغطات مفاتيح"
+
+#: addon\globalPlugins\core\executor.py
+msgid "Error: Keystrokes field is empty"
+msgstr "خطأ: حقل ضغطات المفاتيح فارغ"
+
+#: addon\globalPlugins\core\executor.py
+#, python-brace-format
+msgid "Error: Could not send keystroke: {key}"
+msgstr "خطأ: تعذر إرسال ضغطة المفتاح: {key}"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Keystrokes (one per line, e.g. 'down 5')"
+msgstr "ضغطات المفاتيح (واحدة في كل سطر، مثل: down 5)"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes (seconds)"
+msgstr "الفاصل بين الضغطات (ثواني)"
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes must be a valid number."
+msgstr "يجب أن يكون الفاصل رقمًا صالحًا."
+
+#: addon\globalPlugins\core\item_dialog.py
+msgid "Delay between keystrokes must be zero or greater."
+msgstr "يجب أن يكون الفاصل صفرًا أو أكبر."
+
+
 #~ msgid "All files (*.*)|*.*"
 #~ msgstr "كافة الملفات (*.*)|*.*"
 

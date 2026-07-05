@@ -61,6 +61,12 @@ def _normalizeActionData(itemType, rawData):
 			action = TEXT_SNIPPET_ACTION_VALUES[0]
 		typingDelay = _toNonNegativeFloat(rawData.get("typingDelay", 0.05), 0.05)
 		return {"text": text, "action": action, "typingDelay": typingDelay}
+	if itemType == "Keystrokes":
+		keys = rawData.get("keys", "")
+		if not isinstance(keys, str):
+			keys = ""
+		pressDelay = _toNonNegativeFloat(rawData.get("pressDelay", 0.05), 0.05)
+		return {"keys": keys, "pressDelay": pressDelay}
 	return {}
 
 
