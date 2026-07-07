@@ -16,7 +16,12 @@ from .constants import (
 	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 )
-from .gestures import buildGestureNameFromEvent, formatGestureForDisplay, normalizeGesture, validateGestureName
+from .gestures import (
+	buildGestureNameFromEvent,
+	formatGestureForDisplay,
+	normalizeGesture,
+	validateGestureName,
+)
 
 
 def _formatDelay(delayValue):
@@ -40,11 +45,15 @@ def _getActionSummary(action):
 		if len(firstLine) > 50:
 			firstLine = firstLine[:47] + "..."
 		details = _("{action}: {preview}").format(
-			action=TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]),
+			action=TEXT_SNIPPET_ACTION_TO_LABEL.get(
+				action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]
+			),
 			preview=firstLine,
 		)
 	elif itemType == "Keystrokes":
-		first_keystroke = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		first_keystroke = (
+			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		)
 		if len(first_keystroke) > 50:
 			first_keystroke = first_keystroke[:47] + "..."
 		details = first_keystroke
@@ -138,7 +147,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		label = wx.StaticText(self, wx.ID_ANY, _("Path or URL"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY)
 		button = wx.Button(self, wx.ID_ANY, _("Browse"))
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			label,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(ctrl, 1, wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		row.Add(button, 0)
 		return row, ctrl, button
@@ -147,7 +161,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		row = wx.BoxSizer(wx.HORIZONTAL)
 		label = wx.StaticText(self, wx.ID_ANY, _("Arguments (optional)"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			label,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(ctrl, 1)
 		return row, ctrl
 
@@ -156,7 +175,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		label = wx.StaticText(self, wx.ID_ANY, _("NVDA command"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_READONLY)
 		button = wx.Button(self, wx.ID_ANY, _("Select command"))
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			label,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(ctrl, 1, wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		row.Add(button, 0)
 		return row, ctrl, button
@@ -165,7 +189,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		row = wx.BoxSizer(wx.HORIZONTAL)
 		self.snippetLabel = wx.StaticText(self, wx.ID_ANY, _("Text snippet"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 120))
-		row.Add(self.snippetLabel, 0, wx.ALIGN_TOP | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			self.snippetLabel,
+			0,
+			wx.ALIGN_TOP | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(ctrl, 1, wx.EXPAND)
 		return row, ctrl
 
@@ -174,7 +203,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		label = wx.StaticText(self, wx.ID_ANY, _("Snippet action"))
 		choice = wx.Choice(self, wx.ID_ANY, choices=TEXT_SNIPPET_ACTION_LABELS)
 		choice.SetSelection(0)
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			label,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(choice, 0)
 		return row, choice
 
@@ -182,7 +216,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		row = wx.BoxSizer(wx.HORIZONTAL)
 		self.typingDelayLabel = wx.StaticText(self, wx.ID_ANY, _("Typing delay"))
 		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		row.Add(self.typingDelayLabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			self.typingDelayLabel,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(ctrl, 0)
 		return row, ctrl
 
@@ -222,9 +261,9 @@ class InstantAccessActionDialog(wx.Dialog):
 		showSnippetArea = itemType in ("TextSnippets", "Keystrokes")
 		showSnippetActionChoice = itemType == "TextSnippets"
 		showDelayField = (
-			(itemType == "TextSnippets" and TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()] == "type")
-			or itemType == "Keystrokes"
-		)
+			itemType == "TextSnippets"
+			and TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()] == "type"
+		) or itemType == "Keystrokes"
 
 		# Labels change at runtime to match the currently selected action type.
 		if itemType == "Keystrokes":
@@ -252,7 +291,12 @@ class InstantAccessActionDialog(wx.Dialog):
 	def onBrowse(self, event):
 		itemType = TYPE_SECTIONS[self.typeChoice.GetSelection()]
 		if itemType == "Programs":
-			dialog = wx.FileDialog(self, _("Select a program"), wildcard=ALL_FILES_WILDCARD, style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+			dialog = wx.FileDialog(
+				self,
+				_("Select a program"),
+				wildcard=ALL_FILES_WILDCARD,
+				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+			)
 			if dialog.ShowModal() == wx.ID_OK:
 				self.pathCtrl.SetValue(dialog.GetPath())
 			dialog.Destroy()
@@ -264,7 +308,12 @@ class InstantAccessActionDialog(wx.Dialog):
 			dialog.Destroy()
 			return
 		if itemType == "Files":
-			dialog = wx.FileDialog(self, _("Select a file"), wildcard=ALL_FILES_WILDCARD, style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+			dialog = wx.FileDialog(
+				self,
+				_("Select a file"),
+				wildcard=ALL_FILES_WILDCARD,
+				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+			)
 			if dialog.ShowModal() == wx.ID_OK:
 				self.pathCtrl.SetValue(dialog.GetPath())
 			dialog.Destroy()
@@ -287,7 +336,7 @@ class InstantAccessActionDialog(wx.Dialog):
 		elif itemType == "NvdaCommands":
 			path = self.selectedCommandId.strip()
 		else:
-			path = self.pathCtrl.GetValue().strip()
+			path = self.pathCtrl.GetValue().strip().strip("'\"")
 
 		if not path.strip():
 			gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
@@ -375,7 +424,9 @@ class InstantAccessItemDialog(wx.Dialog):
 
 		actionsLabel = wx.StaticText(self, wx.ID_ANY, _("Actions"))
 		sizerHelper.addItem(actionsLabel)
-		self.actionsList = nvdaControls.AutoWidthColumnListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN)
+		self.actionsList = nvdaControls.AutoWidthColumnListCtrl(
+			self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN
+		)
 		self.actionsList.InsertColumn(0, _("Type"))
 		self.actionsList.InsertColumn(1, _("Delay"))
 		self.actionsList.InsertColumn(2, _("Details"))
@@ -389,10 +440,14 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.moveDownActionButton = actionsButtons.addButton(self, label=_("Move &down"))
 		sizerHelper.addItem(actionsButtons.sizer, flag=wx.EXPAND)
 
-		self.intervalCtrl = sizerHelper.addLabeledControl(_("Interval between actions (seconds)"), wx.TextCtrl)
+		self.intervalCtrl = sizerHelper.addLabeledControl(
+			_("Interval between actions (seconds)"), wx.TextCtrl
+		)
 		self.intervalCtrl.SetValue("0")
 
-		self.restrictionRow, self.restrictToAppsCheck, self.appNameLabel, self.appNameCtrl = self._createRestrictionRow()
+		self.restrictionRow, self.restrictToAppsCheck, self.appNameLabel, self.appNameCtrl = (
+			self._createRestrictionRow()
+		)
 		sizerHelper.addItem(self.restrictionRow, flag=wx.EXPAND)
 
 		self.shortcutRow, self.shortcutButton = self._createShortcutRow()
@@ -435,7 +490,12 @@ class InstantAccessItemDialog(wx.Dialog):
 		appCtrl = wx.TextCtrl(self, wx.ID_ANY)
 		appCtrl.SetHint(_("App name"))
 		row.Add(check, 0, wx.ALIGN_CENTER_VERTICAL)
-		row.Add(appLabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			appLabel,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(appCtrl, 1, wx.LEFT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		return row, check, appLabel, appCtrl
 
@@ -443,7 +503,12 @@ class InstantAccessItemDialog(wx.Dialog):
 		row = wx.BoxSizer(wx.HORIZONTAL)
 		label = wx.StaticText(self, wx.ID_ANY, _("Shortcut"))
 		button = wx.Button(self, wx.ID_ANY, "")
-		row.Add(label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
+		row.Add(
+			label,
+			0,
+			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
+		)
 		row.Add(button, 0)
 		return row, button
 
@@ -530,7 +595,14 @@ class InstantAccessItemDialog(wx.Dialog):
 		index = self.getSelectedActionIndex()
 		if index == -1:
 			return
-		if gui.messageBox(_("Are you sure you would like to delete the selected action?"), _("Confirm"), wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
+		if (
+			gui.messageBox(
+				_("Are you sure you would like to delete the selected action?"),
+				_("Confirm"),
+				wx.YES_NO | wx.ICON_QUESTION,
+			)
+			!= wx.YES
+		):
 			return
 		del self.actions[index]
 		nextIndex = min(index, len(self.actions) - 1)
@@ -561,7 +633,9 @@ class InstantAccessItemDialog(wx.Dialog):
 				dialog.Destroy()
 				return
 			if gestureName in RESERVED_GESTURES:
-				gui.messageBox(_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+				gui.messageBox(
+					_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+				)
 				dialog.Destroy()
 				return
 			if not validateGestureName(formatGestureForDisplay(gestureName)):
@@ -584,7 +658,11 @@ class InstantAccessItemDialog(wx.Dialog):
 			gui.messageBox(_("At least one action is required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 		if self.restrictToAppsCheck.GetValue() and not appName:
-			gui.messageBox(_("App name is required when app restriction is enabled."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			gui.messageBox(
+				_("App name is required when app restriction is enabled."),
+				ERROR_CAPTION,
+				wx.OK | wx.ICON_ERROR,
+			)
 			return None
 
 		try:
@@ -598,7 +676,9 @@ class InstantAccessItemDialog(wx.Dialog):
 
 		normalizedGesture = normalizeGesture(gesture)
 		if normalizedGesture in RESERVED_GESTURES:
-			gui.messageBox(_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			gui.messageBox(
+				_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+			)
 			return None
 		if not validateGestureName(formatGestureForDisplay(normalizedGesture)):
 			gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
@@ -612,12 +692,18 @@ class InstantAccessItemDialog(wx.Dialog):
 			return None
 
 		excludeName = self.existingItem["name"] if self.existingItem else ""
-		conflictItem = self.configManager.findGestureConflict(normalizedGesture, appName=appName, excludeName=excludeName)
+		conflictItem = self.configManager.findGestureConflict(
+			normalizedGesture, appName=appName, excludeName=excludeName
+		)
 		if conflictItem:
 			if appName:
-				gui.messageBox(_("This shortcut is already assigned for this app."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+				gui.messageBox(
+					_("This shortcut is already assigned for this app."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+				)
 			else:
-				gui.messageBox(_("This global shortcut is already assigned."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+				gui.messageBox(
+					_("This global shortcut is already assigned."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+				)
 			return None
 
 		return {
