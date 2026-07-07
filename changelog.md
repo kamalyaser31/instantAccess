@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026.4] - 2026-07-07
+### Added
+- New Feature: Keystrokes macro simulation (allows advanced screen reader users to execute keyboard shortcut sequences with custom delays).
+- Documentation: Added complete user guides and macro examples for the new Keystrokes feature in English and Arabic readmes.
+
+### Changed
+- Code Quality: Refactored core modules (`plugin.py`, `executor.py`, `item_dialog.py`) to eliminate code duplication and align with clean code standards.
+
 ## [2026.3] - 2026-05-07
 ### Added
 - Official release update.

@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="../style.css" media="screen">
-<title>instant Access 2026.3</title>
+<title>instant Access 2026.4</title>
 </head>
 <body>
-<p>Instant Access 2026.3</p>
+<p>Instant Access 2026.4</p>
 <h1>Instant Access for NVDA</h1>
 <ul>
 <li><strong>Author:</strong> Kamal Yaser</li>
-<li><strong>Version:</strong> 2026.3</li>
+<li><strong>Version:</strong> 2026.4</li>
 <li><strong>Compatibility:</strong> NVDA 2024.1 and later</li>
 </ul>
 <h2>Overview</h2>
@@ -26,6 +26,7 @@
 <li>Launch websites, programs, folders, and files.</li>
 <li>Execute NVDA commands from a filterable list.</li>
 <li>Insert, copy, or paste reusable text snippets.</li>
+<li>Simulate keystroke sequences with adjustable delay.</li>
 </ul>
 </li>
 <li><strong>Centralized Management:</strong> A comprehensive settings panel to add, edit, test, and organize your items.</li>
@@ -77,6 +78,12 @@
 <li><strong>Type:</strong> Simulates typing the text. You can set a custom <strong>Typing delay</strong> (in seconds) between characters.</li>
 <li><strong>Copy:</strong> Puts the text on the clipboard.</li>
 <li><strong>Paste:</strong> Puts the text on the clipboard and then simulates a <code>Ctrl+V</code> paste.</li>
+</ul>
+</li>
+<li><strong>Keystrokes:</strong> Simulates a sequence of keyboard keys or shortcut combinations (one per line).<ul>
+<li><strong>Syntax:</strong> Write the shortcut name (e.g., <code>ctrl+alt+del</code> or <code>shift+f10</code>).</li>
+<li><strong>Repetition:</strong> You can repeat a key by appending a space and a count (e.g., <code>down 5</code> to press the Down Arrow 5 times).</li>
+<li><strong>Delay between keystrokes:</strong> You can set a custom pause (in seconds) to occur between each keystroke.</li>
 </ul>
 </li>
 <li><strong>Delay before executing this action:</strong> A pause (in seconds) that occurs <em>before</em> this specific action runs.</li>
@@ -256,6 +263,26 @@ Open backup locations, Control Panel settings, and Google account security in on
 </ul>
 <p><strong>Result:</strong><br />
 Launch VS Code, GitHub, and your documentation folder for collaborative coding work.</p>
+<hr />
+<h3>Example 12: Sequence of Keystrokes (Macro)</h3>
+<p>This item simulates a sequence of keyboard shortcut actions (e.g., using the context menu, navigating down 5 times, and pressing Enter).</p>
+<ul>
+<li><strong>Name:</strong> <code>Menu Sequence</code></li>
+<li><strong>Shortcut:</strong> <code>M</code></li>
+<li><strong>Actions:</strong><ol>
+<li><strong>Type:</strong> <code>Keystrokes</code><ul>
+<li><strong>Keys:</strong>
+    <code>shift+f10
+    down 5
+    enter</code></li>
+<li><strong>Delay between keystrokes:</strong> <code>0.1</code> seconds</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>Result:</strong><br />
+Press <code>NVDA+E</code> then <code>M</code> to simulate pressing <code>Shift+F10</code>, waiting 0.1 seconds, pressing <code>Down Arrow</code> 5 times (with 0.1s pauses), and pressing <code>Enter</code>.</p>
 <hr />
 <h2>App-Specific Shortcuts</h2>
 <p>You can make a shortcut behave differently depending on the application you are in.</p>

@@ -1,10 +1,10 @@
-   Instant Access 2026.3
+   Instant Access 2026.4
 
 Instant Access for NVDA
 =======================
 
 *   **Author:** Kamal Yaser
-*   **Version:** 2026.3
+*   **Version:** 2026.4
 *   **Compatibility:** NVDA 2024.1 and later
 
 Overview
@@ -24,6 +24,7 @@ Key Features
     *   Launch websites, programs, folders, and files.
     *   Execute NVDA commands from a filterable list.
     *   Insert, copy, or paste reusable text snippets.
+    *   Simulate keystroke sequences with adjustable delay.
 *   **Centralized Management:** A comprehensive settings panel to add, edit, test, and organize your items.
 *   **Import & Export:** Back up and share your configuration in JSON format.
 *   **Adjustable Verbosity:** Choose between detailed feedback (Beginner) or concise tones (Advanced).
@@ -79,6 +80,10 @@ When you add or edit an action, you can choose from several types:
     *   **Type:** Simulates typing the text. You can set a custom **Typing delay** (in seconds) between characters.
     *   **Copy:** Puts the text on the clipboard.
     *   **Paste:** Puts the text on the clipboard and then simulates a `Ctrl+V` paste.
+*   **Keystrokes:** Simulates a sequence of keyboard keys or shortcut combinations (one per line).
+    *   **Syntax:** Write the shortcut name (e.g., `ctrl+alt+del` or `shift+f10`).
+    *   **Repetition:** You can repeat a key by appending a space and a count (e.g., `down 5` to press the Down Arrow 5 times).
+    *   **Delay between keystrokes:** You can set a custom pause (in seconds) to occur between each keystroke.
 *   **Delay before executing this action:** A pause (in seconds) that occurs _before_ this specific action runs.
 
 Examples of Use
@@ -256,6 +261,27 @@ This item prepares your documentation workspace for coding projects.
 
 **Result:**  
 Launch VS Code, GitHub, and your documentation folder for collaborative coding work.
+
+* * *
+
+### Example 12: Sequence of Keystrokes (Macro)
+
+This item simulates a sequence of keyboard shortcut actions (e.g., using the context menu, navigating down 5 times, and pressing Enter).
+
+*   **Name:** `Menu Sequence`
+*   **Shortcut:** `M`
+*   **Actions:**
+    1.  **Type:** `Keystrokes`
+        *   **Keys:**
+            ```
+            shift+f10
+            down 5
+            enter
+            ```
+        *   **Delay between keystrokes:** `0.1` seconds
+
+**Result:**  
+Press `NVDA+E` then `M` to simulate pressing `Shift+F10`, waiting 0.1 seconds, pressing `Down Arrow` 5 times (with 0.1s pauses), and pressing `Enter`.
 
 * * *
 
