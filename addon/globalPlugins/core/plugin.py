@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 
+import addonHandler
 import api
 import globalPluginHandler
 import globalVars
@@ -19,6 +20,8 @@ from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCR
 from .executor import executeInstantItem
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
+
+addonHandler.initTranslation()
 
 log = logging.getLogger(__name__)
 

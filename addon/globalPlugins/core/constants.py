@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
+
+addonHandler.initTranslation()
+
 CONFIG_SECTIONS = [
 	"Websites",
 	"Programs",

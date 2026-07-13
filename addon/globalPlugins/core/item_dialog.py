@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import addonHandler
 import gui
 from gui import guiHelper, nvdaControls
 import wx
@@ -22,6 +23,8 @@ from .gestures import (
 	normalizeGesture,
 	validateGestureName,
 )
+
+addonHandler.initTranslation()
 
 
 def _formatDelay(delayValue):
