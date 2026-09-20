@@ -49,7 +49,8 @@ def _getActionSummary(action):
 			firstLine = firstLine[:47] + "..."
 		details = _("{action}: {preview}").format(
 			action=TEXT_SNIPPET_ACTION_TO_LABEL.get(
-				action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]
+				action.get("textAction", "type"),
+				TEXT_SNIPPET_ACTION_TO_LABEL["type"],
 			),
 			preview=firstLine,
 		)
@@ -428,7 +429,8 @@ class InstantAccessItemDialog(wx.Dialog):
 		actionsLabel = wx.StaticText(self, wx.ID_ANY, _("Actions"))
 		sizerHelper.addItem(actionsLabel)
 		self.actionsList = nvdaControls.AutoWidthColumnListCtrl(
-			self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN
+			self,
+			style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN,
 		)
 		self.actionsList.InsertColumn(0, _("Type"))
 		self.actionsList.InsertColumn(1, _("Delay"))
@@ -444,7 +446,8 @@ class InstantAccessItemDialog(wx.Dialog):
 		sizerHelper.addItem(actionsButtons.sizer, flag=wx.EXPAND)
 
 		self.intervalCtrl = sizerHelper.addLabeledControl(
-			_("Interval between actions (seconds)"), wx.TextCtrl
+			_("Interval between actions (seconds)"),
+			wx.TextCtrl,
 		)
 		self.intervalCtrl.SetValue("0")
 
@@ -637,7 +640,9 @@ class InstantAccessItemDialog(wx.Dialog):
 				return
 			if gestureName in RESERVED_GESTURES:
 				gui.messageBox(
-					_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+					_("This shortcut is reserved for instant Access."),
+					ERROR_CAPTION,
+					wx.OK | wx.ICON_ERROR,
 				)
 				dialog.Destroy()
 				return
@@ -680,7 +685,9 @@ class InstantAccessItemDialog(wx.Dialog):
 		normalizedGesture = normalizeGesture(gesture)
 		if normalizedGesture in RESERVED_GESTURES:
 			gui.messageBox(
-				_("This shortcut is reserved for instant Access."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+				_("This shortcut is reserved for instant Access."),
+				ERROR_CAPTION,
+				wx.OK | wx.ICON_ERROR,
 			)
 			return None
 		if not validateGestureName(formatGestureForDisplay(normalizedGesture)):
@@ -696,16 +703,22 @@ class InstantAccessItemDialog(wx.Dialog):
 
 		excludeName = self.existingItem["name"] if self.existingItem else ""
 		conflictItem = self.configManager.findGestureConflict(
-			normalizedGesture, appName=appName, excludeName=excludeName
+			normalizedGesture,
+			appName=appName,
+			excludeName=excludeName,
 		)
 		if conflictItem:
 			if appName:
 				gui.messageBox(
-					_("This shortcut is already assigned for this app."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+					_("This shortcut is already assigned for this app."),
+					ERROR_CAPTION,
+					wx.OK | wx.ICON_ERROR,
 				)
 			else:
 				gui.messageBox(
-					_("This global shortcut is already assigned."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR
+					_("This global shortcut is already assigned."),
+					ERROR_CAPTION,
+					wx.OK | wx.ICON_ERROR,
 				)
 			return None
 

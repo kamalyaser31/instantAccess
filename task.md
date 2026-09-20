@@ -1,0 +1,23 @@
+# Task: Modernize instantAccess Tooling & Build System to addonTemplate
+
+- [x] Stage 1: Backup and clean legacy tooling files <!-- id: 0 -->
+  - [x] Delete `.pre-commit-config.yaml` <!-- id: 1 -->
+  - [x] Remove obsolete build artifacts (`*.nvda-addon`, `*.pot`, `.sconsign.dblite`) from root <!-- id: 2 -->
+- [x] Stage 2: Deploy modern template files from addonTemplate <!-- id: 3 -->
+  - [x] Deploy `prek.toml` <!-- id: 4 -->
+  - [x] Deploy `uv.lock` <!-- id: 5 -->
+  - [x] Deploy `site_scons/` <!-- id: 6 -->
+  - [x] Deploy `sconstruct` <!-- id: 7 -->
+  - [x] Deploy `manifest.ini.tpl` and `manifest-translated.ini.tpl` <!-- id: 8 -->
+  - [x] Deploy `.github/workflows/build_addon.yml` <!-- id: 9 -->
+  - [x] Deploy updated `.gitignore` <!-- id: 10 -->
+  - [x] Deploy official `COPYING.txt` <!-- id: 21 -->
+- [x] Stage 3: Align configuration files with instantAccess metadata <!-- id: 11 -->
+  - [x] Configure `pyproject.toml` (PEP 735 dependency groups + instantAccess metadata) <!-- id: 12 -->
+  - [x] Update `buildVars.py` with `SpeechDictionaries` typing and dictionary <!-- id: 13 -->
+- [x] Stage 4: Verification and testing <!-- id: 14 -->
+  - [x] Run `uv sync` <!-- id: 15 -->
+  - [x] Run `uv run scons` and `uv run scons pot` <!-- id: 17 -->
+- [x] Stage 5: Documentation and project state <!-- id: 18 -->
+  - [x] Create `project_state.md` <!-- id: 19 -->
+  - [x] Update `changelog.md` <!-- id: 20 -->

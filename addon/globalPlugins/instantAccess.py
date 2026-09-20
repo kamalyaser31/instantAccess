@@ -10,5 +10,3 @@
 import addonHandler
 
 addonHandler.initTranslation()
-
-from .core.plugin import GlobalPlugin

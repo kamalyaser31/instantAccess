@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class ConfigManager:
 	"""Manages the configuration for the instantAccess add-on."""
-	
+
 	def __init__(self, configPath):
 		"""Initialize the ConfigManager with a configuration file path."""
 		self.configPath = configPath
@@ -207,7 +207,11 @@ class ConfigManager:
 		"""Add a new item to the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") != name]
-		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
+		items.append(
+			self._buildStoredItem(
+				name=name, gesture=gesture, actions=actions, interval=interval, appName=appName
+			)
+		)
 		config["items"] = items
 		self.saveConfig(config)
 
@@ -215,7 +219,11 @@ class ConfigManager:
 		"""Update an existing item in the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
-		items.append(self._buildStoredItem(name=name, gesture=gesture, actions=actions, interval=interval, appName=appName))
+		items.append(
+			self._buildStoredItem(
+				name=name, gesture=gesture, actions=actions, interval=interval, appName=appName
+			)
+		)
 		config["items"] = items
 		self.saveConfig(config)
 

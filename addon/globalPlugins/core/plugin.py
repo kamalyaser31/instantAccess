@@ -55,7 +55,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 		except Exception as e:
 			log.error("Error removing settings panel during termination: %s", e, exc_info=True)
-		
+
 		InstantAccessSettingsPanel.onRunItem = None
 		InstantAccessSettingsPanel.onVerbosityChanged = None
 		self.deactivateInstantMode(speak=False)
@@ -93,13 +93,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		script = globalPluginHandler.GlobalPlugin.getScript(self, gesture)
 		if not script:
 			script = self.script_invalidKey
-		
+
 		def wrappedScript(*args, **kwargs):
 			try:
 				return script(*args, **kwargs)
 			finally:
 				self.finishInstantLayer()
-		
+
 		return wrappedScript
 
 	def _getGesturesForScript(self, scriptDescription, fallback):
@@ -141,7 +141,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			for gesture in item.get("gestures", []):
 				for expanded in expandGestureLayouts(gesture):
 					self.gestureToItems.setdefault(expanded.lower(), []).append(item)
-		self.loadedCommandCount = len({item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture})
+		self.loadedCommandCount = len(
+			{item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture}
+		)
 		instantGestures = {}
 		for gesture in self.gestureToItems.keys():
 			instantGestures[gesture] = "runInstantItem"

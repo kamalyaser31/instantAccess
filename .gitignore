@@ -1,4 +1,5 @@
-﻿__pycache__/
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
 .venv/
@@ -9,5 +10,23 @@ build/
 dist/
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
+
+# Editors & IDEs
 .vscode/
 .idea/
+
+# NVDA Add-on Build Artifacts
+addon/doc/*.css
+addon/doc/en/
+*_docHandler.py
+*.html
+manifest.ini
+*.mo
+*.pot
+*.po~
+*.nvda-addon
+.sconsign.dblite
+/[0-9]*.[0-9]*.[0-9]*.json
+clipboard-content-editor/
+

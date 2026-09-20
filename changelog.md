@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased] - 2026-09-20
+### Changed
+- Modernized build infrastructure and tooling to match NVDA addonTemplate (PEP 735 dependency groups, uv, prek, and upgraded GitHub Actions workflows).
+
 ## [2026.4] - 2026-07-07
 ### Added
 - New Feature: Keystrokes macro simulation (allows advanced screen reader users to execute keyboard shortcut sequences with custom delays).

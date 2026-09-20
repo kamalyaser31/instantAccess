@@ -132,7 +132,7 @@ def _sendKeystrokeSequence(keys_text, press_delay):
 			except Exception as e:
 				log.error("Keystroke send failed for '%s': %s", hotkey, e)
 				queueMessage(
-					_("Error: Could not send keystroke: {key}").format(key=hotkey)
+					_("Error: Could not send keystroke: {key}").format(key=hotkey),
 				)
 				return
 			if press_delay > 0:
@@ -185,12 +185,13 @@ def executeInstantAction(itemType, path, arguments="", textAction="type", typing
 		except AttributeError:
 			# os.startfile is Windows-only, use xdg-open on Linux or open on macOS
 			try:
-				if os.name == 'posix':
+				if os.name == "posix":
 					import platform
-					if platform.system() == 'Darwin':
-						subprocess.Popen(['open', resolvedPath])
+
+					if platform.system() == "Darwin":
+						subprocess.Popen(["open", resolvedPath])
 					else:
-						subprocess.Popen(['xdg-open', resolvedPath])
+						subprocess.Popen(["xdg-open", resolvedPath])
 				else:
 					queueMessage(_("Error: Could not open the item"))
 			except Exception as e:

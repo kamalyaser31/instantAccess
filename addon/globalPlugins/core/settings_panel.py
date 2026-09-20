@@ -27,13 +27,19 @@ addonHandler.initTranslation()
 def _getActionSummary(action):
 	itemType = action.get("type", "")
 	if itemType == "TextSnippets":
-		text_preview = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
+		text_preview = (
+			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
+		)
 		if len(text_preview) > 70:
 			text_preview = text_preview[:67] + "..."
-		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"])
+		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(
+			action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]
+		)
 		return _("{action}: {preview}").format(action=actionLabel, preview=text_preview)
 	if itemType == "Keystrokes":
-		first_keystroke = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		first_keystroke = (
+			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
+		)
 		if len(first_keystroke) > 70:
 			first_keystroke = first_keystroke[:67] + "..."
 		return first_keystroke
@@ -77,7 +83,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 	def makeSettings(self, settingsSizer):
 		sHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
-		self.listCtrl = nvdaControls.AutoWidthColumnListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN)
+		self.listCtrl = nvdaControls.AutoWidthColumnListCtrl(
+			self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN
+		)
 		# Translators: Column label for item name in the list.
 		self.listCtrl.InsertColumn(0, _("Name"))
 		# Translators: Column label for item type in the list.
@@ -104,8 +112,12 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		sHelper.addItem(buttonHelper.sizer, flag=wx.EXPAND)
 
 		# Translators: Label for verbosity level selection.
-		self.verbosityChoice = sHelper.addLabeledControl(_("Verbosity level"), wx.Choice, choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED])
-		currentVerbosity = self.configManager.getVerbosityLevel() if self.configManager else VERBOSITY_VALUES[0]
+		self.verbosityChoice = sHelper.addLabeledControl(
+			_("Verbosity level"), wx.Choice, choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED]
+		)
+		currentVerbosity = (
+			self.configManager.getVerbosityLevel() if self.configManager else VERBOSITY_VALUES[0]
+		)
 		self.verbosityChoice.SetSelection(VERBOSITY_VALUES.index(currentVerbosity))
 
 		self.addButton.Bind(wx.EVT_BUTTON, self.onAdd)
@@ -208,7 +220,14 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		if not item:
 			return
 		deletedIndex = self.listCtrl.GetFirstSelected()
-		if gui.messageBox(_("Are you sure you would like to delete the selected item?"), CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES:
+		if (
+			gui.messageBox(
+				_("Are you sure you would like to delete the selected item?"),
+				CONFIRM_CAPTION,
+				wx.YES_NO | wx.ICON_QUESTION,
+			)
+			== wx.YES
+		):
 			self.configManager.deleteItem(item["name"])
 			self.refreshList()
 			if self.items:

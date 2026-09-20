@@ -21,7 +21,9 @@ _COMMAND_LOADER = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantA
 class NvdaCommandPickerDialog(wx.Dialog):
 	def __init__(self, parent, selectedCommandId=""):
 		# Translators: Title of the dialog used to select an NVDA command.
-		wx.Dialog.__init__(self, parent, title=_("Select NVDA command"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+		wx.Dialog.__init__(
+			self, parent, title=_("Select NVDA command"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+		)
 		self.selectedCommandId = selectedCommandId or ""
 		self.commands = []
 		self._commandById = {}

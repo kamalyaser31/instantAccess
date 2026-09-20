@@ -145,7 +145,7 @@ This item prepares your environment for testing websites and applications with a
     2.  **Type:** Website, **Path:** `https://www.axe-core.org`
     3.  **Type:** Folder, **Path:** `C:\Users\YourName\Documents\A11yTests`
 
-**Result:**  
+**Result:**
 Press `NVDA+E` then `A` to instantly open WAVE accessibility checker, axe DevTools documentation, and your testing notes folder in one action.
 
 ### Example 5: Open Teaching Tools (for Online Lessons)
@@ -160,7 +160,7 @@ This item prepares your teaching environment by opening several tools used durin
     2.  **Type:** Website, **Path:** [https://wordwall.net](https://wordwall.net)
     3.  **Type:** Folder, **Path:** `C:\Users\Teacher\Documents\LessonNotes`
 
-**Result:**  
+**Result:**
 With one command you open the meeting platform, your interactive activity site, and your lesson materials.
 
 ### Example 6: Insert Frequently Used Phrase
@@ -173,10 +173,10 @@ This item types a phrase that you frequently use in communication.
     1.  **Type:** Text Snippet
         *   **Snippet Action:** Type
         *   **Typing delay:** 0.02 seconds
-        *   **Text:**  
+        *   **Text:**
             Thank you for your message. I will review it and reply shortly.
 
-**Result:**  
+**Result:**
 Press `NVDA+E` then `Y` to instantly type the message in any text field.
 
 ### Example 7: System Utility Launcher
@@ -191,7 +191,7 @@ This item opens several Windows system tools used for troubleshooting.
     2.  **Type:** Program, **Path:** `C:\Windows\System32\control.exe`
     3.  **Type:** Program, **Path:** `C:\Windows\System32\cmd.exe`
 
-**Result:**  
+**Result:**
 This quickly opens **Task Manager**, **Control Panel**, and **Command Prompt**.
 
 ### Example 8: Focus Mode Setup
@@ -207,7 +207,7 @@ This item prepares a distraction-free work environment.
     3.  **Type:** NVDA Command
         *   Command: _toggleSpeechMode_
 
-**Result:**  
+**Result:**
 This opens your editor, starts a Pomodoro timer, and adjusts NVDA feedback for focused work.
 
 Additional Practical Examples
@@ -225,7 +225,7 @@ This item opens your email account and productivity tools in sequence.
     2.  **Type:** Website, **Path:** `https://calendar.google.com`
     3.  **Type:** Folder, **Path:** `C:\Users\YourName\Documents\EmailTemplates`
 
-**Result:**  
+**Result:**
 Press `NVDA+E` then `E` to open Gmail, Google Calendar, and your email templates folder.
 
 * * *
@@ -242,7 +242,7 @@ This item verifies backup status and opens relevant backup tools.
     2.  **Type:** Program, **Path:** `C:\Windows\System32\control.exe`
     3.  **Type:** Website, **Path:** `https://myaccount.google.com/security`
 
-**Result:**  
+**Result:**
 Open backup locations, Control Panel settings, and Google account security in one command.
 
 * * *
@@ -259,7 +259,7 @@ This item prepares your documentation workspace for coding projects.
     2.  **Type:** Website, **Path:** `https://github.com`
     3.  **Type:** Folder, **Path:** `C:\Users\YourName\Documents\ProjectDocs`
 
-**Result:**  
+**Result:**
 Launch VS Code, GitHub, and your documentation folder for collaborative coding work.
 
 * * *
@@ -280,7 +280,7 @@ This item simulates a sequence of keyboard shortcut actions (e.g., using the con
             ```
         *   **Delay between keystrokes:** `0.1` seconds
 
-**Result:**  
+**Result:**
 Press `NVDA+E` then `M` to simulate pressing `Shift+F10`, waiting 0.1 seconds, pressing `Down Arrow` 5 times (with 0.1s pauses), and pressing `Enter`.
 
 * * *
@@ -313,7 +313,7 @@ You can change how much feedback the add-on gives you from the main settings pan
 Import and Export
 -----------------
 
-You can back up your entire configuration or move it to another computer using the **Import settings** and **Export settings** buttons. The configuration is stored in a `config.json` file.  
+You can back up your entire configuration or move it to another computer using the **Import settings** and **Export settings** buttons. The configuration is stored in a `config.json` file.
 **Note:** Importing a configuration will overwrite your existing settings.
 
 Super User Recipes (Argument-Driven Workflows)
@@ -329,7 +329,7 @@ The following examples demonstrate practical, specialized workflows that showcas
 
 Many Chromium browsers can open a site as a **standalone app window** without browser UI.
 
-**Name:** Open WhatsApp Web App  
+**Name:** Open WhatsApp Web App
 **Shortcut:** W
 
 **Program**
@@ -342,7 +342,7 @@ Many Chromium browsers can open a site as a **standalone app window** without br
 
     --app=https://web.whatsapp.com
 
-**Result:**  
+**Result:**
 The website opens like a **native desktop application**.
 
 * * *
@@ -351,7 +351,7 @@ The website opens like a **native desktop application**.
 
 Windows Explorer can directly **select a file** when opened.
 
-**Name:** Locate Project Config  
+**Name:** Locate Project Config
 **Shortcut:** L
 
 **Program**
@@ -364,7 +364,7 @@ Windows Explorer can directly **select a file** when opened.
 
     /select,"C:\dev\project-x\config.json"
 
-**Result:**  
+**Result:**
 Explorer opens the folder and focuses on the file.
 
 * * *
@@ -373,7 +373,7 @@ Explorer opens the folder and focuses on the file.
 
 Run cleanup without opening the full interface.
 
-**Name:** Quick Disk Cleanup  
+**Name:** Quick Disk Cleanup
 **Shortcut:** C
 
 **Program**
@@ -386,7 +386,7 @@ Run cleanup without opening the full interface.
 
     /verylowdisk
 
-**Result:**  
+**Result:**
 Runs disk cleanup automatically.
 
 * * *
@@ -395,7 +395,7 @@ Runs disk cleanup automatically.
 
 Open a secure browsing session immediately.
 
-**Name:** Private Browser  
+**Name:** Private Browser
 **Shortcut:** P
 
 **Program**
@@ -406,7 +406,7 @@ Open a secure browsing session immediately.
 
     -private-window
 
-**Result:**  
+**Result:**
 Firefox starts directly in **private browsing**.
 
 * * *
@@ -415,7 +415,7 @@ Firefox starts directly in **private browsing**.
 
 **Purpose:** Launch Visual Studio Code directly inside a project folder.
 
-**Name:** Open Project in VS Code  
+**Name:** Open Project in VS Code
 **Shortcut:** V
 
 **Program**
@@ -426,7 +426,7 @@ Firefox starts directly in **private browsing**.
 
     C:\dev\myproject
 
-**Result:**  
+**Result:**
 VS Code launches with the specified project folder already loaded.
 
 * * *
@@ -435,7 +435,7 @@ VS Code launches with the specified project folder already loaded.
 
 **Purpose:** Start a terminal already positioned in a project directory.
 
-**Name:** Dev Terminal  
+**Name:** Dev Terminal
 **Shortcut:** T
 
 **Program**
@@ -446,7 +446,7 @@ VS Code launches with the specified project folder already loaded.
 
     /k cd C:\dev\project-x
 
-**Result:**  
+**Result:**
 Command Prompt opens and automatically changes to the project directory.
 
 * * *
@@ -455,7 +455,7 @@ Command Prompt opens and automatically changes to the project directory.
 
 **Purpose:** Execute a PowerShell script that performs automated tasks.
 
-**Name:** Run Backup Script  
+**Name:** Run Backup Script
 **Shortcut:** B
 
 **Program**
@@ -466,7 +466,7 @@ Command Prompt opens and automatically changes to the project directory.
 
     -ExecutionPolicy Bypass -File "C:\Scripts\backup.ps1"
 
-**Result:**  
+**Result:**
 Runs a predefined backup automation script.
 
 * * *
@@ -475,7 +475,7 @@ Runs a predefined backup automation script.
 
 Windows settings pages can be opened using **ms-settings arguments**.
 
-**Name:** Open Bluetooth Settings  
+**Name:** Open Bluetooth Settings
 **Shortcut:** S
 
 **Program**
@@ -492,9 +492,9 @@ Windows settings pages can be opened using **ms-settings arguments**.
     ms-settings:network
     ms-settings:sound
     ms-settings:windowsupdate
-    
 
-**Result:**  
+
+**Result:**
 Instantly opens the selected settings page.
 
 * * *
@@ -503,7 +503,7 @@ Instantly opens the selected settings page.
 
 **Purpose:** Start Firefox with several tabs simultaneously for a research workflow.
 
-**Name:** Research Session  
+**Name:** Research Session
 **Shortcut:** R
 
 **Program**
@@ -514,7 +514,7 @@ Instantly opens the selected settings page.
 
     https://scholar.google.com https://arxiv.org https://github.com
 
-**Result:**  
+**Result:**
 Opens Firefox with three research resources in separate tabs.
 
 * * *
@@ -523,7 +523,7 @@ Opens Firefox with three research resources in separate tabs.
 
 **Purpose:** Launch Registry Editor directly to a specific location.
 
-**Name:** Open NVDA Registry Settings  
+**Name:** Open NVDA Registry Settings
 **Shortcut:** O
 
 **Program**
@@ -534,7 +534,7 @@ Opens Firefox with three research resources in separate tabs.
 
     /m
 
-**Result:**  
+**Result:**
 Opens Registry Editor in read-only mode for safe browsing.
 
 * * *
@@ -543,7 +543,7 @@ Opens Registry Editor in read-only mode for safe browsing.
 
 **Purpose:** Open Event Viewer directly for system diagnostics.
 
-**Name:** View System Events  
+**Name:** View System Events
 **Shortcut:** E
 
 **Program**
@@ -554,7 +554,7 @@ Opens Registry Editor in read-only mode for safe browsing.
 
     /c system
 
-**Result:**  
+**Result:**
 Opens Event Viewer focused on system events for troubleshooting.
 
 * * *
@@ -563,7 +563,7 @@ Opens Event Viewer focused on system events for troubleshooting.
 
 **Purpose:** Execute a batch script that requires elevated privileges.
 
-**Name:** Admin Batch Script  
+**Name:** Admin Batch Script
 **Shortcut:** H
 
 **Program**
@@ -574,7 +574,7 @@ Opens Event Viewer focused on system events for troubleshooting.
 
     /c call C:\Scripts\system_maintenance.bat
 
-**Result:**  
+**Result:**
 Executes a batch script for system maintenance tasks.
 
 * * *
@@ -583,7 +583,7 @@ Executes a batch script for system maintenance tasks.
 
 **Purpose:** Open Git Bash terminal in a specific project folder.
 
-**Name:** Git Project Terminal  
+**Name:** Git Project Terminal
 **Shortcut:** G
 
 **Program**
@@ -594,7 +594,7 @@ Executes a batch script for system maintenance tasks.
 
     --cd=C:\dev\my-repo
 
-**Result:**  
+**Result:**
 Opens Git Bash in your project directory, ready for version control commands.
 
 * * *
@@ -603,7 +603,7 @@ Opens Git Bash in your project directory, ready for version control commands.
 
 **Purpose:** Launch Performance Monitor for system monitoring.
 
-**Name:** Performance Monitor  
+**Name:** Performance Monitor
 **Shortcut:** M
 
 **Program**
@@ -614,7 +614,7 @@ Opens Git Bash in your project directory, ready for version control commands.
 
     /res
 
-**Result:**  
+**Result:**
 Opens Performance Monitor in Reliability Monitor view for resource tracking.
 
 * * *
@@ -623,7 +623,7 @@ Opens Performance Monitor in Reliability Monitor view for resource tracking.
 
 **Purpose:** Open VLC with a media directory.
 
-**Name:** Music Library  
+**Name:** Music Library
 **Shortcut:** U
 
 **Program**
@@ -634,7 +634,7 @@ Opens Performance Monitor in Reliability Monitor view for resource tracking.
 
 C:\\Users\\YourName\\Music
 
-**Result:**  
+**Result:**
 Launches VLC with your music library ready to play.
 
 * * *
@@ -643,7 +643,7 @@ Launches VLC with your music library ready to play.
 
 **Purpose:** Quick access to network configuration.
 
-**Name:** Network Config  
+**Name:** Network Config
 **Shortcut:** I
 
 **Program**
@@ -654,7 +654,7 @@ Launches VLC with your music library ready to play.
 
     ms-settings:network-wifi
 
-**Result:**  
+**Result:**
 Opens Windows network settings for Wi-Fi configuration.
 
 * * *
@@ -718,5 +718,5 @@ Experiment with these arguments to create custom workflows tailored to your spec
 License
 -------
 
-Copyright (C) 2026 Kamal Yaser.  
+Copyright (C) 2026 Kamal Yaser.
 This add-on is licensed under the GNU General Public License (GPL) Version 2 or any later version.
