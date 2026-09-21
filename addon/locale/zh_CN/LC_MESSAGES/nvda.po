@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: instantAccess 2026.4\n"
+"Project-Id-Version: instantAccess 2026.5\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-07-07 08:55+0300\n"
-"PO-Revision-Date: 2026-07-13 00:00+0800\n"
+"POT-Creation-Date: 2026-09-21 20:10+0800\n"
+"PO-Revision-Date: 2026-09-21 20:11+0800\n"
 "Last-Translator: cary-rowen <manchen_0528@outlook.com>\n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -11,385 +11,609 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.9\n"
 
-#. Translators: Title of the dialog used to select an NVDA command.
+#: addon\globalPlugins\core\command_picker_dialog.py:27
 msgid "Select NVDA command"
 msgstr "选择 NVDA 命令"
 
 #. Translators: Label for filter field in NVDA command selection dialog.
+#: addon\globalPlugins\core\command_picker_dialog.py:45
 msgid "Filter"
 msgstr "查找"
 
 #. Translators: Label for OK button in NVDA command selection dialog.
+#: addon\globalPlugins\core\command_picker_dialog.py:54
+#: addon\globalPlugins\core\item_dialog.py:137
+#: addon\globalPlugins\core\item_dialog.py:524
 msgid "&OK"
 msgstr "确定(&O)"
 
 #. Translators: Label for Cancel button in NVDA command selection dialog.
+#: addon\globalPlugins\core\command_picker_dialog.py:56
+#: addon\globalPlugins\core\item_dialog.py:138
+#: addon\globalPlugins\core\item_dialog.py:525
 msgid "&Cancel"
 msgstr "取消(&C)"
 
+#: addon\globalPlugins\core\command_picker_dialog.py:248
 msgid "Please select an NVDA command."
 msgstr "请选择 NVDA 命令。"
 
+#: addon\globalPlugins\core\config_io.py:181
+msgid ""
+"The instant Access configuration file appears to be corrupted. Would you "
+"like to restore the previous backup?"
+msgstr ""
+"instantAccess 配置文件似乎已损坏。是否要恢复上一次备份？"
+
+#: addon\globalPlugins\core\constants.py:26
 msgid "Website"
 msgstr "网站"
 
+#: addon\globalPlugins\core\constants.py:27
 msgid "Program"
 msgstr "程序"
 
+#: addon\globalPlugins\core\constants.py:28
 msgid "Folder"
 msgstr "文件夹"
 
+#: addon\globalPlugins\core\constants.py:29
 msgid "File"
 msgstr "文件"
 
+#: addon\globalPlugins\core\constants.py:30
+#: addon\globalPlugins\core\item_dialog.py:189
 msgid "NVDA command"
 msgstr "NVDA 命令"
 
+#: addon\globalPlugins\core\constants.py:31
+#: addon\globalPlugins\core\item_dialog.py:204
+#: addon\globalPlugins\core\item_dialog.py:287
 msgid "Text snippet"
 msgstr "文本片段"
 
+#: addon\globalPlugins\core\constants.py:32
 msgid "Keystrokes"
 msgstr "按键序列"
 
 #. Translators: Action labels for text snippet entries.
+#: addon\globalPlugins\core\constants.py:40
 msgid "Type the text"
 msgstr "输入文本"
 
+#: addon\globalPlugins\core\constants.py:40
 msgid "Copy"
 msgstr "复制"
 
+#: addon\globalPlugins\core\constants.py:40
 msgid "Paste"
 msgstr "粘贴"
 
 #. Translators: Category name for the instant Access add-on.
 #. Translators: Title of the instant Access settings panel.
+#: addon\globalPlugins\core\constants.py:47
+#: addon\globalPlugins\core\settings_panel.py:79 buildVars.py:6
 msgid "instant Access"
 msgstr "instantAccess"
 
 #. Translators: Description for the toggle instant mode command in Input Gestures.
+#: addon\globalPlugins\core\constants.py:50
 msgid "Toggle instant Access mode."
 msgstr "开启或关闭 instantAccess 模式。"
 
 #. Translators: Description for reporting the currently focused application name.
+#: addon\globalPlugins\core\constants.py:53
 msgid "Report current app name."
 msgstr "读出当前应用程序名称。"
 
 #. Translators: Caption for error message dialogs.
+#: addon\globalPlugins\core\constants.py:56
 msgid "Error"
 msgstr "错误"
 
 #. Translators: Caption for confirmation dialogs.
+#: addon\globalPlugins\core\constants.py:59
+#: addon\globalPlugins\core\item_dialog.py:670
 msgid "Confirm"
 msgstr "确认"
 
 #. Translators: Label for beginner verbosity level.
+#: addon\globalPlugins\core\constants.py:64
 msgid "Beginner"
 msgstr "初级"
 
 #. Translators: Label for advanced verbosity level.
+#: addon\globalPlugins\core\constants.py:67
 msgid "Advanced"
 msgstr "高级"
 
+#: addon\globalPlugins\core\executor.py:65
 msgid "Error: Text snippet is empty"
 msgstr "错误：文本片段不能为空"
 
+#: addon\globalPlugins\core\executor.py:70
+#: addon\globalPlugins\core\executor.py:76
 msgid "Error: Could not copy text snippet"
 msgstr "错误：无法复制文本片段"
 
+#: addon\globalPlugins\core\executor.py:79
+#: addon\globalPlugins\core\executor.py:90
+#: addon\globalPlugins\core\executor.py:186
 msgid "Error: Keyboard library is not available"
 msgstr "错误：键盘模拟组件不可用"
 
+#: addon\globalPlugins\core\executor.py:86
 msgid "Error: Could not paste text snippet"
 msgstr "错误：无法粘贴文本片段"
 
+#: addon\globalPlugins\core\executor.py:97
 msgid "Error: Could not type text snippet"
 msgstr "错误：无法输入文本片段"
 
+#: addon\globalPlugins\core\executor.py:142
 #, python-brace-format
 msgid "Error: Could not send keystroke: {key}"
 msgstr "错误：无法模拟按键：{key}"
 
+#: addon\globalPlugins\core\executor.py:165
 msgid "Error: URL is empty"
 msgstr "错误：网址不能为空"
 
+#: addon\globalPlugins\core\executor.py:174
 msgid "Error: Could not open the website"
 msgstr "错误：无法打开网站"
 
+#: addon\globalPlugins\core\executor.py:190
 msgid "Error: Keystrokes field is empty"
 msgstr "错误：按键序列不能为空"
 
+#: addon\globalPlugins\core\executor.py:196
+#: addon\globalPlugins\core\executor.py:201
+#: addon\globalPlugins\core\executor.py:213
+#: addon\globalPlugins\core\executor.py:233
 msgid "Error: File not found"
 msgstr "错误：找不到指定路径"
 
+#: addon\globalPlugins\core\executor.py:208
 msgid "Error: Could not open the item"
 msgstr "错误：无法打开文件夹"
 
+#: addon\globalPlugins\core\executor.py:224
 msgid "Error: Could not open the file"
 msgstr "错误：无法打开文件"
 
+#: addon\globalPlugins\core\executor.py:252
 msgid "Error: Could not start the program"
 msgstr "错误：无法启动程序"
 
+#: addon\globalPlugins\core\item_dialog.py:55
+#: addon\globalPlugins\core\settings_panel.py:39
 #, python-brace-format
 msgid "{action}: {preview}"
 msgstr "{action}：{preview}"
 
+#: addon\globalPlugins\core\item_dialog.py:80
 msgid "Set shortcut"
 msgstr "设置快捷键"
 
+#: addon\globalPlugins\core\item_dialog.py:83
 msgid "Press the desired shortcut key. Escape cancels."
 msgstr "请按下要设置的快捷键，按 Esc 取消。"
 
 #. Translators: Column label for item type in the list.
+#: addon\globalPlugins\core\item_dialog.py:109
+#: addon\globalPlugins\core\item_dialog.py:488
+#: addon\globalPlugins\core\settings_panel.py:94
 msgid "Type"
 msgstr "类型"
 
-msgid "Delay before executing this action"
+#: addon\globalPlugins\core\item_dialog.py:131
+msgid "Delay before executing this action (seconds)"
 msgstr "执行此操作前等待（秒）"
 
+#. Translators: Label for the Test button in the settings panel.
+#: addon\globalPlugins\core\item_dialog.py:139
+#: addon\globalPlugins\core\settings_panel.py:111
+msgid "&Test"
+msgstr "测试(&T)"
+
+#: addon\globalPlugins\core\item_dialog.py:161
 msgid "Path or URL"
 msgstr "路径或网址"
 
+#: addon\globalPlugins\core\item_dialog.py:163
 msgid "Browse"
 msgstr "浏览"
 
+#: addon\globalPlugins\core\item_dialog.py:176
 msgid "Arguments (optional)"
 msgstr "参数（可选）"
 
+#: addon\globalPlugins\core\item_dialog.py:191
 msgid "Select command"
 msgstr "选择命令"
 
+#: addon\globalPlugins\core\item_dialog.py:217
 msgid "Snippet action"
 msgstr "文本片段操作"
 
+#: addon\globalPlugins\core\item_dialog.py:231
+#: addon\globalPlugins\core\item_dialog.py:288
 msgid "Typing delay"
 msgstr "字符输入间隔（秒）"
 
+#: addon\globalPlugins\core\item_dialog.py:284
 msgid "Keystrokes (one per line, e.g. 'down 5')"
 msgstr "按键序列（每行一个，例如“down 5”）"
 
+#: addon\globalPlugins\core\item_dialog.py:285
 msgid "Delay between keystrokes (seconds)"
 msgstr "按键间隔（秒）"
 
+#: addon\globalPlugins\core\item_dialog.py:310
 msgid "Select a program"
 msgstr "选择程序"
 
+#: addon\globalPlugins\core\item_dialog.py:319
 msgid "Select a folder"
 msgstr "选择文件夹"
 
+#: addon\globalPlugins\core\item_dialog.py:327
 msgid "Select a file"
 msgstr "选择文件"
 
+#: addon\globalPlugins\core\item_dialog.py:356
+#: addon\globalPlugins\core\item_dialog.py:755
 msgid "All fields are required."
 msgstr "请填写必填项。"
 
+#: addon\globalPlugins\core\item_dialog.py:367
+#, python-brace-format
+msgid ""
+"The specified path was not found on your system:\n"
+"{path}\n"
+"\n"
+"Would you like to save this action anyway?"
+msgstr ""
+"在系统中找不到指定的路径：\n"
+"{path}\n"
+"\n"
+"仍要保存此操作吗？"
+
+#: addon\globalPlugins\core\item_dialog.py:376
 msgid "Delay must be a valid number."
 msgstr "延迟必须为有效数字。"
 
+#: addon\globalPlugins\core\item_dialog.py:379
 msgid "Delay must be zero or greater."
 msgstr "延迟不能小于 0。"
 
+#: addon\globalPlugins\core\item_dialog.py:388
 msgid "Typing delay must be a valid number."
 msgstr "字符输入间隔必须为有效数字。"
 
+#: addon\globalPlugins\core\item_dialog.py:389
 msgid "Typing delay must be zero or greater."
 msgstr "字符输入间隔不能小于 0。"
 
+#: addon\globalPlugins\core\item_dialog.py:398
 msgid "Delay between keystrokes must be a valid number."
 msgstr "按键间隔必须为有效数字。"
 
+#: addon\globalPlugins\core\item_dialog.py:399
 msgid "Delay between keystrokes must be zero or greater."
 msgstr "按键间隔不能小于 0。"
 
+#: addon\globalPlugins\core\item_dialog.py:428
+msgid ""
+"Keystrokes or text typing will be simulated after a 3-second delay so you "
+"can switch to the target window.\n"
+"\n"
+"Would you like to proceed?"
+msgstr ""
+"将在 3 秒后模拟按键序列或文本输入，以便您切换到目标窗口。\n"
+"\n"
+"是否继续？"
+
 #. Translators: Column label for item name in the list.
+#: addon\globalPlugins\core\item_dialog.py:480
+#: addon\globalPlugins\core\settings_panel.py:92
 msgid "Name"
 msgstr "名称"
 
+#: addon\globalPlugins\core\item_dialog.py:482
 msgid "Actions"
 msgstr "操作"
 
+#: addon\globalPlugins\core\item_dialog.py:489
 msgid "Delay"
 msgstr "延迟"
 
+#. Translators: Column label for details in the list.
+#: addon\globalPlugins\core\item_dialog.py:490
+#: addon\globalPlugins\core\settings_panel.py:98
 msgid "Details"
 msgstr "详细信息"
 
 #. Translators: Label for the Add button in the settings panel.
+#: addon\globalPlugins\core\item_dialog.py:494
+#: addon\globalPlugins\core\settings_panel.py:103
 msgid "&Add"
 msgstr "添加(&A)"
 
 #. Translators: Label for the Edit button in the settings panel.
+#: addon\globalPlugins\core\item_dialog.py:495
+#: addon\globalPlugins\core\settings_panel.py:105
 msgid "&Edit"
 msgstr "编辑(&E)"
 
 #. Translators: Label for the Delete button in the settings panel.
+#: addon\globalPlugins\core\item_dialog.py:496
+#: addon\globalPlugins\core\settings_panel.py:107
 msgid "&Delete"
 msgstr "删除(&D)"
 
+#: addon\globalPlugins\core\item_dialog.py:497
 msgid "Move &up"
 msgstr "上移(&U)"
 
+#: addon\globalPlugins\core\item_dialog.py:498
 msgid "Move &down"
 msgstr "下移(&W)"
 
+#: addon\globalPlugins\core\item_dialog.py:502
 msgid "Interval between actions (seconds)"
 msgstr "操作间隔（秒）"
 
+#: addon\globalPlugins\core\item_dialog.py:510
+msgid "Stop executing remaining actions if an action fails"
+msgstr "如果某项操作失败，则停止执行剩余操作"
+
+#: addon\globalPlugins\core\item_dialog.py:556
 msgid "Restrict this shortcut to work in certain apps"
 msgstr "仅在指定应用程序中启用此快捷键"
 
+#: addon\globalPlugins\core\item_dialog.py:557
+#: addon\globalPlugins\core\item_dialog.py:559
 msgid "App name"
 msgstr "应用程序名称"
 
 #. Translators: Column label for shortcut in the list.
+#: addon\globalPlugins\core\item_dialog.py:572
+#: addon\globalPlugins\core\settings_panel.py:96
 msgid "Shortcut"
 msgstr "快捷键"
 
+#: addon\globalPlugins\core\item_dialog.py:604
 #, python-brace-format
 msgid "Shortcut key: {gesture}"
 msgstr "快捷键：{gesture}"
 
+#: addon\globalPlugins\core\item_dialog.py:606
 msgid "Shortcut key: Undefined"
 msgstr "快捷键：未设置"
 
+#: addon\globalPlugins\core\item_dialog.py:645
 msgid "Add action"
 msgstr "添加操作"
 
+#: addon\globalPlugins\core\item_dialog.py:656
 msgid "Edit action"
 msgstr "编辑操作"
 
+#: addon\globalPlugins\core\item_dialog.py:669
 msgid "Are you sure you would like to delete the selected action?"
 msgstr "确定要删除选定的操作吗？"
 
+#: addon\globalPlugins\core\item_dialog.py:735
+#: addon\globalPlugins\core\item_dialog.py:780
 msgid "This shortcut is reserved for instant Access."
 msgstr "此快捷键是 instantAccess 的保留快捷键。"
 
+#: addon\globalPlugins\core\item_dialog.py:742
+#: addon\globalPlugins\core\item_dialog.py:786
 msgid "Invalid shortcut key."
 msgstr "快捷键无效。"
 
+#: addon\globalPlugins\core\item_dialog.py:758
 msgid "At least one action is required."
 msgstr "请至少添加一个操作。"
 
+#: addon\globalPlugins\core\item_dialog.py:762
 msgid "App name is required when app restriction is enabled."
 msgstr "启用应用程序限制时必须填写应用程序名称。"
 
+#: addon\globalPlugins\core\item_dialog.py:771
 msgid "Interval must be a valid number."
 msgstr "操作间隔必须为有效数字。"
 
+#: addon\globalPlugins\core\item_dialog.py:774
 msgid "Interval must be zero or greater."
 msgstr "操作间隔不能小于 0。"
 
+#: addon\globalPlugins\core\item_dialog.py:793
 msgid "This name already exists."
 msgstr "该名称已存在。"
 
-msgid "This shortcut is already assigned for this app."
-msgstr "此快捷键已在该应用程序中使用。"
+#. Translators: Error shown when an app-specific shortcut conflicts with an existing item.
+#: addon\globalPlugins\core\item_dialog.py:806
+#, python-brace-format
+msgid "This shortcut is already assigned to '{name}' for this app."
+msgstr "该应用程序中的“{name}”项目已使用此快捷键。"
 
-msgid "This global shortcut is already assigned."
-msgstr "此全局快捷键已被占用。"
+#. Translators: Error shown when a global shortcut conflicts with an existing item.
+#: addon\globalPlugins\core\item_dialog.py:811
+#, python-brace-format
+msgid "This global shortcut is already assigned to '{name}'."
+msgstr "“{name}”项目已使用此全局快捷键。"
 
+#: addon\globalPlugins\core\nvda_commands.py:34
 #, python-brace-format
 msgid "{category}: {command}"
 msgstr "{category}：{command}"
 
+#: addon\globalPlugins\core\nvda_commands.py:101
 msgid "instant Access command"
 msgstr "instantAccess 命令"
 
+#: addon\globalPlugins\core\nvda_commands.py:205
 msgid "Error: Invalid NVDA command"
 msgstr "错误：无效的 NVDA 命令"
 
+#: addon\globalPlugins\core\nvda_commands.py:217
 msgid "Error: NVDA command is not currently available"
 msgstr "错误：该 NVDA 命令当前不可用"
 
+#: addon\globalPlugins\core\nvda_commands.py:225
 msgid "Error: Could not run NVDA command"
 msgstr "错误：无法运行 NVDA 命令"
 
+#: addon\globalPlugins\core\plugin.py:169
 msgid "No commands configured."
 msgstr "尚未配置命令。"
 
+#: addon\globalPlugins\core\plugin.py:176
 msgid "On"
 msgstr "开启"
 
+#: addon\globalPlugins\core\plugin.py:179
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
 msgstr "instantAccess 已开启，已加载 {count} 个命令。"
 
+#: addon\globalPlugins\core\plugin.py:192
 msgid "Off"
 msgstr "关闭"
 
+#: addon\globalPlugins\core\plugin.py:194
 msgid "instant Access Off"
 msgstr "instantAccess 已关闭。"
 
+#: addon\globalPlugins\core\plugin.py:204
 msgid "This gesture has no command assigned."
 msgstr "没有为此手势分配命令。"
 
+#. Translators: Message announced when current application name could not be determined.
+#: addon\globalPlugins\core\plugin.py:260
+msgid "Could not determine current application name."
+msgstr "无法确定当前应用程序名称。"
+
+#: addon\globalPlugins\core\plugin.py:267
 msgid "App name copied to clipboard."
 msgstr "应用程序名称已复制到剪贴板。"
 
 #. Translators: Type label for shortcut items containing multiple actions.
+#: addon\globalPlugins\core\settings_panel.py:63
 msgid "Multiple actions"
 msgstr "多项操作"
 
 #. Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
+#: addon\globalPlugins\core\settings_panel.py:74
 #, python-brace-format
 msgid "{first} (+{count} more)"
 msgstr "{first}（另有 {count} 项操作）"
 
-#. Translators: Column label for path or URL in the list.
-msgid "Path"
-msgstr "路径"
-
-#. Translators: Label for the Test button in the settings panel.
-msgid "&Test"
-msgstr "测试(&T)"
+#. Translators: Label for the Duplicate button in the settings panel.
+#: addon\globalPlugins\core\settings_panel.py:109
+msgid "D&uplicate"
+msgstr "复制(&U)"
 
 #. Translators: Label for the Export settings button.
+#: addon\globalPlugins\core\settings_panel.py:113
 msgid "E&xport settings"
 msgstr "导出设置(&X)"
 
 #. Translators: Label for the Import settings button.
+#: addon\globalPlugins\core\settings_panel.py:115
 msgid "I&mport settings"
 msgstr "导入设置(&M)"
 
-#. Translators: Label for verbosity level selection.
+#: addon\globalPlugins\core\settings_panel.py:120
 msgid "Verbosity level"
 msgstr "详细程度"
 
 #. Translators: Title of the add item dialog.
+#: addon\globalPlugins\core\settings_panel.py:225
 msgid "Add item"
 msgstr "添加项目"
 
 #. Translators: Title of the edit item dialog.
+#: addon\globalPlugins\core\settings_panel.py:236
 msgid "Edit item"
 msgstr "编辑项目"
 
+#: addon\globalPlugins\core\settings_panel.py:254
+msgid "Duplicate item"
+msgstr "复制项目"
+
+#: addon\globalPlugins\core\settings_panel.py:269
 msgid "Are you sure you would like to delete the selected item?"
 msgstr "确定要删除选定的项目吗？"
 
+#: addon\globalPlugins\core\settings_panel.py:300
 msgid "Export settings"
 msgstr "导出设置"
 
+#. Translators: Message shown when settings are successfully exported.
+#: addon\globalPlugins\core\settings_panel.py:310
+msgid "Settings exported successfully."
+msgstr "已成功导出设置。"
+
+#: addon\globalPlugins\core\settings_panel.py:312
 msgid "Could not export settings."
 msgstr "无法导出设置。"
 
+#. Translators: Warning message before importing settings which will overwrite current configuration.
+#: addon\globalPlugins\core\settings_panel.py:322
+msgid ""
+"Importing settings will replace your current items. Are you sure you want to "
+"continue?"
+msgstr "导入设置将替换现有项目。确定要继续吗？"
+
+#: addon\globalPlugins\core\settings_panel.py:331
 msgid "Import settings"
 msgstr "导入设置"
 
+#. Translators: Message shown when settings are successfully imported.
+#: addon\globalPlugins\core\settings_panel.py:348
+msgid "Settings imported successfully."
+msgstr "已成功导入设置。"
+
+#: addon\globalPlugins\core\settings_panel.py:350
 msgid "Could not import settings."
 msgstr "无法导入设置。"
 
+#: buildVars.py:7
 msgid ""
 "A powerful productivity tool to launch websites, files, folders, and "
 "programs quickly using a dedicated layer.\n"
 "\tFeatures include background execution, verbosity levels, command line "
 "arguments, and settings import/export."
 msgstr ""
-"一款高效的快捷启动工具，可通过专用快捷键层快速打开网站、文件和文件夹，或启动程序。\n"
+"一款高效的快捷启动工具，可通过专用快捷键层快速打开网站、文件和文件夹，或启动"
+"程序。\n"
 "\t支持后台运行、反馈详细程度、命令行参数以及设置导入和导出。"
 
+#: buildVars.py:10
 msgid ""
 "\n"
+"- Version 2026.5:\n"
+"  - Item Duplication: Easily clone items with all actions and settings via a "
+"new Duplicate button.\n"
+"  - Action Testing: Test actions in isolation with automatic 3-second "
+"preparation countdown for typing and keystrokes.\n"
+"  - Multi-Action Stop on Error: Optional setting to abort remaining actions "
+"if an error occurs.\n"
+"  - System Integration: Support for PATH commands, batch scripts "
+"(.bat/.cmd), and custom URI protocols (e.g. mailto:, ms-settings:).\n"
+"  - Keyboard Ergonomics: Enter to edit item, Delete to delete item/action "
+"with confirmation, Ctrl+Up/Down to reorder actions.\n"
+"  - Safety & Disaster Recovery: Atomic configuration saves, automatic "
+"backups (config.json.bak), and corruption recovery prompts.\n"
+"  - Modernized Tooling: Built with official NVDA addonTemplate standards "
+"(PEP 735, uv, prek.toml).\n"
 "- Version 2026.4:\n"
 "  - New Feature: Keystrokes macro simulation (allows advanced screen reader "
 "users to execute keyboard shortcut sequences with custom delays).\n"
@@ -406,11 +630,23 @@ msgid ""
 "performance."
 msgstr ""
 "\n"
+"- 版本 2026.5：\n"
+"  - 项目复制：通过新增的“复制”按钮，轻松复制包含全部操作和设置的项目。\n"
+"  - 操作测试：可单独测试操作；测试文本输入和按键序列前会自动倒计时 3 秒。\n"
+"  - 出错时停止：可选择在发生错误时停止执行剩余操作。\n"
+"  - 系统集成：支持 PATH 中的命令、批处理脚本（.bat/.cmd）以及自定义 URI 方案（例如 mailto:、ms-settings:）。\n"
+"  - 键盘操作：按 Enter 编辑项目，按 Delete 在确认后删除项目或操作，按 Ctrl+Up/Down 调整操作顺序。\n"
+"  - 原子保存与故障恢复：以原子方式保存配置，自动创建备份（config.json.bak），并在配置损坏时提示恢复。\n"
+"  - 工具链现代化：采用 NVDA 官方 addonTemplate 标准（PEP 735、uv、prek.toml）构建。\n"
 "- 版本 2026.4：\n"
-"  - 新功能：新增按键序列宏，熟练使用屏幕阅读器的用户可按自定义间隔执行一系列快捷键。\n"
+"  - 新功能：新增按键序列宏，熟练使用屏幕阅读器的用户可按自定义间隔执行一系列"
+"快捷键。\n"
 "  - 代码质量：重构核心模块，提高可维护性并移除重复代码。\n"
 "  - 文档：补充按键序列功能及其格式说明。\n"
 "- 版本 2026.3：正式版更新。\n"
 "  - 插件加载：修复插件在某些 NVDA 环境中无法正常加载的严重问题。\n"
 "  - 文档：全面更新阿拉伯语用户指南，使说明更清晰、内容更完善。\n"
 "  - 稳定性：完成内部优化和代码清理，运行更流畅。"
+
+#~ msgid "Path"
+#~ msgstr "路径"
