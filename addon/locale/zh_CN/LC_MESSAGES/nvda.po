@@ -106,7 +106,7 @@ msgstr "开启或关闭 instantAccess 模式。"
 #. Translators: Description for reporting the currently focused application name.
 #: addon\globalPlugins\core\constants.py:53
 msgid "Report current app name."
-msgstr "读出当前应用程序名称。"
+msgstr "读出当前焦点所在应用程序的名称。"
 
 #. Translators: Caption for error message dialogs.
 #: addon\globalPlugins\core\constants.py:56
@@ -211,7 +211,7 @@ msgstr "类型"
 
 #: addon\globalPlugins\core\item_dialog.py:131
 msgid "Delay before executing this action (seconds)"
-msgstr "执行此操作前等待（秒）"
+msgstr "执行此操作前的等待时间（秒）"
 
 #. Translators: Label for the Test button in the settings panel.
 #: addon\globalPlugins\core\item_dialog.py:139
@@ -267,7 +267,7 @@ msgstr "选择文件"
 #: addon\globalPlugins\core\item_dialog.py:356
 #: addon\globalPlugins\core\item_dialog.py:755
 msgid "All fields are required."
-msgstr "请填写必填项。"
+msgstr "请填写所有字段。"
 
 #: addon\globalPlugins\core\item_dialog.py:367
 #, python-brace-format
@@ -277,14 +277,14 @@ msgid ""
 "\n"
 "Would you like to save this action anyway?"
 msgstr ""
-"在系统中找不到指定的路径：\n"
+"找不到以下路径：\n"
 "{path}\n"
 "\n"
 "仍要保存此操作吗？"
 
 #: addon\globalPlugins\core\item_dialog.py:376
 msgid "Delay must be a valid number."
-msgstr "延迟必须为有效数字。"
+msgstr "延迟必须为数字。"
 
 #: addon\globalPlugins\core\item_dialog.py:379
 msgid "Delay must be zero or greater."
@@ -292,7 +292,7 @@ msgstr "延迟不能小于 0。"
 
 #: addon\globalPlugins\core\item_dialog.py:388
 msgid "Typing delay must be a valid number."
-msgstr "字符输入间隔必须为有效数字。"
+msgstr "字符输入间隔必须为数字。"
 
 #: addon\globalPlugins\core\item_dialog.py:389
 msgid "Typing delay must be zero or greater."
@@ -300,7 +300,7 @@ msgstr "字符输入间隔不能小于 0。"
 
 #: addon\globalPlugins\core\item_dialog.py:398
 msgid "Delay between keystrokes must be a valid number."
-msgstr "按键间隔必须为有效数字。"
+msgstr "按键间隔必须为数字。"
 
 #: addon\globalPlugins\core\item_dialog.py:399
 msgid "Delay between keystrokes must be zero or greater."
@@ -313,7 +313,7 @@ msgid ""
 "\n"
 "Would you like to proceed?"
 msgstr ""
-"将在 3 秒后模拟按键序列或文本输入，以便您切换到目标窗口。\n"
+"按键序列或文本输入将在 3 秒后开始，请在此期间切换到目标窗口。\n"
 "\n"
 "是否继续？"
 
@@ -369,7 +369,7 @@ msgstr "操作间隔（秒）"
 
 #: addon\globalPlugins\core\item_dialog.py:510
 msgid "Stop executing remaining actions if an action fails"
-msgstr "如果某项操作失败，则停止执行剩余操作"
+msgstr "操作失败时停止执行剩余操作"
 
 #: addon\globalPlugins\core\item_dialog.py:556
 msgid "Restrict this shortcut to work in certain apps"
@@ -410,7 +410,7 @@ msgstr "确定要删除选定的操作吗？"
 #: addon\globalPlugins\core\item_dialog.py:735
 #: addon\globalPlugins\core\item_dialog.py:780
 msgid "This shortcut is reserved for instant Access."
-msgstr "此快捷键是 instantAccess 的保留快捷键。"
+msgstr "instantAccess 已保留此快捷键。"
 
 #: addon\globalPlugins\core\item_dialog.py:742
 #: addon\globalPlugins\core\item_dialog.py:786
@@ -423,11 +423,11 @@ msgstr "请至少添加一个操作。"
 
 #: addon\globalPlugins\core\item_dialog.py:762
 msgid "App name is required when app restriction is enabled."
-msgstr "启用应用程序限制时必须填写应用程序名称。"
+msgstr "将快捷键限定在指定应用程序中时，必须填写应用程序名称。"
 
 #: addon\globalPlugins\core\item_dialog.py:771
 msgid "Interval must be a valid number."
-msgstr "操作间隔必须为有效数字。"
+msgstr "操作间隔必须为数字。"
 
 #: addon\globalPlugins\core\item_dialog.py:774
 msgid "Interval must be zero or greater."
@@ -441,13 +441,13 @@ msgstr "该名称已存在。"
 #: addon\globalPlugins\core\item_dialog.py:806
 #, python-brace-format
 msgid "This shortcut is already assigned to '{name}' for this app."
-msgstr "该应用程序中的“{name}”项目已使用此快捷键。"
+msgstr "此快捷键已分配给该应用程序中的“{name}”项目。"
 
 #. Translators: Error shown when a global shortcut conflicts with an existing item.
 #: addon\globalPlugins\core\item_dialog.py:811
 #, python-brace-format
 msgid "This global shortcut is already assigned to '{name}'."
-msgstr "“{name}”项目已使用此全局快捷键。"
+msgstr "此全局快捷键已分配给“{name}”项目。"
 
 #: addon\globalPlugins\core\nvda_commands.py:34
 #, python-brace-format
@@ -594,7 +594,7 @@ msgid ""
 msgstr ""
 "一款高效的快捷启动工具，可通过专用快捷键层快速打开网站、文件和文件夹，或启动"
 "程序。\n"
-"\t支持后台运行、反馈详细程度、命令行参数以及设置导入和导出。"
+"\t支持后台执行和命令行参数，可调整反馈详细程度，并可导入或导出设置。"
 
 #: buildVars.py:10
 msgid ""
@@ -631,16 +631,15 @@ msgid ""
 msgstr ""
 "\n"
 "- 版本 2026.5：\n"
-"  - 项目复制：通过新增的“复制”按钮，轻松复制包含全部操作和设置的项目。\n"
-"  - 操作测试：可单独测试操作；测试文本输入和按键序列前会自动倒计时 3 秒。\n"
+"  - 项目复制：新增“复制”按钮，可连同项目的所有操作和设置一并创建副本。\n"
+"  - 操作测试：可单独测试各项操作；测试文本输入或按键序列前会自动倒计时 3 秒。\n"
 "  - 出错时停止：可选择在发生错误时停止执行剩余操作。\n"
 "  - 系统集成：支持 PATH 中的命令、批处理脚本（.bat/.cmd）以及自定义 URI 方案（例如 mailto:、ms-settings:）。\n"
-"  - 键盘操作：按 Enter 编辑项目，按 Delete 在确认后删除项目或操作，按 Ctrl+Up/Down 调整操作顺序。\n"
-"  - 原子保存与故障恢复：以原子方式保存配置，自动创建备份（config.json.bak），并在配置损坏时提示恢复。\n"
-"  - 工具链现代化：采用 NVDA 官方 addonTemplate 标准（PEP 735、uv、prek.toml）构建。\n"
+"  - 键盘操作：按 Enter 编辑项目；按 Delete 删除项目或操作（需确认）；按 Ctrl+Up/Down 调整操作顺序。\n"
+"  - 配置安全与故障恢复：采用原子写入方式保存配置，自动创建备份（config.json.bak），并在配置损坏时提示恢复。\n"
+"  - 构建工具更新：按照 NVDA 官方 addonTemplate 规范构建（PEP 735、uv、prek.toml）。\n"
 "- 版本 2026.4：\n"
-"  - 新功能：新增按键序列宏，熟练使用屏幕阅读器的用户可按自定义间隔执行一系列"
-"快捷键。\n"
+"  - 新功能：新增按键序列宏，可按自定义间隔执行一组快捷键。\n"
 "  - 代码质量：重构核心模块，提高可维护性并移除重复代码。\n"
 "  - 文档：补充按键序列功能及其格式说明。\n"
 "- 版本 2026.3：正式版更新。\n"
