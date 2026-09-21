@@ -33,7 +33,8 @@ def _getActionSummary(action):
 		if len(text_preview) > 70:
 			text_preview = text_preview[:67] + "..."
 		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(
-			action.get("textAction", "type"), TEXT_SNIPPET_ACTION_TO_LABEL["type"]
+			action.get("textAction", "type"),
+			TEXT_SNIPPET_ACTION_TO_LABEL["type"],
 		)
 		return _("{action}: {preview}").format(action=actionLabel, preview=text_preview)
 	if itemType == "Keystrokes":
@@ -84,7 +85,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 	def makeSettings(self, settingsSizer):
 		sHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 		self.listCtrl = nvdaControls.AutoWidthColumnListCtrl(
-			self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN
+			self,
+			style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN,
 		)
 		# Translators: Column label for item name in the list.
 		self.listCtrl.InsertColumn(0, _("Name"))
@@ -115,7 +117,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 		# Translators: Label for verbosity level selection.
 		self.verbosityChoice = sHelper.addLabeledControl(
-			_("Verbosity level"), wx.Choice, choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED]
+			_("Verbosity level"),
+			wx.Choice,
+			choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED],
 		)
 		currentVerbosity = (
 			self.configManager.getVerbosityLevel() if self.configManager else VERBOSITY_VALUES[0]
@@ -244,7 +248,12 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		clonedItem["name"] = uniqueName
 		clonedItem["gestures"] = []
 		# Translators: Title of the duplicate item dialog.
-		dialog = InstantAccessItemDialog(self, self.configManager, _("Duplicate item"), existingItem=clonedItem)
+		dialog = InstantAccessItemDialog(
+			self,
+			self.configManager,
+			_("Duplicate item"),
+			existingItem=clonedItem,
+		)
 		if dialog.ShowModal() == wx.ID_OK:
 			self._saveItemResult(dialog.result)
 		dialog.Destroy()

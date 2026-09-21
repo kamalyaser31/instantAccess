@@ -179,7 +179,7 @@ def _shouldRecoverFromBackup():
 		# Translators: Prompt asking whether to recover corrupted configuration from backup.
 		promptMsg = _(
 			"The instant Access configuration file appears to be corrupted. "
-			"Would you like to restore the previous backup?"
+			"Would you like to restore the previous backup?",
 		)
 		return gui.messageBox(promptMsg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES
 	except Exception:

@@ -23,7 +23,7 @@ class KeyboardEvent(object):
 	is_keypad = None
 
 	def __init__(
-		self, event_type, scan_code, name=None, time=None, device=None, modifiers=None, is_keypad=None
+		self, event_type, scan_code, name=None, time=None, device=None, modifiers=None, is_keypad=None,
 	):
 		self.event_type = event_type
 		self.scan_code = scan_code
@@ -44,7 +44,7 @@ class KeyboardEvent(object):
 
 	def __repr__(self):
 		return "KeyboardEvent({} {})".format(
-			self.name or "Unknown {}".format(self.scan_code), self.event_type
+			self.name or "Unknown {}".format(self.scan_code), self.event_type,
 		)
 
 	def __eq__(self, other):

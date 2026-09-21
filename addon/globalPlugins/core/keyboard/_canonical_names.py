@@ -1215,7 +1215,7 @@ if platform.system() == "Darwin":
 			"win": "command",
 			"backspace": "delete",
 			"alt gr": "alt",  # Issue #117
-		}
+		},
 	)
 	all_modifiers = {"alt", "ctrl", "shift", "windows"}
 if platform.system() == "Linux":
@@ -1225,7 +1225,7 @@ if platform.system() == "Linux":
 			"find": "home",
 			"next": "page down",
 			"prior": "page up",
-		}
+		},
 	)
 
 

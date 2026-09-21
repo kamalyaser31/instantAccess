@@ -128,7 +128,8 @@ class InstantAccessActionDialog(wx.Dialog):
 		self.typingDelayCtrl.SetValue("0.05")
 
 		self.delayCtrl = sizerHelper.addLabeledControl(
-			_("Delay before executing this action (seconds)"), wx.TextCtrl
+			_("Delay before executing this action (seconds)"),
+			wx.TextCtrl,
 		)
 		self.delayCtrl.SetValue("0")
 
@@ -364,7 +365,7 @@ class InstantAccessActionDialog(wx.Dialog):
 				# Translators: Warning message shown when an action path does not exist on disk or in PATH.
 				warnMsg = _(
 					"The specified path was not found on your system:\n{path}\n\n"
-					"Would you like to save this action anyway?"
+					"Would you like to save this action anyway?",
 				).format(path=path)
 				if gui.messageBox(warnMsg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
 					return None
@@ -419,14 +420,13 @@ class InstantAccessActionDialog(wx.Dialog):
 		itemType = result.get("type", "")
 		textAction = result.get("textAction", "type")
 		needsSwitchDelay = (
-			(itemType == "TextSnippets" and textAction in ("type", "paste"))
-			or itemType == "Keystrokes"
-		)
+			itemType == "TextSnippets" and textAction in ("type", "paste")
+		) or itemType == "Keystrokes"
 		if needsSwitchDelay:
 			# Translators: Prompt confirming test of keystroke simulation or text typing with a switch delay.
 			msg = _(
 				"Keystrokes or text typing will be simulated after a 3-second delay so you can switch to the target window.\n\n"
-				"Would you like to proceed?"
+				"Would you like to proceed?",
 			)
 			if gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
 				return
@@ -712,6 +712,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		try:
 			import inputCore
 			from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION
+
 			categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
 			for desc in (TOGGLE_DESCRIPTION, REPORT_APP_NAME_DESCRIPTION):
 				info = categoryMap.get(desc)
@@ -802,7 +803,9 @@ class InstantAccessItemDialog(wx.Dialog):
 			conflictName = conflictItem.get("name", "")
 			if appName:
 				# Translators: Error shown when an app-specific shortcut conflicts with an existing item.
-				msg = _("This shortcut is already assigned to '{name}' for this app.").format(name=conflictName)
+				msg = _("This shortcut is already assigned to '{name}' for this app.").format(
+					name=conflictName,
+				)
 			else:
 				# Translators: Error shown when a global shortcut conflicts with an existing item.
 				msg = _("This global shortcut is already assigned to '{name}'.").format(name=conflictName)

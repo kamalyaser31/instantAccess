@@ -162,7 +162,6 @@ class ConfigManager:
 			item["appName"] = normalizedAppName
 		return item
 
-
 	def getItems(self):
 		"""Get all configured items."""
 		config = self.loadOrCreateConfig()
@@ -230,7 +229,7 @@ class ConfigManager:
 				interval=interval,
 				appName=appName,
 				stopOnError=stopOnError,
-			)
+			),
 		)
 		config["items"] = items
 		self.saveConfig(config)
@@ -247,7 +246,7 @@ class ConfigManager:
 				interval=interval,
 				appName=appName,
 				stopOnError=stopOnError,
-			)
+			),
 		)
 		config["items"] = items
 		self.saveConfig(config)

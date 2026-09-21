@@ -280,4 +280,3 @@ def executeInstantItem(item):
 			break
 		if index < len(actions) - 1 and interval > 0:
 			time.sleep(interval)
-

@@ -144,7 +144,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				for expanded in expandGestureLayouts(gesture):
 					self.gestureToItems.setdefault(expanded.lower(), []).append(item)
 		self.loadedCommandCount = len(
-			{item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture}
+			{item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture},
 		)
 		instantGestures = {}
 		for gesture in self.gestureToItems.keys():

@@ -22,7 +22,10 @@ class NvdaCommandPickerDialog(wx.Dialog):
 	def __init__(self, parent, selectedCommandId=""):
 		# Translators: Title of the dialog used to select an NVDA command.
 		wx.Dialog.__init__(
-			self, parent, title=_("Select NVDA command"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+			self,
+			parent,
+			title=_("Select NVDA command"),
+			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
 		)
 		self.selectedCommandId = selectedCommandId or ""
 		self.commands = []

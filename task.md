@@ -30,3 +30,9 @@
   - [x] Plugin lifecycle reference cleanup and empty app name reporting (`plugin.py`) <!-- id: 28 -->
   - [x] Native Arabic documentation (`addon/doc/ar/readme.md`) and updated English guide (`readme.md`) <!-- id: 29 -->
   - [x] Full localization synchronization in `addon/locale/ar/LC_MESSAGES/nvda.po` and POT generation <!-- id: 30 -->
+- [x] Stage 7: Packaging, Release & Store Submission <!-- id: 31 -->
+  - [x] Code linting via `uv run ruff check addon/` (all passed) <!-- id: 32 -->
+  - [x] Final build via `uv run scons` generating `instantAccess-2026.5.nvda-addon` <!-- id: 33 -->
+  - [x] Git staging, commit, and push to main branch <!-- id: 34 -->
+  - [x] GitHub Release `v2026.5` published with attached addon package <!-- id: 35 -->
+  - [x] Submission to official NVDA Add-on Store (`nvaccess/addon-datastore`) completed <!-- id: 36 -->

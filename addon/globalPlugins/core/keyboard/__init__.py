@@ -325,7 +325,7 @@ def key_to_scan_codes(key, error_if_missing=True):
 		t = tuple(
 			_collections.OrderedDict(
 				(scan_code, True) for scan_code, modifier in _os_keyboard.map_name(normalized)
-			)
+			),
 		)
 		e = None
 	except (KeyError, ValueError) as exception:
@@ -955,7 +955,7 @@ def wait(hotkey=None, suppress=False, trigger_on_release=False):
 	if hotkey:
 		lock = _Event()
 		remove = add_hotkey(
-			hotkey, lambda: lock.set(), suppress=suppress, trigger_on_release=trigger_on_release
+			hotkey, lambda: lock.set(), suppress=suppress, trigger_on_release=trigger_on_release,
 		)
 		lock.wait()
 		remove_hotkey(remove)

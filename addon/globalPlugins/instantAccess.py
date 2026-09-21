@@ -14,4 +14,3 @@ addonHandler.initTranslation()
 from .core.plugin import GlobalPlugin  # noqa: E402
 
 __all__ = ["GlobalPlugin"]
-

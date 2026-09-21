@@ -572,7 +572,7 @@ def prepare_intercept(callback):
 
 		is_keypad = (scan_code, vk, is_extended) in keypad_keys
 		return callback(
-			KeyboardEvent(event_type=event_type, scan_code=scan_code or -vk, name=name, is_keypad=is_keypad)
+			KeyboardEvent(event_type=event_type, scan_code=scan_code or -vk, name=name, is_keypad=is_keypad),
 		)
 
 	def low_level_keyboard_handler(nCode, wParam, lParam):
