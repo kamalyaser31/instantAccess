@@ -35,4 +35,5 @@
 - Added native Arabic markdown documentation (`addon/doc/ar/readme.md`).
 - Published official GitHub Release `v2026.5` with asset `instantAccess-2026.5.nvda-addon`.
 - Submitted registration issue to NV Access Add-on Store (`nvaccess/addon-datastore#11721`), successfully validated and accepted for official catalog publication.
-
+- Purged obsolete tracked binary and generated artifacts (`instantAccess-2026.4.nvda-addon`, compiled `.mo` files, `.vscode/`, and generated `.html` / `manifest.ini` files).
+- Fixed GitHub Actions CI check by using `--skip no-commit-to-branch` for `prek`.

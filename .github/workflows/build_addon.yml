@@ -34,7 +34,7 @@ jobs:
         uv sync
 
     - name: Code checks
-      run: export PREK_SKIP=no-commit-to-branch; uv run prek run --all-files
+      run: uv run prek run --skip no-commit-to-branch --all-files
 
     - name: building addon
       run: uv run scons && uv run scons pot
