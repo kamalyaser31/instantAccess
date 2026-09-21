@@ -85,6 +85,7 @@ class ConfigManager:
 			"name": storedItem.get("name", ""),
 			"appName": (storedItem.get("appName", "") or "").strip().lower(),
 			"interval": float(storedItem.get("interval", 0.0) or 0.0),
+			"stopOnError": bool(storedItem.get("stopOnError", True)),
 			"actions": actions,
 			"gestures": [gesture] if gesture else [],
 		}
@@ -140,7 +141,7 @@ class ConfigManager:
 			data = {}
 		return {"type": itemType, "data": data, "delay": delay}
 
-	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName=""):
+	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
 		"""Build a stored item from public-facing item data."""
 		try:
 			interval = float(interval)
@@ -153,12 +154,14 @@ class ConfigManager:
 			"name": name,
 			"gesture": (gesture or "").strip().lower(),
 			"interval": interval,
+			"stopOnError": bool(stopOnError),
 			"actions": storedActions,
 		}
 		normalizedAppName = (appName or "").strip().lower()
 		if normalizedAppName:
 			item["appName"] = normalizedAppName
 		return item
+
 
 	def getItems(self):
 		"""Get all configured items."""
@@ -203,25 +206,47 @@ class ConfigManager:
 					return item
 		return None
 
-	def addItem(self, name, gesture, actions, interval=0.0, appName=""):
+	def getUniqueItemName(self, baseName):
+		"""Generate a unique item name for duplicating an item."""
+		existingNames = self.getAllNames()
+		candidate = f"{baseName} (copy)"
+		if candidate not in existingNames:
+			return candidate
+		for counter in range(2, 1000):
+			candidate = f"{baseName} (copy {counter})"
+			if candidate not in existingNames:
+				return candidate
+		return candidate
+
+	def addItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
 		"""Add a new item to the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") != name]
 		items.append(
 			self._buildStoredItem(
-				name=name, gesture=gesture, actions=actions, interval=interval, appName=appName
+				name=name,
+				gesture=gesture,
+				actions=actions,
+				interval=interval,
+				appName=appName,
+				stopOnError=stopOnError,
 			)
 		)
 		config["items"] = items
 		self.saveConfig(config)
 
-	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName=""):
+	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
 		"""Update an existing item in the configuration."""
 		config = self.loadOrCreateConfig()
 		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
 		items.append(
 			self._buildStoredItem(
-				name=name, gesture=gesture, actions=actions, interval=interval, appName=appName
+				name=name,
+				gesture=gesture,
+				actions=actions,
+				interval=interval,
+				appName=appName,
+				stopOnError=stopOnError,
 			)
 		)
 		config["items"] = items

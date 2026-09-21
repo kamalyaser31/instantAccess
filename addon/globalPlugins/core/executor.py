@@ -4,6 +4,8 @@ import addonHandler
 import api
 import logging
 import os
+import re
+import shutil
 import subprocess
 import time
 import ui
@@ -19,7 +21,6 @@ try:
 except Exception:
 	keyboard = None
 
-# Set up logging for better debugging
 log = logging.getLogger(__name__)
 
 
@@ -27,7 +28,8 @@ def expandPath(rawPath):
 	"""Expand environment variables and user home directory in a path."""
 	if not rawPath:
 		return rawPath
-	return os.path.expandvars(os.path.expanduser(rawPath))
+	cleaned = rawPath.strip().strip("'\"")
+	return os.path.expandvars(os.path.expanduser(cleaned))
 
 
 def queueMessage(message):
@@ -50,7 +52,7 @@ def _setClipboardText(text):
 
 
 def _executeTextSnippet(path, action, typingDelay=0.05):
-	"""Execute a text snippet action (type, copy, or paste)."""
+	"""Execute a text snippet action (type, copy, or paste). Returns True on success."""
 	text = path or ""
 	action = (action or "type").strip().lower()
 	try:
@@ -61,35 +63,39 @@ def _executeTextSnippet(path, action, typingDelay=0.05):
 		typingDelay = 0.05
 	if not text:
 		queueMessage(_("Error: Text snippet is empty"))
-		return
+		return False
 
 	if action == "copy":
 		if not _setClipboardText(text):
 			queueMessage(_("Error: Could not copy text snippet"))
-		return
+			return False
+		return True
 
 	if action == "paste":
 		if not _setClipboardText(text):
 			queueMessage(_("Error: Could not copy text snippet"))
-			return
+			return False
 		if keyboard is None:
 			queueMessage(_("Error: Keyboard library is not available"))
-			return
+			return False
 		try:
 			keyboard.send("ctrl+v")
+			return True
 		except Exception as e:
 			log.error("Error pasting text snippet: %s", e)
 			queueMessage(_("Error: Could not paste text snippet"))
-		return
+			return False
 
 	if keyboard is None:
 		queueMessage(_("Error: Keyboard library is not available"))
-		return
+		return False
 	try:
 		keyboard.write(text, delay=typingDelay)
+		return True
 	except Exception as e:
 		log.error("Error typing text snippet: %s", e)
 		queueMessage(_("Error: Could not type text snippet"))
+		return False
 
 
 def _parseKeystrokeLine(raw_line):
@@ -114,11 +120,12 @@ def _parseKeystrokeLine(raw_line):
 	return (raw_line, 1)
 
 
-def _sendKeystrokeSequence(keys_text, press_delay):
+def _sendKeystrokeSequence(keys_text, pressDelay):
 	"""Send each line in keys_text as a keyboard hotkey, repeating if a count suffix is given.
 
 	Stops on the first send failure and notifies the user via NVDA speech.
 	Caller is responsible for checking keyboard availability and empty input.
+	Returns True on success, False on failure.
 	"""
 	lines = keys_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
 	for raw_line in lines:
@@ -134,95 +141,118 @@ def _sendKeystrokeSequence(keys_text, press_delay):
 				queueMessage(
 					_("Error: Could not send keystroke: {key}").format(key=hotkey),
 				)
-				return
-			if press_delay > 0:
-				time.sleep(press_delay)
+				return False
+			if pressDelay > 0:
+				time.sleep(pressDelay)
+	return True
 
 
-def executeInstantAction(itemType, path, arguments="", textAction="type", typingDelay=0.05, press_delay=0.05):
-	"""Execute a single instant action based on its type."""
+def executeInstantAction(action):
+	"""Execute a single instant action based on its type. Returns True on success, False on failure.
+
+	*action* is a dict with keys: type, path, arguments, textAction, typingDelay, pressDelay.
+	"""
+	itemType = action.get("type", "")
+	path = action.get("path", "")
+	arguments = action.get("arguments", "")
+	textAction = action.get("textAction", "type")
+	typingDelay = action.get("typingDelay", 0.05)
+	pressDelay = action.get("pressDelay", 0.05)
+
 	if itemType == "Websites":
-		url = (path or "").strip()
+		url = (path or "").strip().strip("'\"")
 		if not url:
 			queueMessage(_("Error: URL is empty"))
-			return
-		if not url.lower().startswith(("http://", "https://")):
+			return False
+		if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", url):
 			url = "https://" + url
 		try:
 			webbrowser.open(url)
+			return True
 		except Exception as e:
 			log.error("Error opening website: %s", e)
 			queueMessage(_("Error: Could not open the website"))
-		return
+			return False
 
 	if itemType == "NvdaCommands":
 		wx.CallAfter(executeNvdaCommand, (path or "").strip())
-		return
+		return True
 
 	if itemType == "TextSnippets":
-		_executeTextSnippet(path, textAction, typingDelay=typingDelay)
-		return
+		return _executeTextSnippet(path, textAction, typingDelay=typingDelay)
 
 	if itemType == "Keystrokes":
 		if keyboard is None:
 			queueMessage(_("Error: Keyboard library is not available"))
-			return
+			return False
 		keys_text = (path or "").strip()
 		if not keys_text:
 			queueMessage(_("Error: Keystrokes field is empty"))
-			return
-		_sendKeystrokeSequence(keys_text, press_delay)
-		return
+			return False
+		return _sendKeystrokeSequence(keys_text, pressDelay)
 
 	resolvedPath = expandPath(path or "")
-	if not resolvedPath or not os.path.exists(resolvedPath):
+	if not resolvedPath:
 		queueMessage(_("Error: File not found"))
-		return
+		return False
 
 	if itemType == "Folders":
+		if not os.path.exists(resolvedPath):
+			queueMessage(_("Error: File not found"))
+			return False
 		try:
 			os.startfile(resolvedPath)
-		except AttributeError:
-			# os.startfile is Windows-only, use xdg-open on Linux or open on macOS
-			try:
-				if os.name == "posix":
-					import platform
-
-					if platform.system() == "Darwin":
-						subprocess.Popen(["open", resolvedPath])
-					else:
-						subprocess.Popen(["xdg-open", resolvedPath])
-				else:
-					queueMessage(_("Error: Could not open the item"))
-			except Exception as e:
-				log.error("Error opening folder: %s", e)
-				queueMessage(_("Error: Could not open the item"))
+			return True
 		except Exception as e:
 			log.error("Error opening folder: %s", e)
 			queueMessage(_("Error: Could not open the item"))
-		return
+			return False
 
 	if itemType == "Files":
+		if not os.path.exists(resolvedPath):
+			queueMessage(_("Error: File not found"))
+			return False
 		try:
-			if not wx.LaunchDefaultApplication(resolvedPath):
-				queueMessage(_("Error: Could not open the file"))
-		except Exception as e:
-			log.error("Error opening file: %s", e)
+			os.startfile(resolvedPath)
+			return True
+		except Exception:
+			try:
+				if wx.LaunchDefaultApplication(resolvedPath):
+					return True
+			except Exception as e:
+				log.error("Error opening file: %s", e)
 			queueMessage(_("Error: Could not open the file"))
-		return
+			return False
 
 	if itemType == "Programs":
+		if not os.path.exists(resolvedPath):
+			whichPath = shutil.which(resolvedPath)
+			if whichPath:
+				resolvedPath = whichPath
+			else:
+				queueMessage(_("Error: File not found"))
+				return False
 		try:
 			argumentsText = (arguments or "").strip()
 			workingDir = os.path.dirname(resolvedPath) or None
-			if argumentsText:
+			is_batch = resolvedPath.lower().endswith((".bat", ".cmd"))
+			if is_batch:
+				cmd = ["cmd", "/c", resolvedPath]
+				if argumentsText:
+					cmd.append(argumentsText)
+				subprocess.Popen(cmd, cwd=workingDir)
+			elif argumentsText:
 				commandLine = subprocess.list2cmdline([resolvedPath]) + " " + argumentsText
 				subprocess.Popen(commandLine, cwd=workingDir)
 			else:
 				subprocess.Popen([resolvedPath], cwd=workingDir)
+			return True
 		except Exception as e:
 			log.error("Error starting program: %s", e)
 			queueMessage(_("Error: Could not start the program"))
+			return False
+
+	return False
 
 
 def executeInstantItem(item):
@@ -230,6 +260,7 @@ def executeInstantItem(item):
 	if not item:
 		return
 	actions = item.get("actions", [])
+	stopOnError = bool(item.get("stopOnError", True))
 	try:
 		interval = float(item.get("interval", 0.0) or 0.0)
 	except (ValueError, TypeError):
@@ -243,13 +274,10 @@ def executeInstantItem(item):
 			delay = 0.0
 		if delay > 0:
 			time.sleep(delay)
-		executeInstantAction(
-			itemType=action.get("type", ""),
-			path=action.get("path", ""),
-			arguments=action.get("arguments", ""),
-			textAction=action.get("textAction", "type"),
-			typingDelay=action.get("typingDelay", 0.05),
-			press_delay=action.get("pressDelay", 0.05),
-		)
+		success = executeInstantAction(action)
+		if not success and stopOnError:
+			log.warning("Action %d failed, stopping sequence for item '%s'", index, item.get("name"))
+			break
 		if index < len(actions) - 1 and interval > 0:
 			time.sleep(interval)
+

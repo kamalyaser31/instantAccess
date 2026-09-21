@@ -3,7 +3,7 @@
 ## Overview
 - **Name:** instantAccess
 - **Type:** NVDA Add-on
-- **Version:** 2026.4
+- **Version:** 2026.5
 - **Repository:** https://github.com/kamalyaser31/instantAccess
 - **Target NVDA Versions:** Minimum 2024.1.0, Last Tested 2026.1
 
@@ -24,5 +24,12 @@
 - `.github/workflows/build_addon.yml`: CI/CD automation for PRs, branch pushes, and tag releases.
 
 ## Recent Changes (2026-09-20)
-- Upgraded the build system, typings, and tooling from legacy `pre-commit` to `addonTemplate` (PEP 735, `uv`, `prek.toml`, `uv.lock`, and upgraded GitHub Actions workflows).
-- Verified build and translation generation via `uv run scons` and `uv run scons pot`.
+- Upgraded the build system, typings, and tooling from legacy `pre-commit` to official `addonTemplate` (PEP 735, `uv`, `prek.toml`, `uv.lock`, and upgraded GitHub Actions workflows).
+- Purged vendored keyboard library non-Windows code and dead POSIX code.
+- Added Item Duplication (`Duplicate` button) with unique naming.
+- Added isolated Action Testing with 3-second preparation countdown for typing and keystrokes.
+- Added multi-action Stop on Error execution safety.
+- Added keyboard navigation ergonomics (`Enter` to edit, `Delete` to delete, `Ctrl+Up`/`Ctrl+Down` to reorder).
+- Added support for PATH commands, `.bat`/`.cmd` scripts, custom URI schemes, and quote stripping.
+- Added atomic configuration saving, automatic `.bak` backups, and corrupted configuration recovery prompts.
+- Added native Arabic markdown documentation (`addon/doc/ar/readme.md`).

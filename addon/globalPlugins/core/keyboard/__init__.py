@@ -124,16 +124,7 @@ class _Event(_UninterruptibleEvent):
 				break
 
 
-import platform as _platform
-
-if _platform.system() == "Windows":
-	from . import _winkeyboard as _os_keyboard
-elif _platform.system() == "Linux":
-	from . import _nixkeyboard as _os_keyboard
-elif _platform.system() == "Darwin":
-	from . import _darwinkeyboard as _os_keyboard
-else:
-	raise OSError("Unsupported platform '{}'".format(_platform.system()))
+from . import _winkeyboard as _os_keyboard
 
 from ._keyboard_event import KEY_DOWN, KEY_UP, KeyboardEvent
 from ._generic import GenericListener as _GenericListener

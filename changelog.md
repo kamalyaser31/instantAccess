@@ -1,57 +1,64 @@
 # Changelog
 
-## [Unreleased] - 2026-09-20
+All notable changes to the **instantAccess** add-on will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2026.5] - 2026-09-20
+
+### Added
+- **Item Duplication**: Added a `Duplicate` button in the main Settings Panel to clone existing items with all their actions and settings under an auto-incremented unique name (`Name (copy)`), clearing the shortcut to avoid immediate conflict.
+- **Individual Action Testing**: Added a `Test` button inside the Action Dialog to test single actions directly. Keystrokes and typing actions include an automated 3-second preparation delay and confirmation prompt to allow blind users to switch (`Alt+Tab`) to the target window safely.
+- **Stop on Error Execution**: Added a dedicated option for multi-action items to immediately abort remaining actions in the sequence if any action fails.
+- **Keyboard Ergonomics**:
+  - Pressing `Enter` on an item in the Settings Panel immediately opens the edit dialog.
+  - Pressing `Delete` on an item or action opens a confirmation dialog to delete it.
+  - Pressing `Ctrl+Up` / `Ctrl+Down` reorders actions inside the item dialog.
+- **Enhanced System Integration**:
+  - Automatic lookup of executables found in the system `PATH` (e.g. `cmd`, `notepad`, `calc`, `code`) via `shutil.which`.
+  - Native execution support for batch files (`.bat` and `.cmd`) using Windows shell dispatching.
+  - Support for custom URI schemes (e.g. `mailto:`, `ms-settings:`) without prepending default web schemes.
+  - Automatic stripping of surrounding double and single quotes from paths upon saving and execution.
+- **Non-blocking Path Validation**: Added an accessible confirmation prompt when saving an action if the path is not found on disk or in `PATH`, allowing the user to proceed or revise.
+- **Safe Settings Import/Export**:
+  - Added a confirmation prompt before importing settings to prevent accidental overwrites of existing configurations.
+  - Added accessible notifications upon successful import and export.
+- **Disaster Recovery & Atomic Configuration**:
+  - Implemented atomic file saving (`.tmp` file creation followed by atomic replacement) to prevent file corruption during unexpected power loss.
+  - Automatic backup creation (`config.json.bak`) upon every successful configuration save.
+  - Startup corruption detection with a recovery dialog offering to restore the backup automatically.
+- **Native Arabic Documentation**: Added `addon/doc/ar/readme.md` so that localized HTML documentation (`readme.html`) is compiled automatically by SCons during builds.
+
 ### Changed
-- Modernized build infrastructure and tooling to match NVDA addonTemplate (PEP 735 dependency groups, uv, prek, and upgraded GitHub Actions workflows).
+- **Settings Panel Column**: Renamed Column 3 from "Path" to "Details" to accurately represent multi-action summaries.
+- **Action Dialog Label**: Clarified the delay label to "Delay before executing this action (seconds)".
+- **Modernized Build Infrastructure**: Upgraded to official NVDA `addonTemplate` 2025/2026 standards, adopting PEP 735 dependency groups in `pyproject.toml`, `uv`, `prek.toml` for ultra-fast Git hooks, and modern GitHub Actions workflows.
+- **Vendored Library Cleanup**: Streamlined the vendored `keyboard` library by removing unused non-Windows platform code (`_darwinkeyboard.py`, `_nixkeyboard.py`, etc.) and test suites, significantly reducing add-on size.
+- **POSIX Code Elimination**: Purged dead POSIX/Darwin fallback code from `executor.py`.
+
+### Fixed
+- **Entrypoint Export**: Fixed critical `GlobalPlugin` export in `instantAccess.py` ensuring NVDA discovers and loads the plugin reliably.
+- **Resource Management**: Properly cleared `configManager` references, UI callbacks, and running executor threads upon plugin termination.
+- **Empty App Name Feedback**: Spoke an accessible error message when the current application name cannot be determined via `NVDA+Shift+E`.
+- **Localization Correction**: Corrected an erroneous translation for app restriction in the Arabic `.po` catalog.
 
 ## [2026.4] - 2026-07-07
+
 ### Added
-- New Feature: Keystrokes macro simulation (allows advanced screen reader users to execute keyboard shortcut sequences with custom delays).
-- Documentation: Added complete user guides and macro examples for the new Keystrokes feature in English and Arabic readmes.
+- **Keystrokes Macro Simulation**: Added simulation of keystroke sequences with custom intervals, allowing screen reader users to automate keyboard navigation workflows.
+- **Documentation**: Added complete user guides and macro examples for the Keystrokes feature in English and Arabic documentation.
 
 ### Changed
-- Code Quality: Refactored core modules (`plugin.py`, `executor.py`, `item_dialog.py`) to eliminate code duplication and align with clean code standards.
+- **Code Quality**: Refactored core modules (`plugin.py`, `executor.py`, `item_dialog.py`) to eliminate code duplication and align with clean code standards.
 
 ## [2026.3] - 2026-05-07
+
 ### Added
 - Official release update.
 - Fully updated the Arabic user guide to provide clearer instructions and information.
 
 ### Fixed
-- Resolved a critical issue that prevented the add-on from loading correctly in certain NVDA environments.
+- **Add-on Loading**: Resolved a critical issue that prevented the add-on from loading correctly in certain NVDA environments.
 
 ### Changed
-- Internal refinements and cleanup to ensure smoother performance.
-
-# Changes Since "Updated Readme" (c1bf430)
-
-This document outlines all technical and functional changes made to the **instantAccess** add-on since the commit `c1bf430` (updated readme).
-
-## [Summary of Changes]
-
-### 🏗️ Architectural & Core Improvements
-- **Logging System:** Integrated `logging` module across `config_manager.py`, `executor.py`, and `plugin.py` for professional debugging and error tracking.
-- **Robust Exception Handling:** Refined `try-except` blocks to catch specific errors (e.g., `ValueError`, `TypeError`, `KeyError`) instead of generic exceptions, improving stability.
-- **Code Documentation:** Added extensive docstrings and comments to core classes and functions for better maintainability.
-
-### ⚙️ Configuration Management (`config_manager.py`)
-- **Enhanced Data Validation:** Added strict type checking and default values for `typingDelay` and `delay` parameters.
-- **Improved Item Conversion:** Added error logging during the conversion of stored items to public formats.
-- **Refined Conflict Detection:** Optimized `findGestureConflict` logic with better normalization of gestures and application names.
-
-### 🚀 Execution Engine (`executor.py`)
-- **Cross-Platform Support:** Added preliminary support for opening folders on Linux (via `xdg-open`) and macOS (via `open`), although the primary target remains Windows.
-- **Clipboard Reliability:** Improved `_setClipboardText` to handle errors gracefully using internal logging.
-- **Execution Flow:** Optimized `executeInstantItem` to handle interval and delay calculations more reliably.
-
-### 🔌 Plugin Logic (`plugin.py`)
-- **Resource Management:** Improved the termination process (`terminate`) to safely remove settings panels and shutdown the thread pool executor.
-- **Gesture Handling:** Refined the `getScript` wrapper to ensure the "Instant Layer" is always finished correctly, preventing the UI from getting stuck.
-- **Dynamic Configuration:** Better handling of dynamic configuration changes and toggle gestures.
-
-### 🌍 Localization & Documentation
-- **Updated Translations:** Significant updates to the English localization (`nvda.po`), including new strings for settings and error messages.
-- **Redundant File Cleanup:** Removed outdated HTML and Markdown readme files from the `addon/doc/en/` directory in favor of the root `readme.md`.
-
----
-*Generated automatically by Gemini CLI.*
+- Internal stability refinements and cleanup to ensure smoother performance.

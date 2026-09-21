@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+import os
+import shutil
+import threading
+import time
 
 import addonHandler
 import gui
@@ -8,6 +11,7 @@ import wx
 from .command_picker_dialog import NvdaCommandPickerDialog
 from .constants import (
 	ALL_FILES_WILDCARD,
+	CONFIRM_CAPTION,
 	ERROR_CAPTION,
 	RESERVED_GESTURES,
 	TEXT_SNIPPET_ACTION_LABELS,
@@ -17,6 +21,7 @@ from .constants import (
 	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 )
+from .executor import executeInstantAction, expandPath
 from .gestures import (
 	buildGestureNameFromEvent,
 	formatGestureForDisplay,
@@ -122,12 +127,15 @@ class InstantAccessActionDialog(wx.Dialog):
 		sizerHelper.addItem(self.typingDelayRow, flag=wx.EXPAND)
 		self.typingDelayCtrl.SetValue("0.05")
 
-		self.delayCtrl = sizerHelper.addLabeledControl(_("Delay before executing this action"), wx.TextCtrl)
+		self.delayCtrl = sizerHelper.addLabeledControl(
+			_("Delay before executing this action (seconds)"), wx.TextCtrl
+		)
 		self.delayCtrl.SetValue("0")
 
 		buttonSizer = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		self.okButton = buttonSizer.addButton(self, wx.ID_OK, _("&OK"))
 		buttonSizer.addButton(self, wx.ID_CANCEL, _("&Cancel"))
+		self.testButton = buttonSizer.addButton(self, label=_("&Test"))
 
 		mainSizer.Add(sizerHelper.sizer, 1, wx.ALL | wx.EXPAND, 10)
 		mainSizer.Add(buttonSizer.sizer, 0, wx.ALL | wx.ALIGN_CENTER, 5)
@@ -139,6 +147,7 @@ class InstantAccessActionDialog(wx.Dialog):
 		self.browseButton.Bind(wx.EVT_BUTTON, self.onBrowse)
 		self.commandButton.Bind(wx.EVT_BUTTON, self.onSelectCommand)
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
+		self.testButton.Bind(wx.EVT_BUTTON, self.onTestAction)
 
 		if existingAction:
 			self._loadExistingAction(existingAction)
@@ -330,7 +339,7 @@ class InstantAccessActionDialog(wx.Dialog):
 			self.commandCtrl.SetValue(self.selectedCommandLabel)
 		dialog.Destroy()
 
-	def validate(self):
+	def validate(self, isTesting=False):
 		itemType = TYPE_SECTIONS[self.typeChoice.GetSelection()]
 		arguments = self.argumentsCtrl.GetValue().strip() if itemType == "Programs" else ""
 		textAction = TEXT_SNIPPET_ACTION_VALUES[self.snippetActionChoice.GetSelection()]
@@ -345,6 +354,20 @@ class InstantAccessActionDialog(wx.Dialog):
 		if not path.strip():
 			gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
+
+		if not isTesting and itemType in ("Programs", "Folders", "Files"):
+			resolved = expandPath(path)
+			exists = os.path.exists(resolved)
+			if not exists and itemType == "Programs":
+				exists = bool(shutil.which(resolved))
+			if not exists:
+				# Translators: Warning message shown when an action path does not exist on disk or in PATH.
+				warnMsg = _(
+					"The specified path was not found on your system:\n{path}\n\n"
+					"Would you like to save this action anyway?"
+				).format(path=path)
+				if gui.messageBox(warnMsg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
+					return None
 
 		try:
 			delay = float((self.delayCtrl.GetValue() or "0").strip())
@@ -388,6 +411,36 @@ class InstantAccessActionDialog(wx.Dialog):
 			"commandLabel": self.selectedCommandLabel.strip(),
 			"delay": delay,
 		}
+
+	def onTestAction(self, event):
+		result = self.validate(isTesting=True)
+		if not result:
+			return
+		itemType = result.get("type", "")
+		textAction = result.get("textAction", "type")
+		needsSwitchDelay = (
+			(itemType == "TextSnippets" and textAction in ("type", "paste"))
+			or itemType == "Keystrokes"
+		)
+		if needsSwitchDelay:
+			# Translators: Prompt confirming test of keystroke simulation or text typing with a switch delay.
+			msg = _(
+				"Keystrokes or text typing will be simulated after a 3-second delay so you can switch to the target window.\n\n"
+				"Would you like to proceed?"
+			)
+			if gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
+				return
+
+		def _runAction(pre_delay=0):
+			if pre_delay > 0:
+				time.sleep(pre_delay)
+			executeInstantAction(result)
+
+		threading.Thread(
+			target=_runAction,
+			kwargs={"pre_delay": 3 if needsSwitchDelay else 0},
+			daemon=True,
+		).start()
 
 	def _parseDelayField(self, raw_value, invalid_msg, negative_msg):
 		"""Parse a delay text field and show an error dialog on invalid input.
@@ -451,6 +504,14 @@ class InstantAccessItemDialog(wx.Dialog):
 		)
 		self.intervalCtrl.SetValue("0")
 
+		self.stopOnErrorCheck = wx.CheckBox(
+			self,
+			wx.ID_ANY,
+			_("Stop executing remaining actions if an action fails"),
+		)
+		self.stopOnErrorCheck.SetValue(True)
+		sizerHelper.addItem(self.stopOnErrorCheck)
+
 		self.restrictionRow, self.restrictToAppsCheck, self.appNameLabel, self.appNameCtrl = (
 			self._createRestrictionRow()
 		)
@@ -476,6 +537,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.actionsList.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onActionsSelectionChanged)
 		self.actionsList.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onActionsSelectionChanged)
 		self.actionsList.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onEditAction)
+		self.actionsList.Bind(wx.EVT_KEY_DOWN, self.onActionsListKeyDown)
 		self.shortcutButton.Bind(wx.EVT_BUTTON, self.onSetShortcut)
 		self.restrictToAppsCheck.Bind(wx.EVT_CHECKBOX, self.onRestrictionToggle)
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
@@ -525,6 +587,7 @@ class InstantAccessItemDialog(wx.Dialog):
 			self.gesture = normalizeGesture(gestures[0])
 		self.actions = [dict(action) for action in item.get("actions", [])]
 		self.intervalCtrl.SetValue(_formatDelay(item.get("interval", 0.0)))
+		self.stopOnErrorCheck.SetValue(bool(item.get("stopOnError", True)))
 		appName = (item.get("appName", "") or "").strip()
 		if appName:
 			self.restrictToAppsCheck.SetValue(True)
@@ -631,6 +694,34 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.refreshActionsList(selectIndex=index + 1)
 		self.actionsList.SetFocus()
 
+	def onActionsListKeyDown(self, event):
+		keyCode = event.GetKeyCode()
+		if keyCode == wx.WXK_DELETE:
+			self.onDeleteAction(event)
+			return
+		if event.ControlDown() and keyCode == wx.WXK_UP:
+			self.onMoveActionUp(event)
+			return
+		if event.ControlDown() and keyCode == wx.WXK_DOWN:
+			self.onMoveActionDown(event)
+			return
+		event.Skip()
+
+	def getReservedGestures(self):
+		reserved = set(RESERVED_GESTURES)
+		try:
+			import inputCore
+			from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION
+			categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
+			for desc in (TOGGLE_DESCRIPTION, REPORT_APP_NAME_DESCRIPTION):
+				info = categoryMap.get(desc)
+				if info and getattr(info, "gestures", None):
+					for g in info.gestures:
+						reserved.add(normalizeGesture(g))
+		except Exception:
+			pass
+		return reserved
+
 	def onSetShortcut(self, event):
 		dialog = ShortcutCaptureDialog(self)
 		if dialog.ShowModal() == wx.ID_OK:
@@ -638,7 +729,7 @@ class InstantAccessItemDialog(wx.Dialog):
 			if not gestureName:
 				dialog.Destroy()
 				return
-			if gestureName in RESERVED_GESTURES:
+			if gestureName in self.getReservedGestures():
 				gui.messageBox(
 					_("This shortcut is reserved for instant Access."),
 					ERROR_CAPTION,
@@ -683,7 +774,7 @@ class InstantAccessItemDialog(wx.Dialog):
 			return None
 
 		normalizedGesture = normalizeGesture(gesture)
-		if normalizedGesture in RESERVED_GESTURES:
+		if normalizedGesture in self.getReservedGestures():
 			gui.messageBox(
 				_("This shortcut is reserved for instant Access."),
 				ERROR_CAPTION,
@@ -708,18 +799,14 @@ class InstantAccessItemDialog(wx.Dialog):
 			excludeName=excludeName,
 		)
 		if conflictItem:
+			conflictName = conflictItem.get("name", "")
 			if appName:
-				gui.messageBox(
-					_("This shortcut is already assigned for this app."),
-					ERROR_CAPTION,
-					wx.OK | wx.ICON_ERROR,
-				)
+				# Translators: Error shown when an app-specific shortcut conflicts with an existing item.
+				msg = _("This shortcut is already assigned to '{name}' for this app.").format(name=conflictName)
 			else:
-				gui.messageBox(
-					_("This global shortcut is already assigned."),
-					ERROR_CAPTION,
-					wx.OK | wx.ICON_ERROR,
-				)
+				# Translators: Error shown when a global shortcut conflicts with an existing item.
+				msg = _("This global shortcut is already assigned to '{name}'.").format(name=conflictName)
+			gui.messageBox(msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 
 		return {
@@ -727,6 +814,7 @@ class InstantAccessItemDialog(wx.Dialog):
 			"gesture": normalizedGesture,
 			"appName": appName,
 			"interval": interval,
+			"stopOnError": self.stopOnErrorCheck.GetValue(),
 			"actions": [dict(action) for action in self.actions],
 		}
 

@@ -84,6 +84,7 @@ exclude = [
 	".venv",
 	"buildVars.py",
 	"tests",
+	"addon/globalPlugins/core/keyboard",
 ]
 
 [tool.ruff.format]

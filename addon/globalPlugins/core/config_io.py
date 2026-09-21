@@ -2,9 +2,18 @@
 
 import copy
 import json
+import logging
 import os
+import shutil
 
-from .constants import TEXT_SNIPPET_ACTION_VALUES, TYPE_SECTIONS, VERBOSITY_VALUES
+import addonHandler
+import gui
+import wx
+
+from .constants import CONFIRM_CAPTION, TEXT_SNIPPET_ACTION_VALUES, TYPE_SECTIONS, VERBOSITY_VALUES
+
+addonHandler.initTranslation()
+log = logging.getLogger(__name__)
 
 
 def _defaultConfig():
@@ -88,6 +97,9 @@ def _normalizeItem(rawItem):
 	gesture = (rawItem.get("gesture", "") or "").strip().lower()
 	appName = (rawItem.get("appName", "") or "").strip().lower()
 	interval = _toNonNegativeFloat(rawItem.get("interval", 0.0), 0.0)
+	stopOnError = rawItem.get("stopOnError", True)
+	if not isinstance(stopOnError, bool):
+		stopOnError = True
 	if not name or not gesture:
 		return None
 	rawActions = rawItem.get("actions", [])
@@ -102,6 +114,7 @@ def _normalizeItem(rawItem):
 		"name": name,
 		"gesture": gesture,
 		"interval": interval,
+		"stopOnError": stopOnError,
 		"actions": actions,
 	}
 	if appName:
@@ -140,17 +153,71 @@ def saveConfig(configPath, config):
 	configDir = os.path.dirname(configPath)
 	os.makedirs(configDir, exist_ok=True)
 	normalized = _normalizeConfig(config)
-	with open(configPath, "w", encoding="utf-8") as handle:
+	tempPath = configPath + ".tmp"
+	backupPath = configPath + ".bak"
+	with open(tempPath, "w", encoding="utf-8") as handle:
 		json.dump(normalized, handle, ensure_ascii=False, indent="\t")
+		handle.flush()
+		os.fsync(handle.fileno())
+	if os.path.exists(configPath):
+		try:
+			shutil.copy2(configPath, backupPath)
+		except Exception as e:
+			log.warning("Could not create config backup: %s", e)
+	os.replace(tempPath, configPath)
+
+
+def _shouldRecoverFromBackup():
+	"""Ask the user whether to restore a corrupted config from backup.
+
+	Only shows the dialog when called on the main thread; silently
+	recovers when called from a background thread to avoid wx deadlocks (C2).
+	"""
+	if not wx.IsMainThread():
+		return True
+	try:
+		# Translators: Prompt asking whether to recover corrupted configuration from backup.
+		promptMsg = _(
+			"The instant Access configuration file appears to be corrupted. "
+			"Would you like to restore the previous backup?"
+		)
+		return gui.messageBox(promptMsg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES
+	except Exception:
+		return True
+
+
+def _tryRecoverFromBackup(backupPath, configPath):
+	"""Attempt to restore configuration from a backup file.
+
+	Returns the recovered config dict on success, or None on failure.
+	"""
+	if not os.path.exists(backupPath):
+		return None
+	if not _shouldRecoverFromBackup():
+		return None
+	try:
+		with open(backupPath, "r", encoding="utf-8") as handle:
+			rawConfig = json.load(handle)
+		recovered = _normalizeConfig(rawConfig)
+		saveConfig(configPath, recovered)
+		return recovered
+	except Exception as e:
+		log.error("Failed to restore config from backup %s: %s", backupPath, e)
+		return None
 
 
 def loadConfigSafe(configPath):
 	ensureConfigFile(configPath)
+	backupPath = configPath + ".bak"
 	try:
 		with open(configPath, "r", encoding="utf-8") as handle:
 			rawConfig = json.load(handle)
 		return _normalizeConfig(rawConfig)
-	except Exception:
+	except Exception as e:
+		log.error("Failed to load config from %s: %s", configPath, e)
+		recovered = _tryRecoverFromBackup(backupPath, configPath)
+		if recovered is not None:
+			return recovered
 		defaultConfig = _defaultConfig()
 		saveConfig(configPath, defaultConfig)
 		return copy.deepcopy(defaultConfig)

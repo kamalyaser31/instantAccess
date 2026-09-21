@@ -6,8 +6,16 @@ addon_info = AddonInfo(
 	addon_summary=_("instant Access"),
 	addon_description=_("""A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer.
 	Features include background execution, verbosity levels, command line arguments, and settings import/export."""),
-	addon_version="2026.4",
+	addon_version="2026.5",
 	addon_changelog=_("""
+- Version 2026.5:
+  - Item Duplication: Easily clone items with all actions and settings via a new Duplicate button.
+  - Action Testing: Test actions in isolation with automatic 3-second preparation countdown for typing and keystrokes.
+  - Multi-Action Stop on Error: Optional setting to abort remaining actions if an error occurs.
+  - System Integration: Support for PATH commands, batch scripts (.bat/.cmd), and custom URI protocols (e.g. mailto:, ms-settings:).
+  - Keyboard Ergonomics: Enter to edit item, Delete to delete item/action with confirmation, Ctrl+Up/Down to reorder actions.
+  - Safety & Disaster Recovery: Atomic configuration saves, automatic backups (config.json.bak), and corruption recovery prompts.
+  - Modernized Tooling: Built with official NVDA addonTemplate standards (PEP 735, uv, prek.toml).
 - Version 2026.4:
   - New Feature: Keystrokes macro simulation (allows advanced screen reader users to execute keyboard shortcut sequences with custom delays).
   - Code Quality: Refactored core modules to improve maintainability and clean up code duplication.
@@ -24,7 +32,7 @@ addon_info = AddonInfo(
 	addon_lastTestedNVDAVersion="2026.1",
 	addon_updateChannel=None,
 	addon_license="GPL v2",
-	addon_licenseURL=None,
+	addon_licenseURL="https://www.gnu.org/licenses/gpl-2.0.html",
 )
 pythonSources = ["addon/**/*.py"]
 i18nSources: list[str] = pythonSources + ["buildVars.py"]

@@ -1,10 +1,10 @@
-   Instant Access 2026.4
+Instant Access 2026.5
 
 Instant Access for NVDA
 =======================
 
 *   **Author:** Kamal Yaser
-*   **Version:** 2026.4
+*   **Version:** 2026.5
 *   **Compatibility:** NVDA 2024.1 and later
 
 Overview
@@ -18,15 +18,23 @@ Key Features
 ------------
 
 *   **Multi-Action Items:** Assign a sequence of actions to a single shortcut.
+*   **Item Duplication:** Clone any configured item with a single click, preserving all actions and settings.
+*   **Action Testing:** Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.
+*   **Stop on Error:** Optional setting to abort the rest of an item's action sequence if any action fails to execute.
 *   **Timing Control:** Set a custom delay before each action and a shared interval between all actions in an item.
 *   **App-Specific Shortcuts:** Make a shortcut global or restrict it to a specific application.
+*   **Keyboard Ergonomics:**
+    *   Press `Enter` to edit the selected item.
+    *   Press `Delete` to delete the selected item or action (with confirmation).
+    *   Press `Ctrl+Up` / `Ctrl+Down` in the item dialog to reorder actions.
 *   **Wide Range of Actions:**
-    *   Launch websites, programs, folders, and files.
+    *   Launch websites, custom URL protocols (`mailto:`, `ms-settings:`), programs, folders, files, batch scripts (`.bat`, `.cmd`), and system PATH commands.
     *   Execute NVDA commands from a filterable list.
     *   Insert, copy, or paste reusable text snippets.
     *   Simulate keystroke sequences with adjustable delay.
-*   **Centralized Management:** A comprehensive settings panel to add, edit, test, and organize your items.
-*   **Import & Export:** Back up and share your configuration in JSON format.
+*   **Centralized Management:** A comprehensive settings panel to add, edit, duplicate, test, and organize your items.
+*   **Safe Import & Export:** Back up and share your configuration in JSON format with confirmation before overwrite and success notifications.
+*   **Atomic Config & Disaster Recovery:** Safe atomic saves prevent corruption, accompanied by automatic backups (`config.json.bak`) and startup recovery prompts.
 *   **Adjustable Verbosity:** Choose between detailed feedback (Beginner) or concise tones (Advanced).
 
 Built-In Shortcuts
@@ -46,14 +54,14 @@ You can configure the add-on from the NVDA settings panel:
 2.  Go to **Preferences** -> **Settings**.
 3.  Select the **instant Access** category.
 
-The main settings panel lists all your configured items, showing their name, type, shortcut, and a summary of their actions. From here, you can **Add**, **Edit**, **Delete**, and **Test** your items.
+The main settings panel lists all your configured items, showing their name, type, shortcut, and a summary of their actions. From here, you can **Add**, **Edit**, **Duplicate**, **Delete**, and **Test** your items, or **Export** and **Import** your configuration.
 
 Understanding Items and Actions
 -------------------------------
 
 The add-on is built around two core concepts: **Items** and **Actions**.
 
-*   An **Item** is the main unit you create. It has a name, a shortcut (gesture), and a list of one or more actions to perform. It can also be restricted to an app and have a pause interval between its actions.
+*   An **Item** is the main unit you create. It has a name, a shortcut (gesture), and a list of one or more actions to perform. It can also be restricted to an app, have a pause interval between its actions, and have error halting enabled.
 *   An **Action** is a single step within an item. When you trigger an item, it executes its actions in order.
 
 ### Creating and Editing an Item
@@ -61,7 +69,8 @@ The add-on is built around two core concepts: **Items** and **Actions**.
 When you add or edit an item, a dialog appears with the following options:
 
 *   **Name:** A unique, descriptive name for your item.
-*   **Actions List:** A list of all the actions this item will perform. You can **Add**, **Edit**, **Delete**, **Move up**, and **Move down** actions to define the sequence.
+*   **Actions List:** A list of all the actions this item will perform. You can **Add**, **Edit**, **Delete**, **Move up**, and **Move down** actions to define the sequence (or use `Delete` and `Ctrl+Up`/`Ctrl+Down`).
+*   **Stop executing subsequent actions if an error occurs:** A checkbox to prevent subsequent actions from running if an error occurs.
 *   **Interval between actions (seconds):** A pause (in seconds) that occurs _after_ each action in the sequence (except the last one).
 *   **Restrict this shortcut...:** A checkbox to make the shortcut app-specific.
     *   **App name:** If the restriction is checked, you must provide the exact app name (use `NVDA+Shift+E` to find it).
@@ -85,6 +94,7 @@ When you add or edit an action, you can choose from several types:
     *   **Repetition:** You can repeat a key by appending a space and a count (e.g., `down 5` to press the Down Arrow 5 times).
     *   **Delay between keystrokes:** You can set a custom pause (in seconds) to occur between each keystroke.
 *   **Delay before executing this action:** A pause (in seconds) that occurs _before_ this specific action runs.
+*   **Test Button:** Allows you to test the current action in isolation without having to save the item or run the entire sequence. For Keystroke and Text Snippet actions, a 3-second preparation countdown allows you to switch (via `Alt+Tab`) to the intended target window before typing starts.
 
 Examples of Use
 ---------------

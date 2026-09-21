@@ -56,6 +56,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		except Exception as e:
 			log.error("Error removing settings panel during termination: %s", e, exc_info=True)
 
+		InstantAccessSettingsPanel.configManager = None
+		InstantAccessSettingsPanel.onConfigChanged = None
 		InstantAccessSettingsPanel.onRunItem = None
 		InstantAccessSettingsPanel.onVerbosityChanged = None
 		self.deactivateInstantMode(speak=False)
@@ -254,6 +256,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_reportCurrentAppName(self, gesture):
 		appName = self.getCurrentAppName()
 		if not appName:
+			# Translators: Message announced when current application name could not be determined.
+			ui.message(_("Could not determine current application name."))
 			return
 		if scriptHandler.getLastScriptRepeatCount() > 0:
 			if hasattr(api, "setClipText"):

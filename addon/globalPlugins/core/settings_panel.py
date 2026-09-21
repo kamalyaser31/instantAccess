@@ -92,8 +92,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		self.listCtrl.InsertColumn(1, _("Type"))
 		# Translators: Column label for shortcut in the list.
 		self.listCtrl.InsertColumn(2, _("Shortcut"))
-		# Translators: Column label for path or URL in the list.
-		self.listCtrl.InsertColumn(3, _("Path"))
+		# Translators: Column label for details in the list.
+		self.listCtrl.InsertColumn(3, _("Details"))
 		sHelper.addItem(self.listCtrl, flag=wx.EXPAND, proportion=1)
 
 		buttonHelper = guiHelper.ButtonHelper(wx.HORIZONTAL)
@@ -103,6 +103,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		self.editButton = buttonHelper.addButton(self, label=_("&Edit"))
 		# Translators: Label for the Delete button in the settings panel.
 		self.deleteButton = buttonHelper.addButton(self, label=_("&Delete"))
+		# Translators: Label for the Duplicate button in the settings panel.
+		self.duplicateButton = buttonHelper.addButton(self, label=_("D&uplicate"))
 		# Translators: Label for the Test button in the settings panel.
 		self.testButton = buttonHelper.addButton(self, label=_("&Test"))
 		# Translators: Label for the Export settings button.
@@ -123,14 +125,24 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		self.addButton.Bind(wx.EVT_BUTTON, self.onAdd)
 		self.editButton.Bind(wx.EVT_BUTTON, self.onEdit)
 		self.deleteButton.Bind(wx.EVT_BUTTON, self.onDelete)
+		self.duplicateButton.Bind(wx.EVT_BUTTON, self.onDuplicate)
 		self.testButton.Bind(wx.EVT_BUTTON, self.onTest)
 		self.exportButton.Bind(wx.EVT_BUTTON, self.onExportSettings)
 		self.importButton.Bind(wx.EVT_BUTTON, self.onImportSettings)
 		self.listCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectionChange)
 		self.listCtrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onSelectionChange)
+		self.listCtrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onEdit)
+		self.listCtrl.Bind(wx.EVT_KEY_DOWN, self.onListKeyDown)
 
 		self.refreshList()
 		self.updateButtons()
+
+	def onListKeyDown(self, event):
+		keyCode = event.GetKeyCode()
+		if keyCode == wx.WXK_DELETE:
+			self.onDelete(event)
+		else:
+			event.Skip()
 
 	def onSave(self):
 		verbosityValue = VERBOSITY_VALUES[self.verbosityChoice.GetSelection()]
@@ -145,6 +157,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		hasSelection = self.listCtrl.GetFirstSelected() != -1
 		self.editButton.Enable(hasSelection)
 		self.deleteButton.Enable(hasSelection)
+		self.duplicateButton.Enable(hasSelection)
 		self.testButton.Enable(hasSelection)
 
 	def refreshList(self, selectName=None):
@@ -175,21 +188,39 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		except Exception:
 			return None
 
-	def onAdd(self, event):
-		# Translators: Title of the add item dialog.
-		dialog = InstantAccessItemDialog(self, self.configManager, _("Add item"))
-		if dialog.ShowModal() == wx.ID_OK:
-			result = dialog.result
+	def _saveItemResult(self, result, oldName=None):
+		"""Persist a dialog result and refresh the UI.
+
+		When *oldName* is given the existing item is updated; otherwise a new item is added.
+		"""
+		if oldName:
+			self.configManager.updateItem(
+				oldName,
+				result["name"],
+				result["gesture"],
+				result.get("actions", []),
+				result.get("interval", 0.0),
+				result.get("appName", ""),
+				result.get("stopOnError", True),
+			)
+		else:
 			self.configManager.addItem(
 				result["name"],
 				result["gesture"],
 				result.get("actions", []),
 				result.get("interval", 0.0),
 				result.get("appName", ""),
+				result.get("stopOnError", True),
 			)
-			self.refreshList(selectName=result["name"])
-			if self.onConfigChanged:
-				self.onConfigChanged()
+		self.refreshList(selectName=result["name"])
+		if self.onConfigChanged:
+			self.onConfigChanged()
+
+	def onAdd(self, event):
+		# Translators: Title of the add item dialog.
+		dialog = InstantAccessItemDialog(self, self.configManager, _("Add item"))
+		if dialog.ShowModal() == wx.ID_OK:
+			self._saveItemResult(dialog.result)
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
 
@@ -200,18 +231,22 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		# Translators: Title of the edit item dialog.
 		dialog = InstantAccessItemDialog(self, self.configManager, _("Edit item"), existingItem=item)
 		if dialog.ShowModal() == wx.ID_OK:
-			result = dialog.result
-			self.configManager.updateItem(
-				item["name"],
-				result["name"],
-				result["gesture"],
-				result.get("actions", []),
-				result.get("interval", 0.0),
-				result.get("appName", ""),
-			)
-			self.refreshList(selectName=result["name"])
-			if self.onConfigChanged:
-				self.onConfigChanged()
+			self._saveItemResult(dialog.result, oldName=item["name"])
+		dialog.Destroy()
+		self.listCtrl.SetFocus()
+
+	def onDuplicate(self, event):
+		item = self.getSelectedItem()
+		if not item:
+			return
+		uniqueName = self.configManager.getUniqueItemName(item.get("name", ""))
+		clonedItem = dict(item)
+		clonedItem["name"] = uniqueName
+		clonedItem["gestures"] = []
+		# Translators: Title of the duplicate item dialog.
+		dialog = InstantAccessItemDialog(self, self.configManager, _("Duplicate item"), existingItem=clonedItem)
+		if dialog.ShowModal() == wx.ID_OK:
+			self._saveItemResult(dialog.result)
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
 
@@ -262,6 +297,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			destinationPath = dialog.GetPath()
 			try:
 				shutil.copy2(self.configManager.getConfigPath(), destinationPath)
+				# Translators: Message shown when settings are successfully exported.
+				gui.messageBox(_("Settings exported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
 			except Exception:
 				gui.messageBox(_("Could not export settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 		dialog.Destroy()
@@ -269,6 +306,16 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 	def onImportSettings(self, event):
 		if not self.configManager:
+			return
+		if (
+			gui.messageBox(
+				# Translators: Warning message before importing settings which will overwrite current configuration.
+				_("Importing settings will replace your current items. Are you sure you want to continue?"),
+				CONFIRM_CAPTION,
+				wx.YES_NO | wx.ICON_QUESTION,
+			)
+			!= wx.YES
+		):
 			return
 		dialog = wx.FileDialog(
 			self,
@@ -288,6 +335,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 					self.onConfigChanged()
 				if self.onVerbosityChanged:
 					self.onVerbosityChanged(currentVerbosity)
+				# Translators: Message shown when settings are successfully imported.
+				gui.messageBox(_("Settings imported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
 			except Exception:
 				gui.messageBox(_("Could not import settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 		dialog.Destroy()

@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="../style.css" media="screen">
-<title>instant Access 2026.4</title>
+<title>instant Access 2026.5</title>
 </head>
 <body>
-<p>Instant Access 2026.4</p>
+<p>Instant Access 2026.5</p>
 <h1>Instant Access for NVDA</h1>
 <ul>
 <li><strong>Author:</strong> Kamal Yaser</li>
-<li><strong>Version:</strong> 2026.4</li>
+<li><strong>Version:</strong> 2026.5</li>
 <li><strong>Compatibility:</strong> NVDA 2024.1 and later</li>
 </ul>
 <h2>Overview</h2>
@@ -20,17 +20,27 @@
 <h2>Key Features</h2>
 <ul>
 <li><strong>Multi-Action Items:</strong> Assign a sequence of actions to a single shortcut.</li>
+<li><strong>Item Duplication:</strong> Clone any configured item with a single click, preserving all actions and settings.</li>
+<li><strong>Action Testing:</strong> Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.</li>
+<li><strong>Stop on Error:</strong> Optional setting to abort the rest of an item's action sequence if any action fails to execute.</li>
 <li><strong>Timing Control:</strong> Set a custom delay before each action and a shared interval between all actions in an item.</li>
 <li><strong>App-Specific Shortcuts:</strong> Make a shortcut global or restrict it to a specific application.</li>
+<li><strong>Keyboard Ergonomics:</strong><ul>
+<li>Press <code>Enter</code> to edit the selected item.</li>
+<li>Press <code>Delete</code> to delete the selected item or action (with confirmation).</li>
+<li>Press <code>Ctrl+Up</code> / <code>Ctrl+Down</code> in the item dialog to reorder actions.</li>
+</ul>
+</li>
 <li><strong>Wide Range of Actions:</strong><ul>
-<li>Launch websites, programs, folders, and files.</li>
+<li>Launch websites, custom URL protocols (<code>mailto:</code>, <code>ms-settings:</code>), programs, folders, files, batch scripts (<code>.bat</code>, <code>.cmd</code>), and system PATH commands.</li>
 <li>Execute NVDA commands from a filterable list.</li>
 <li>Insert, copy, or paste reusable text snippets.</li>
 <li>Simulate keystroke sequences with adjustable delay.</li>
 </ul>
 </li>
-<li><strong>Centralized Management:</strong> A comprehensive settings panel to add, edit, test, and organize your items.</li>
-<li><strong>Import &amp; Export:</strong> Back up and share your configuration in JSON format.</li>
+<li><strong>Centralized Management:</strong> A comprehensive settings panel to add, edit, duplicate, test, and organize your items.</li>
+<li><strong>Safe Import &amp; Export:</strong> Back up and share your configuration in JSON format with confirmation before overwrite and success notifications.</li>
+<li><strong>Atomic Config &amp; Disaster Recovery:</strong> Safe atomic saves prevent corruption, accompanied by automatic backups (<code>config.json.bak</code>) and startup recovery prompts.</li>
 <li><strong>Adjustable Verbosity:</strong> Choose between detailed feedback (Beginner) or concise tones (Advanced).</li>
 </ul>
 <h2>Built-In Shortcuts</h2>
@@ -47,18 +57,19 @@
 <li>Go to <strong>Preferences</strong> -&gt; <strong>Settings</strong>.</li>
 <li>Select the <strong>instant Access</strong> category.</li>
 </ol>
-<p>The main settings panel lists all your configured items, showing their name, type, shortcut, and a summary of their actions. From here, you can <strong>Add</strong>, <strong>Edit</strong>, <strong>Delete</strong>, and <strong>Test</strong> your items.</p>
+<p>The main settings panel lists all your configured items, showing their name, type, shortcut, and a summary of their actions. From here, you can <strong>Add</strong>, <strong>Edit</strong>, <strong>Duplicate</strong>, <strong>Delete</strong>, and <strong>Test</strong> your items, or <strong>Export</strong> and <strong>Import</strong> your configuration.</p>
 <h2>Understanding Items and Actions</h2>
 <p>The add-on is built around two core concepts: <strong>Items</strong> and <strong>Actions</strong>.</p>
 <ul>
-<li>An <strong>Item</strong> is the main unit you create. It has a name, a shortcut (gesture), and a list of one or more actions to perform. It can also be restricted to an app and have a pause interval between its actions.</li>
+<li>An <strong>Item</strong> is the main unit you create. It has a name, a shortcut (gesture), and a list of one or more actions to perform. It can also be restricted to an app, have a pause interval between its actions, and have error halting enabled.</li>
 <li>An <strong>Action</strong> is a single step within an item. When you trigger an item, it executes its actions in order.</li>
 </ul>
 <h3>Creating and Editing an Item</h3>
 <p>When you add or edit an item, a dialog appears with the following options:</p>
 <ul>
 <li><strong>Name:</strong> A unique, descriptive name for your item.</li>
-<li><strong>Actions List:</strong> A list of all the actions this item will perform. You can <strong>Add</strong>, <strong>Edit</strong>, <strong>Delete</strong>, <strong>Move up</strong>, and <strong>Move down</strong> actions to define the sequence.</li>
+<li><strong>Actions List:</strong> A list of all the actions this item will perform. You can <strong>Add</strong>, <strong>Edit</strong>, <strong>Delete</strong>, <strong>Move up</strong>, and <strong>Move down</strong> actions to define the sequence (or use <code>Delete</code> and <code>Ctrl+Up</code>/<code>Ctrl+Down</code>).</li>
+<li><strong>Stop executing subsequent actions if an error occurs:</strong> A checkbox to prevent subsequent actions from running if an error occurs.</li>
 <li><strong>Interval between actions (seconds):</strong> A pause (in seconds) that occurs <em>after</em> each action in the sequence (except the last one).</li>
 <li><strong>Restrict this shortcut...:</strong> A checkbox to make the shortcut app-specific.<ul>
 <li><strong>App name:</strong> If the restriction is checked, you must provide the exact app name (use <code>NVDA+Shift+E</code> to find it).</li>
@@ -87,6 +98,7 @@
 </ul>
 </li>
 <li><strong>Delay before executing this action:</strong> A pause (in seconds) that occurs <em>before</em> this specific action runs.</li>
+<li><strong>Test Button:</strong> Allows you to test the current action in isolation without having to save the item or run the entire sequence. For Keystroke and Text Snippet actions, a 3-second preparation countdown allows you to switch (via <code>Alt+Tab</code>) to the intended target window before typing starts.</li>
 </ul>
 <h2>Examples of Use</h2>
 <p>Here are a few examples to inspire you and show how to combine actions into powerful workflows.</p>

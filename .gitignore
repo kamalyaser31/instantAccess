@@ -24,6 +24,7 @@ addon/doc/en/
 manifest.ini
 *.mo
 *.pot
+!instantAccess.pot
 *.po~
 *.nvda-addon
 .sconsign.dblite

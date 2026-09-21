@@ -21,3 +21,12 @@
 - [x] Stage 5: Documentation and project state <!-- id: 18 -->
   - [x] Create `project_state.md` <!-- id: 19 -->
   - [x] Update `changelog.md` <!-- id: 20 -->
+- [x] Stage 6: Version 2026.5 Development & Enhancement <!-- id: 22 -->
+  - [x] Atomic configuration saving, automatic backup, and recovery (`config_io.py`) <!-- id: 23 -->
+  - [x] Item duplication with unique naming and stop-on-error management (`config_manager.py`) <!-- id: 24 -->
+  - [x] Enhanced execution: PATH resolution, batch files, custom URI schemes, quote stripping (`executor.py`) <!-- id: 25 -->
+  - [x] Action testing with 3s countdown, non-blocking path validation, stop-on-error checkbox, list keyboard navigation (`item_dialog.py`) <!-- id: 26 -->
+  - [x] Settings panel duplicate button, details column, Delete/Enter shortcuts, safe import/export (`settings_panel.py`) <!-- id: 27 -->
+  - [x] Plugin lifecycle reference cleanup and empty app name reporting (`plugin.py`) <!-- id: 28 -->
+  - [x] Native Arabic documentation (`addon/doc/ar/readme.md`) and updated English guide (`readme.md`) <!-- id: 29 -->
+  - [x] Full localization synchronization in `addon/locale/ar/LC_MESSAGES/nvda.po` and POT generation <!-- id: 30 -->
