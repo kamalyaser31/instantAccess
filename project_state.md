@@ -34,4 +34,5 @@
 - Added atomic configuration saving, automatic `.bak` backups, and corrupted configuration recovery prompts.
 - Added native Arabic markdown documentation (`addon/doc/ar/readme.md`).
 - Published official GitHub Release `v2026.5` with asset `instantAccess-2026.5.nvda-addon`.
-- Submitted official registration issue to NV Access Add-on Store (`nvaccess/addon-datastore`).
+- Submitted registration issue to NV Access Add-on Store (`nvaccess/addon-datastore#11721`), successfully validated and accepted for official catalog publication.
+

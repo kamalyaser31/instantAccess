@@ -35,4 +35,5 @@
   - [x] Final build via `uv run scons` generating `instantAccess-2026.5.nvda-addon` <!-- id: 33 -->
   - [x] Git staging, commit, and push to main branch <!-- id: 34 -->
   - [x] GitHub Release `v2026.5` published with attached addon package <!-- id: 35 -->
-  - [x] Submission to official NVDA Add-on Store (`nvaccess/addon-datastore`) completed <!-- id: 36 -->
+  - [x] Submission to official NVDA Add-on Store (`nvaccess/addon-datastore#11721`) accepted and validated <!-- id: 36 -->
+
