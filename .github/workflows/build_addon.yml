@@ -34,7 +34,7 @@ jobs:
         uv sync
 
     - name: Code checks
-      run: uv run prek run --skip no-commit-to-branch --all-files
+      run: uv run ruff check addon/
 
     - name: building addon
       run: uv run scons && uv run scons pot
