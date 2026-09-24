@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: instantAccess 2026.5\n"
+"Project-Id-Version: instantAccess 2026.6\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-09-20 21:32+0300\n"
-"PO-Revision-Date: 2026-09-20 22:55+0300\n"
+"POT-Creation-Date: 2026-09-24 22:15+0300\n"
+"PO-Revision-Date: 2026-09-24 22:15+0300\n"
 "Last-Translator: Kamal Yaser <kamalyaser31@gmail.com>\n"
 "Language-Team: Arabic <LL@li.org>\n"
 "Language: ar\n"
@@ -601,6 +601,13 @@ msgstr ""
 #: buildVars.py:10
 msgid ""
 "\n"
+"- Version 2026.6:\n"
+"  - Configuration & Recovery Safety: Preserve valid backups during recovery, automatically recover missing configurations from backups, and leave stored data intact if recovery is declined or fails.\n"
+"  - Action Serialization: Run shortcuts and action tests through a unified, bounded queue to prevent keyboard and clipboard race conditions.\n"
+"  - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.\n"
+"  - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths with spaces, corrected key-name buffer capacity in Win32 API, and ensured modifier keys are released upon typing failure.\n"
+"  - UI Robustness: Retain user dialog inputs when disk saves fail, preserve command-picker selection state, and safely initialize in NVDA secure mode.\n"
+"  - Automated Regression Tests: Integrated 41 automated regression tests into CI.\n"
 "- Version 2026.5:\n"
 "  - Item Duplication: Easily clone items with all actions and settings via a "
 "new Duplicate button.\n"
@@ -632,6 +639,13 @@ msgid ""
 "performance."
 msgstr ""
 "\n"
+"- الإصدار 2026.6:\n"
+"  - أمان التهيئة والتعافي: الحفاظ على النسخ الاحتياطية الصالحة عند الاستعادة، والاستعادة التلقائية للتهيئة المفقودة، وصيانة بيانات القرص عند رفض الاستعادة أو تعثرها.\n"
+"  - تسلسل التنفيذ: تشغيل الاختصارات وتجارب الإجراءات عبر طابور عمل موحد ومحدد لمنع تداخل الحافظة وضغطات المفاتيح.\n"
+"  - مزامنة أوامر NVDA: انتظار اكتمال سكربتات NVDA لضمان تحكم الأخطاء في الإجراءات اللاحقة ضمن العناصر متعددة الإجراءات.\n"
+"  - إصلاحات لوحة المفاتيح وبيئة Windows: تصحيح علامات التنصيص لملفات الدفعات المشتملة على مسافات، وضبط سعة ذاكرة أسماء المفاتيح في Win32، وضمان تحرير مفاتيح التعديل عند إخفاق الكتابة.\n"
+"  - متانة الواجهة: استبقاء مدخلات المستخدم داخل حوار الإجراء عند فشل الحفظ، وحفظ حالة التحديد في منتقي الأوامر، والتهيئة الآمنة في وضع NVDA الآمن.\n"
+"  - اختبارات ارتدادية مؤتمتة: دمج 41 اختباراً ارتدادياً في دورة التكامل المستمر (CI).\n"
 "- الإصدار 2026.5:\n"
 "  - تكرار العناصر: استنساخ العناصر بكافة إجراءاتها وإعداداتها بسهولة عبر زر تكرار جديد.\n"
 "  - اختبار الإجراءات: تجربة الإجراءات منفردة مع مهلة إعداد تلقائية مدتها 3 ثوانٍ لإجراءات الكتابة وضغط المفاتيح.\n"
@@ -650,6 +664,33 @@ msgstr ""
 "  - إصلاح التحميل: حل مشكلة حرجة منعت تحميل الإضافة في بعض بيئات NVDA.\n"
 "  - التوثيق: تحديث دليل المستخدم العربي بالكامل لتوفير توجيهات أوضح.\n"
 "  - الاستقرار العام: تحسينات داخلية لتوفير أداء أكثر سلاسة."
+
+#: addon\globalPlugins\core\settings_panel.py:157
+#: addon\globalPlugins\core\settings_panel.py:295
+msgid "Could not save settings."
+msgstr "تعذر حفظ الإعدادات."
+
+#: addon\globalPlugins\core\settings_panel.py:231
+msgid ""
+"Could not save settings. Restore or import a valid configuration and try "
+"again."
+msgstr "تعذر حفظ الإعدادات. استعد النسخة الاحتياطية أو استورد ملف تهيئة صالحاً ثم حاول ثانية."
+
+#: addon\globalPlugins\core\executor.py:58
+msgid "Too many items are waiting. Please try again later."
+msgstr "هناك عناصر كثيرة قيد الانتظار. يرجى المحاولة لاحقاً."
+
+#: addon\globalPlugins\core\executor.py:119
+msgid "Error: NVDA command did not finish in time"
+msgstr "خطأ: لم ينتهِ أمر NVDA في الوقت المحدد"
+
+#: addon\globalPlugins\core\executor.py:75
+msgid "Error: Could not run the item"
+msgstr "خطأ: تعذر تشغيل العنصر"
+
+#: addon\globalPlugins\core\executor.py:395
+msgid "Error: Could not run the action"
+msgstr "خطأ: تعذر تشغيل الإجراء"
 
 #~ msgid "Path"
 #~ msgstr "المسار"

@@ -36,3 +36,13 @@
   - [x] Git staging, commit, and push to main branch <!-- id: 34 -->
   - [x] GitHub Release `v2026.5` published with attached addon package <!-- id: 35 -->
   - [x] Submission to official NVDA Add-on Store (`nvaccess/addon-datastore#11721`) accepted and validated <!-- id: 36 -->
+- [x] Stage 8: Version 2026.6 Review, Merge & Documentation Update <!-- id: 37 -->
+  - [x] Line-by-line audit of PR #18 against Clean Code and NVDA accessibility standards <!-- id: 38 -->
+  - [x] Merge PR #18 into main branch via GitHub CLI <!-- id: 39 -->
+  - [x] Safe SystemRoot environment resolution in executor.py <!-- id: 40 -->
+  - [x] Clean variable shadowing in config_io.py <!-- id: 41 -->
+  - [x] Update addon_version to 2026.6 and addon_changelog in buildVars.py <!-- id: 42 -->
+  - [x] Update changelog.md with 2026.6 release notes <!-- id: 43 -->
+  - [x] Update documentation headers and key features in readme.md and addon/doc/ar/readme.md <!-- id: 44 -->
+  - [x] Run full regression test suite (41 tests) and ruff linting <!-- id: 45 -->
+  - [x] Update project_state.md and task.md <!-- id: 46 -->

@@ -1,13 +1,29 @@
-from site_scons.site_tools.NVDATool.typings import AddonInfo, BrailleTables, SymbolDictionaries, SpeechDictionaries
+from site_scons.site_tools.NVDATool.typings import (
+    AddonInfo,
+    BrailleTables,
+    SymbolDictionaries,
+    SpeechDictionaries,
+)
 from site_scons.site_tools.NVDATool.utils import _
+
 # Add-on information variables
 addon_info = AddonInfo(
-	addon_name="instantAccess",
-	addon_summary=_("instant Access"),
-	addon_description=_("""A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer.
-	Features include background execution, verbosity levels, command line arguments, and settings import/export."""),
-	addon_version="2026.5",
-	addon_changelog=_("""
+    addon_name="instantAccess",
+    addon_summary=_("instant Access"),
+    addon_description=_(
+        """A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer.
+	Features include background execution, verbosity levels, command line arguments, and settings import/export."""
+    ),
+    addon_version="2026.6",
+    addon_changelog=_(
+        """
+- Version 2026.6:
+  - Configuration & Recovery Safety: Preserve valid backups during recovery, automatically recover missing configurations from backups, and leave stored data intact if recovery is declined or fails.
+  - Action Serialization: Run shortcuts and action tests through a unified, bounded queue to prevent keyboard and clipboard race conditions.
+  - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.
+  - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths with spaces, corrected key-name buffer capacity in Win32 API, and ensured modifier keys are released upon typing failure.
+  - UI Robustness: Retain user dialog inputs when disk saves fail, preserve command-picker selection state, and safely initialize in NVDA secure mode.
+  - Automated Regression Tests: Integrated 41 automated regression tests into CI.
 - Version 2026.5:
   - Item Duplication: Easily clone items with all actions and settings via a new Duplicate button.
   - Action Testing: Test actions in isolation with automatic 3-second preparation countdown for typing and keystrokes.
@@ -23,16 +39,17 @@ addon_info = AddonInfo(
 - Version 2026.3: Official release update.
   - Add-on Loading Fix: Resolved a critical issue that prevented the add-on from loading correctly in certain NVDA environments.
   - Documentation Updates: Fully updated the Arabic user guide to provide clearer instructions and information.
-  - General Stability: Internal refinements and cleanup to ensure smoother performance."""),
-	addon_author="Kamal Yaser <kamalyaser31@gmail.com>",
-	addon_url="https://github.com/kamalyaser31/instantAccess",
-	addon_sourceURL="https://github.com/kamalyaser31/instantAccess",
-	addon_docFileName="readme.html",
-	addon_minimumNVDAVersion="2024.1.0",
-	addon_lastTestedNVDAVersion="2026.1",
-	addon_updateChannel=None,
-	addon_license="GPL v2",
-	addon_licenseURL="https://www.gnu.org/licenses/gpl-2.0.html",
+  - General Stability: Internal refinements and cleanup to ensure smoother performance."""
+    ),
+    addon_author="Kamal Yaser <kamalyaser31@gmail.com>",
+    addon_url="https://github.com/kamalyaser31/instantAccess",
+    addon_sourceURL="https://github.com/kamalyaser31/instantAccess",
+    addon_docFileName="readme.html",
+    addon_minimumNVDAVersion="2024.1.0",
+    addon_lastTestedNVDAVersion="2026.1",
+    addon_updateChannel=None,
+    addon_license="GPL v2",
+    addon_licenseURL="https://www.gnu.org/licenses/gpl-2.0.html",
 )
 pythonSources = ["addon/**/*.py"]
 i18nSources: list[str] = pythonSources + ["buildVars.py"]

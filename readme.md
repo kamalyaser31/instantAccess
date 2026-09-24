@@ -1,10 +1,10 @@
-Instant Access 2026.5
+Instant Access 2026.6
 
 Instant Access for NVDA
 =======================
 
 *   **Author:** Kamal Yaser
-*   **Version:** 2026.5
+*   **Version:** 2026.6
 *   **Compatibility:** NVDA 2024.1 and later
 
 Overview
@@ -18,6 +18,7 @@ Key Features
 ------------
 
 *   **Multi-Action Items:** Assign a sequence of actions to a single shortcut.
+*   **Serialized Execution & Safety:** Actions and shortcuts execute through a unified, bounded worker queue to prevent clipboard and keystroke collisions, with automatic cancellation and modifier key recovery.
 *   **Item Duplication:** Clone any configured item with a single click, preserving all actions and settings.
 *   **Action Testing:** Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.
 *   **Stop on Error:** Optional setting to abort the rest of an item's action sequence if any action fails to execute.

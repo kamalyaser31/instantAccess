@@ -4,20 +4,20 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2026.6] - 2026-09-24
 
 ### Fixed
-- Preserve valid backups during recovery, recover missing configuration files, and leave disk data intact when recovery is declined or fails.
-- Reject malformed imports without silently discarding items, retain zero delays, and reject non-finite timing values.
-- Serialize shortcuts and action tests through one bounded queue; cancel pending work and interrupt delays when the add-on terminates.
-- Wait for NVDA commands to finish their script before continuing, and correctly apply stop-on-error handling to script, keyboard, and browser failures.
-- Restore text typing, release keyboard state after failures, and correct the Windows key-name buffer capacity.
-- Correct Windows batch file quoting and argument handling for paths containing spaces.
-- Apply action delays during testing, preserve command-picker selections, and safely handle secure-mode initialization.
-- Keep duplicated item names unique beyond 999 copies and retain dialog data when saving fails.
+- **Configuration & Recovery Safety**: Preserve valid backups during recovery, automatically recover missing configuration files from existing backups, and leave stored data intact when recovery is declined or fails.
+- **Strict Configuration Validation**: Reject malformed or invalid configuration imports without silently discarding items, retain zero delay values accurately, and reject non-finite or negative timing values.
+- **Action Serialization & Resource Queue**: Serialize shortcut and action testing execution through a single bounded worker queue (`ExecutionQueue`) to prevent keyboard and clipboard race conditions; cancel pending work and interrupt delays when the add-on terminates.
+- **NVDA Script Lifecycle & Error Propagation**: Wait for NVDA commands to finish their script execution before continuing the sequence, and correctly trigger stop-on-error behavior on script, keyboard, or browser failures.
+- **Keyboard Reliability & State Cleanup**: Restore Unicode text typing across platforms, release pressed modifier keys and reset replay flags upon failures, and fix the Windows key-name buffer capacity in Win32 API calls.
+- **Batch File Execution**: Correct Windows batch file (`.bat` / `.cmd`) quoting and argument handling for paths containing spaces.
+- **UI & Picker Enhancements**: Apply action delays accurately during testing, preserve command-picker selection state and lazy-loading, safely handle NVDA secure mode initialization, keep duplicated item names unique beyond 999 copies, and retain dialog input when saving fails.
 
 ### Added
-- Automated regression tests and a separate undefined-name check for the vendored keyboard library in CI.
+- **Automated Regression Suite**: Comprehensive test suite with 41 automated regression tests covering execution, configuration, and UI dialogs.
+- **CI Safety Checks**: Dedicated workflow checks for undefined names in vendored libraries (`ruff check --isolated --select F821`) alongside automated regression test execution.
 
 ## [2026.5] - 2026-09-20
 
