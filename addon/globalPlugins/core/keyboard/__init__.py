@@ -82,6 +82,7 @@ from __future__ import print_function as _print_function
 
 version = "0.13.5"
 
+import platform as _platform
 import re as _re
 import itertools as _itertools
 import collections as _collections
@@ -94,8 +95,8 @@ _time.monotonic = getattr(_time, "monotonic", None) or _time.time
 try:
 	# Python2
 	long, basestring
-	_is_str = lambda x: isinstance(x, basestring)
-	_is_number = lambda x: isinstance(x, (int, long))
+	_is_str = lambda x: isinstance(x, basestring)  # noqa: F821 - Python 2 compatibility
+	_is_number = lambda x: isinstance(x, (int, long))  # noqa: F821 - Python 2 compatibility
 	import Queue as _queue
 
 	# threading.Event is a function in Python2 wrappin _Event (?!).
@@ -388,19 +389,30 @@ def send(hotkey, do_press=True, do_release=True):
 
 	Note: keys are released in the opposite order they were pressed.
 	"""
-	_listener.is_replaying = True
-
 	parsed = parse_hotkey(hotkey)
-	for step in parsed:
-		if do_press:
-			for scan_codes in step:
-				_os_keyboard.press(scan_codes[0])
-
-		if do_release:
-			for scan_codes in reversed(step):
-				_os_keyboard.release(scan_codes[0])
-
-	_listener.is_replaying = False
+	was_replaying = getattr(_listener, "is_replaying", False)
+	_listener.is_replaying = True
+	pressed = []
+	try:
+		for step in parsed:
+			if do_press:
+				for scan_codes in step:
+					_os_keyboard.press(scan_codes[0])
+					pressed.append(scan_codes[0])
+			if do_release:
+				for scan_codes in reversed(step):
+					_os_keyboard.release(scan_codes[0])
+					if scan_codes[0] in pressed:
+						pressed.remove(scan_codes[0])
+	except Exception:
+		for scan_code in reversed(pressed):
+			try:
+				_os_keyboard.release(scan_code)
+			except Exception:
+				pass
+		raise
+	finally:
+		_listener.is_replaying = was_replaying
 
 
 # Alias.
@@ -870,17 +882,18 @@ def restore_state(scan_codes):
 	Given a list of scan_codes ensures these keys, and only these keys, are
 	pressed. Pairs well with `stash_state`, alternative to `restore_modifiers`.
 	"""
+	previous_replaying = getattr(_listener, "is_replaying", False)
 	_listener.is_replaying = True
-
-	with _pressed_events_lock:
-		current = set(_pressed_events)
-	target = set(scan_codes)
-	for scan_code in current - target:
-		_os_keyboard.release(scan_code)
-	for scan_code in target - current:
-		_os_keyboard.press(scan_code)
-
-	_listener.is_replaying = False
+	try:
+		with _pressed_events_lock:
+			current = set(_pressed_events)
+		target = set(scan_codes)
+		for scan_code in current - target:
+			_os_keyboard.release(scan_code)
+		for scan_code in target - current:
+			_os_keyboard.press(scan_code)
+	finally:
+		_listener.is_replaying = previous_replaying
 
 
 def restore_modifiers(scan_codes):
@@ -890,7 +903,7 @@ def restore_modifiers(scan_codes):
 	restore_state((scan_code for scan_code in scan_codes if is_modifier(scan_code)))
 
 
-def write(text, delay=0, restore_state_after=True, exact=None):
+def write(text, delay=0, restore_state_after=True, exact=None, cancel_event=None):
 	"""
 	Sends artificial keyboard events to the OS, simulating the typing of a given
 	text. Characters not available on the keyboard are typed as explicit unicode
@@ -911,40 +924,58 @@ def write(text, delay=0, restore_state_after=True, exact=None):
 	if exact is None:
 		exact = _platform.system() == "Windows"
 
+	if cancel_event is not None and cancel_event.is_set():
+		return False
 	state = stash_state()
+	try:
 
-	# Window's typing of unicode characters is quite efficient and should be preferred.
-	if exact:
-		for letter in text:
-			if letter in "\n\b":
-				send(letter)
-			else:
-				_os_keyboard.type_unicode(letter)
-			if delay:
-				_time.sleep(delay)
-	else:
-		for letter in text:
-			try:
-				entries = _os_keyboard.map_name(normalize_name(letter))
-				scan_code, modifiers = next(iter(entries))
-			except (KeyError, ValueError):
-				_os_keyboard.type_unicode(letter)
-				continue
+		# Window's typing of unicode characters is quite efficient and should be preferred.
+		if exact:
+			for letter in text:
+				if cancel_event is not None and cancel_event.is_set():
+					return False
+				if letter in "\n\b":
+					send(letter)
+				else:
+					_os_keyboard.type_unicode(letter)
+				if delay:
+					if cancel_event is not None:
+						if cancel_event.wait(delay):
+							return False
+					else:
+						_time.sleep(delay)
+		else:
+			for letter in text:
+				if cancel_event is not None and cancel_event.is_set():
+					return False
+				try:
+					entries = _os_keyboard.map_name(normalize_name(letter))
+					scan_code, modifiers = next(iter(entries))
+				except (KeyError, ValueError):
+					_os_keyboard.type_unicode(letter)
+					continue
 
-			for modifier in modifiers:
-				press(modifier)
+				for modifier in modifiers:
+					press(modifier)
 
-			_os_keyboard.press(scan_code)
-			_os_keyboard.release(scan_code)
+				_os_keyboard.press(scan_code)
+				_os_keyboard.release(scan_code)
 
-			for modifier in modifiers:
-				release(modifier)
+				for modifier in modifiers:
+					release(modifier)
 
-			if delay:
-				_time.sleep(delay)
+				if delay:
+					if cancel_event is not None:
+						if cancel_event.wait(delay):
+							return False
+					else:
+						_time.sleep(delay)
 
-	if restore_state_after:
-		restore_modifiers(state)
+
+		return True
+	finally:
+		if restore_state_after:
+			restore_modifiers(state)
 
 
 def wait(hotkey=None, suppress=False, trigger_on_release=False):

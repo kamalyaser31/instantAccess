@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 
@@ -17,7 +16,7 @@ import wx
 
 from .config_manager import ConfigManager
 from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION, VERBOSITY_VALUES
-from .executor import executeInstantItem
+from .executor import ExecutionQueue
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
 
@@ -29,13 +28,16 @@ log = logging.getLogger(__name__)
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def __init__(self):
 		super().__init__()
-		if globalVars.appArgs.secure:
-			return
-		self.executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="instantAccess")
+		self._enabled = False
 		self.verbosityLevel = VERBOSITY_VALUES[0]
 		self.instantMode = False
 		self.gestureToItems = {}
 		self.loadedCommandCount = 0
+		if globalVars.appArgs.secure:
+			self.clearGestureBindings()
+			return
+		self.executionQueue = ExecutionQueue()
+		self._enabled = True
 		configPath = os.path.join(globalVars.appArgs.configPath, "instantAccess", "config.json")
 		self.configManager = ConfigManager(configPath)
 		self.setVerbosityLevel(self.configManager.getVerbosityLevel())
@@ -43,11 +45,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		InstantAccessSettingsPanel.onConfigChanged = self.onConfigChanged
 		InstantAccessSettingsPanel.onRunItem = self.queueRunItemExecution
 		InstantAccessSettingsPanel.onVerbosityChanged = self.setVerbosityLevel
+		InstantAccessSettingsPanel.executionQueue = self.executionQueue
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(InstantAccessSettingsPanel)
 
 	def terminate(self):
-		if not hasattr(self, "executor"):
+		self._enabled = False
+		if not hasattr(self, "executionQueue"):
 			return
+		self.executionQueue.shutdown()
 		try:
 			gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(InstantAccessSettingsPanel)
 		except ValueError:
@@ -60,8 +65,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		InstantAccessSettingsPanel.onConfigChanged = None
 		InstantAccessSettingsPanel.onRunItem = None
 		InstantAccessSettingsPanel.onVerbosityChanged = None
+		InstantAccessSettingsPanel.executionQueue = None
 		self.deactivateInstantMode(speak=False)
-		self.executor.shutdown(wait=False, cancel_futures=True)
+		self.clearGestureBindings()
 
 	def onConfigChanged(self):
 		if self.instantMode:
@@ -79,17 +85,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		wx.CallAfter(tones.beep, frequency, duration)
 
 	def queueRunItemExecution(self, item):
-		if not item:
+		if not item or not self._enabled:
 			return
-		self.executor.submit(self.runItemTask, dict(item))
-
-	def runItemTask(self, item):
-		commandName = (item.get("name", "") or "").strip()
-		if commandName:
-			wx.CallAfter(ui.message, commandName)
-		executeInstantItem(item)
+		return self.executionQueue.submit(item)
 
 	def getScript(self, gesture):
+		if not self._enabled:
+			return None
 		if not self.instantMode:
 			return globalPluginHandler.GlobalPlugin.getScript(self, gesture)
 		script = globalPluginHandler.GlobalPlugin.getScript(self, gesture)
@@ -157,6 +159,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		return instantGestures
 
 	def activateInstantMode(self, speak=True):
+		if not self._enabled:
+			return
 		instantGestures = self.buildInstantGestures()
 		if self.loadedCommandCount <= 0:
 			self.instantMode = False
@@ -210,6 +214,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gesture="kb:NVDA+e",
 	)
 	def script_toggleInstantMode(self, gesture):
+		if not self._enabled:
+			return
 		if self.instantMode:
 			self.deactivateInstantMode()
 		else:
@@ -254,6 +260,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gesture="kb:NVDA+shift+e",
 	)
 	def script_reportCurrentAppName(self, gesture):
+		if not self._enabled:
+			return
 		appName = self.getCurrentAppName()
 		if not appName:
 			# Translators: Message announced when current application name could not be determined.

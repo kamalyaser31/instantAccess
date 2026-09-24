@@ -4,6 +4,21 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Preserve valid backups during recovery, recover missing configuration files, and leave disk data intact when recovery is declined or fails.
+- Reject malformed imports without silently discarding items, retain zero delays, and reject non-finite timing values.
+- Serialize shortcuts and action tests through one bounded queue; cancel pending work and interrupt delays when the add-on terminates.
+- Wait for NVDA commands to finish their script before continuing, and correctly apply stop-on-error handling to script, keyboard, and browser failures.
+- Restore text typing, release keyboard state after failures, and correct the Windows key-name buffer capacity.
+- Correct Windows batch file quoting and argument handling for paths containing spaces.
+- Apply action delays during testing, preserve command-picker selections, and safely handle secure-mode initialization.
+- Keep duplicated item names unique beyond 999 copies and retain dialog data when saving fails.
+
+### Added
+- Automated regression tests and a separate undefined-name check for the vendored keyboard library in CI.
+
 ## [2026.5] - 2026-09-20
 
 ### Added

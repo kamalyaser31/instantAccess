@@ -8,11 +8,15 @@ import re
 import shutil
 import subprocess
 import time
+import copy
+import threading
+from concurrent.futures import ThreadPoolExecutor
 import ui
 import webbrowser
 import wx
 
 from .nvda_commands import executeNvdaCommand
+from .timing import parseDelay
 
 addonHandler.initTranslation()
 
@@ -22,6 +26,105 @@ except Exception:
 	keyboard = None
 
 log = logging.getLogger(__name__)
+
+
+def _isCancelled(cancelEvent):
+	return cancelEvent is not None and cancelEvent.is_set()
+
+
+def _wait(delay, cancelEvent=None):
+	delay = parseDelay(delay)
+	if cancelEvent is not None:
+		return not cancelEvent.wait(delay)
+	if delay:
+		time.sleep(delay)
+	return True
+
+
+class ExecutionQueue:
+	"""Serialize complete items and action tests, with bounded, cancellable work."""
+
+	def __init__(self):
+		self.cancelEvent = threading.Event()
+		self._slots = threading.BoundedSemaphore(32)
+		self._lock = threading.Lock()
+		self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantAccess")
+
+	def submit(self, item, preDelay=0):
+		with self._lock:
+			if self.cancelEvent.is_set():
+				return None
+			if not self._slots.acquire(blocking=False):
+				queueMessage(_("Too many items are waiting. Please try again later."))
+				return None
+			try:
+				future = self._executor.submit(self._run, copy.deepcopy(item), parseDelay(preDelay))
+			except Exception:
+				self._slots.release()
+				raise
+			future.add_done_callback(self._onDone)
+			return future
+
+	def _onDone(self, future):
+		self._slots.release()
+		if not future.cancelled():
+			try:
+				future.result()
+			except Exception:
+				log.exception("Item execution failed")
+				if not self.cancelEvent.is_set():
+					queueMessage(_("Error: Could not run the item"))
+
+	def _run(self, item, preDelay):
+		if not _wait(preDelay, self.cancelEvent):
+			return False
+		if item.get("name"):
+			queueMessage(item["name"])
+		return executeInstantItem(item, self.cancelEvent)
+
+	def shutdown(self):
+		with self._lock:
+			self.cancelEvent.set()
+			self._executor.shutdown(wait=False, cancel_futures=True)
+
+
+def _executeNvdaAction(commandId, cancelEvent=None, timeout=30):
+	"""Wait in the worker until the actual queued script finishes, never in the UI."""
+	completed = threading.Event()
+	expired = threading.Event()
+	result = [False]
+
+	def isCancelled():
+		return expired.is_set() or _isCancelled(cancelEvent)
+
+	def onComplete(success):
+		result[0] = bool(success)
+		completed.set()
+
+	def dispatch():
+		if isCancelled():
+			onComplete(False)
+			return
+		try:
+			executeNvdaCommand(commandId, onComplete=onComplete, isCancelled=isCancelled)
+		except Exception:
+			log.exception("Could not dispatch NVDA command")
+			onComplete(False)
+
+	if wx.IsMainThread():
+		# Item execution is a worker operation. Refuse to deadlock the main loop.
+		log.error("NVDA command execution must be requested from the execution queue")
+		return False
+	wx.CallAfter(dispatch)
+	deadline = time.monotonic() + timeout
+	while not completed.wait(0.05):
+		if isCancelled() or time.monotonic() >= deadline:
+			expired.set()
+			if not _isCancelled(cancelEvent):
+				queueMessage(_("Error: NVDA command did not finish in time"))
+			# A timed-out command must not race subsequent actions, even in continue mode.
+			raise TimeoutError("NVDA command did not finish in time")
+	return result[0] and not isCancelled()
 
 
 def expandPath(rawPath):
@@ -51,16 +154,17 @@ def _setClipboardText(text):
 	return False
 
 
-def _executeTextSnippet(path, action, typingDelay=0.05):
+def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 	"""Execute a text snippet action (type, copy, or paste). Returns True on success."""
 	text = path or ""
 	action = (action or "type").strip().lower()
 	try:
-		typingDelay = float(typingDelay)
+		typingDelay = parseDelay(typingDelay)
 	except (ValueError, TypeError):
-		typingDelay = 0.05
-	if typingDelay < 0:
-		typingDelay = 0.05
+		queueMessage(_("Typing delay must be a valid number."))
+		return False
+	if _isCancelled(cancelEvent):
+		return False
 	if not text:
 		queueMessage(_("Error: Text snippet is empty"))
 		return False
@@ -79,6 +183,8 @@ def _executeTextSnippet(path, action, typingDelay=0.05):
 			queueMessage(_("Error: Keyboard library is not available"))
 			return False
 		try:
+			if _isCancelled(cancelEvent):
+				return False
 			keyboard.send("ctrl+v")
 			return True
 		except Exception as e:
@@ -90,8 +196,7 @@ def _executeTextSnippet(path, action, typingDelay=0.05):
 		queueMessage(_("Error: Keyboard library is not available"))
 		return False
 	try:
-		keyboard.write(text, delay=typingDelay)
-		return True
+		return keyboard.write(text, delay=typingDelay, cancel_event=cancelEvent) is not False
 	except Exception as e:
 		log.error("Error typing text snippet: %s", e)
 		queueMessage(_("Error: Could not type text snippet"))
@@ -120,20 +225,23 @@ def _parseKeystrokeLine(raw_line):
 	return (raw_line, 1)
 
 
-def _sendKeystrokeSequence(keys_text, pressDelay):
+def _sendKeystrokeSequence(keys_text, pressDelay, cancelEvent=None):
 	"""Send each line in keys_text as a keyboard hotkey, repeating if a count suffix is given.
 
 	Stops on the first send failure and notifies the user via NVDA speech.
 	Caller is responsible for checking keyboard availability and empty input.
 	Returns True on success, False on failure.
 	"""
+	pressDelay = parseDelay(pressDelay)
 	lines = keys_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
 	for raw_line in lines:
 		line = raw_line.strip()
 		if not line or line.startswith("#"):
 			continue
 		hotkey, count = _parseKeystrokeLine(line)
-		for _ in range(count):
+		for repeatIndex in range(count):
+			if _isCancelled(cancelEvent):
+				return False
 			try:
 				keyboard.send(hotkey)
 			except Exception as e:
@@ -142,16 +250,18 @@ def _sendKeystrokeSequence(keys_text, pressDelay):
 					_("Error: Could not send keystroke: {key}").format(key=hotkey),
 				)
 				return False
-			if pressDelay > 0:
-				time.sleep(pressDelay)
+			if not _wait(pressDelay, cancelEvent):
+				return False
 	return True
 
 
-def executeInstantAction(action):
+def executeInstantAction(action, cancelEvent=None):
 	"""Execute a single instant action based on its type. Returns True on success, False on failure.
 
 	*action* is a dict with keys: type, path, arguments, textAction, typingDelay, pressDelay.
 	"""
+	if _isCancelled(cancelEvent):
+		return False
 	itemType = action.get("type", "")
 	path = action.get("path", "")
 	arguments = action.get("arguments", "")
@@ -167,19 +277,20 @@ def executeInstantAction(action):
 		if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", url):
 			url = "https://" + url
 		try:
-			webbrowser.open(url)
-			return True
+			if webbrowser.open(url):
+				return True
+			queueMessage(_("Error: Could not open the website"))
+			return False
 		except Exception as e:
 			log.error("Error opening website: %s", e)
 			queueMessage(_("Error: Could not open the website"))
 			return False
 
 	if itemType == "NvdaCommands":
-		wx.CallAfter(executeNvdaCommand, (path or "").strip())
-		return True
+		return _executeNvdaAction((path or "").strip(), cancelEvent)
 
 	if itemType == "TextSnippets":
-		return _executeTextSnippet(path, textAction, typingDelay=typingDelay)
+		return _executeTextSnippet(path, textAction, typingDelay=typingDelay, cancelEvent=cancelEvent)
 
 	if itemType == "Keystrokes":
 		if keyboard is None:
@@ -189,7 +300,7 @@ def executeInstantAction(action):
 		if not keys_text:
 			queueMessage(_("Error: Keystrokes field is empty"))
 			return False
-		return _sendKeystrokeSequence(keys_text, pressDelay)
+		return _sendKeystrokeSequence(keys_text, pressDelay, cancelEvent)
 
 	resolvedPath = expandPath(path or "")
 	if not resolvedPath:
@@ -237,10 +348,13 @@ def executeInstantAction(action):
 			workingDir = os.path.dirname(resolvedPath) or None
 			is_batch = resolvedPath.lower().endswith((".bat", ".cmd"))
 			if is_batch:
-				cmd = ["cmd", "/c", resolvedPath]
+				# cmd.exe needs its own outer quoting; arguments remain a command-line string.
+				interpreter = os.path.join(os.environ["SystemRoot"], "System32", "cmd.exe")
+				batchCommand = f'"{os.path.abspath(resolvedPath)}"'
 				if argumentsText:
-					cmd.append(argumentsText)
-				subprocess.Popen(cmd, cwd=workingDir)
+					batchCommand += " " + argumentsText
+				commandLine = subprocess.list2cmdline([interpreter]) + f' /d /s /c "{batchCommand}"'
+				subprocess.Popen(commandLine, cwd=workingDir)
 			elif argumentsText:
 				commandLine = subprocess.list2cmdline([resolvedPath]) + " " + argumentsText
 				subprocess.Popen(commandLine, cwd=workingDir)
@@ -255,28 +369,36 @@ def executeInstantAction(action):
 	return False
 
 
-def executeInstantItem(item):
+def executeInstantItem(item, cancelEvent=None):
 	"""Execute all actions within an instant item."""
 	if not item:
-		return
+		return False
 	actions = item.get("actions", [])
 	stopOnError = bool(item.get("stopOnError", True))
 	try:
-		interval = float(item.get("interval", 0.0) or 0.0)
+		interval = parseDelay(item.get("interval", 0.0))
 	except (ValueError, TypeError):
-		interval = 0.0
-	if interval < 0:
-		interval = 0.0
+		queueMessage(_("Interval must be a valid number."))
+		return False
+	allSucceeded = True
 	for index, action in enumerate(actions):
+		if _isCancelled(cancelEvent):
+			return False
 		try:
-			delay = float(action.get("delay", 0.0) or 0.0)
-		except (ValueError, TypeError):
-			delay = 0.0
-		if delay > 0:
-			time.sleep(delay)
-		success = executeInstantAction(action)
+			if not _wait(action.get("delay", 0.0), cancelEvent):
+				return False
+			success = executeInstantAction(action, cancelEvent)
+		except TimeoutError:
+			return False
+		except Exception:
+			log.exception("Action %d failed for item '%s'", index, item.get("name"))
+			queueMessage(_("Error: Could not run the action"))
+			success = False
+		allSucceeded = allSucceeded and success
 		if not success and stopOnError:
 			log.warning("Action %d failed, stopping sequence for item '%s'", index, item.get("name"))
-			break
+			return False
 		if index < len(actions) - 1 and interval > 0:
-			time.sleep(interval)
+			if not _wait(interval, cancelEvent):
+				return False
+	return allSucceeded

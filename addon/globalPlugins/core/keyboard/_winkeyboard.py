@@ -407,7 +407,7 @@ def get_event_names(scan_code, vk, is_extended, modifiers):
 		# If your 6 and 7 keys are named "^6" and "^7", this is the reason.
 		ToUnicode(vk, scan_code, keyboard_state, unicode_buffer, len(unicode_buffer), 0)
 
-	name_ret = GetKeyNameText(scan_code << 16 | is_extended << 24, name_buffer, 1024)
+	name_ret = GetKeyNameText(scan_code << 16 | is_extended << 24, name_buffer, len(name_buffer))
 	if name_ret and name_buffer.value:
 		yield name_buffer.value
 
@@ -663,7 +663,8 @@ def type_unicode(character):
 	LPINPUT = INPUT * nInputs
 	pInputs = LPINPUT(*inputs)
 	cbSize = c_int(ctypes.sizeof(INPUT))
-	SendInput(nInputs, pInputs, cbSize)
+	if SendInput(nInputs, pInputs, cbSize) != nInputs:
+		raise OSError("Could not send Unicode keyboard input")
 
 
 if __name__ == "__main__":

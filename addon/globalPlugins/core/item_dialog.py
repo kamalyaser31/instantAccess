@@ -1,7 +1,5 @@
 import os
 import shutil
-import threading
-import time
 
 import addonHandler
 import gui
@@ -21,7 +19,8 @@ from .constants import (
 	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 )
-from .executor import executeInstantAction, expandPath
+from .executor import expandPath
+from .timing import parseDelay
 from .gestures import (
 	buildGestureNameFromEvent,
 	formatGestureForDisplay,
@@ -102,6 +101,7 @@ class InstantAccessActionDialog(wx.Dialog):
 		wx.Dialog.__init__(self, parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self.selectedCommandId = ""
 		self.selectedCommandLabel = ""
+		self.executionQueue = getattr(parent, "executionQueue", None)
 
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		sizerHelper = guiHelper.BoxSizerHelper(self, wx.VERTICAL)
@@ -371,7 +371,7 @@ class InstantAccessActionDialog(wx.Dialog):
 					return None
 
 		try:
-			delay = float((self.delayCtrl.GetValue() or "0").strip())
+			delay = parseDelay((self.delayCtrl.GetValue() or "0").strip())
 		except Exception:
 			gui.messageBox(_("Delay must be a valid number."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
@@ -431,16 +431,11 @@ class InstantAccessActionDialog(wx.Dialog):
 			if gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
 				return
 
-		def _runAction(pre_delay=0):
-			if pre_delay > 0:
-				time.sleep(pre_delay)
-			executeInstantAction(result)
-
-		threading.Thread(
-			target=_runAction,
-			kwargs={"pre_delay": 3 if needsSwitchDelay else 0},
-			daemon=True,
-		).start()
+		if self.executionQueue is not None:
+			self.executionQueue.submit(
+				{"actions": [result], "stopOnError": True},
+				preDelay=3 if needsSwitchDelay else 0,
+			)
 
 	def _parseDelayField(self, raw_value, invalid_msg, negative_msg):
 		"""Parse a delay text field and show an error dialog on invalid input.
@@ -449,7 +444,7 @@ class InstantAccessActionDialog(wx.Dialog):
 		Returns the parsed float or None if validation fails.
 		"""
 		try:
-			value = float((raw_value or "0.05").strip())
+			value = parseDelay((raw_value or "0.05").strip())
 		except Exception:
 			gui.messageBox(invalid_msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
@@ -470,6 +465,7 @@ class InstantAccessItemDialog(wx.Dialog):
 	def __init__(self, parent, configManager, title, existingItem=None):
 		wx.Dialog.__init__(self, parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self.configManager = configManager
+		self.executionQueue = getattr(parent, "executionQueue", None)
 		self.existingItem = existingItem
 		self.gesture = ""
 		self.actions = []
@@ -766,7 +762,7 @@ class InstantAccessItemDialog(wx.Dialog):
 			return None
 
 		try:
-			interval = float((self.intervalCtrl.GetValue() or "0").strip())
+			interval = parseDelay((self.intervalCtrl.GetValue() or "0").strip())
 		except Exception:
 			gui.messageBox(_("Interval must be a valid number."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None

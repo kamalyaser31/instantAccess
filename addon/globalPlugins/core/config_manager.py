@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from .config_io import ensureConfigFile, loadConfigSafe, saveConfig
+from .config_io import ensureConfigFile, loadConfigSafe, loadConfigFromPathStrict, saveConfig
 from .constants import TYPE_SECTIONS, VERBOSITY_VALUES
 
 # Set up logging for better debugging
@@ -23,6 +23,10 @@ class ConfigManager:
 	def saveConfig(self, config):
 		"""Save the configuration to file."""
 		saveConfig(self.configPath, config)
+
+	def _loadConfigForUpdate(self):
+		"""Do not turn a read-only recovery fallback into a destructive write."""
+		return loadConfigFromPathStrict(self.configPath)
 
 	def getConfigPath(self):
 		"""Get the path to the configuration file."""
@@ -53,7 +57,7 @@ class ConfigManager:
 			path = data.get("text", "")
 			textAction = data.get("action", "type")
 			try:
-				typingDelay = float(data.get("typingDelay", 0.05) or 0.05)
+				typingDelay = float(data.get("typingDelay", 0.05))
 			except (ValueError, TypeError):
 				typingDelay = 0.05
 			if typingDelay < 0:
@@ -61,7 +65,7 @@ class ConfigManager:
 		elif itemType == "Keystrokes":
 			path = data.get("keys", "")
 			try:
-				pressDelay = float(data.get("pressDelay", 0.05) or 0.05)
+				pressDelay = float(data.get("pressDelay", 0.05))
 			except (ValueError, TypeError):
 				pressDelay = 0.05
 			if pressDelay < 0:
@@ -115,7 +119,7 @@ class ConfigManager:
 		elif itemType == "TextSnippets":
 			# TextSnippets was previously caught by a catch-all else — now explicit.
 			try:
-				typingDelay = float(action.get("typingDelay", 0.05) or 0.05)
+				typingDelay = float(action.get("typingDelay", 0.05))
 			except (ValueError, TypeError):
 				typingDelay = 0.05
 			if typingDelay < 0:
@@ -127,7 +131,7 @@ class ConfigManager:
 			}
 		elif itemType == "Keystrokes":
 			try:
-				pressDelay = float(action.get("pressDelay", 0.05) or 0.05)
+				pressDelay = float(action.get("pressDelay", 0.05))
 			except (ValueError, TypeError):
 				pressDelay = 0.05
 			if pressDelay < 0:
@@ -211,7 +215,7 @@ class ConfigManager:
 		candidate = f"{baseName} (copy)"
 		if candidate not in existingNames:
 			return candidate
-		for counter in range(2, 1000):
+		for counter in range(2, len(existingNames) + 3):
 			candidate = f"{baseName} (copy {counter})"
 			if candidate not in existingNames:
 				return candidate
@@ -219,7 +223,7 @@ class ConfigManager:
 
 	def addItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
 		"""Add a new item to the configuration."""
-		config = self.loadOrCreateConfig()
+		config = self._loadConfigForUpdate()
 		items = [item for item in config.get("items", []) if item.get("name", "") != name]
 		items.append(
 			self._buildStoredItem(
@@ -236,7 +240,7 @@ class ConfigManager:
 
 	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
 		"""Update an existing item in the configuration."""
-		config = self.loadOrCreateConfig()
+		config = self._loadConfigForUpdate()
 		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
 		items.append(
 			self._buildStoredItem(
@@ -253,7 +257,7 @@ class ConfigManager:
 
 	def deleteItem(self, name):
 		"""Delete an item from the configuration."""
-		config = self.loadOrCreateConfig()
+		config = self._loadConfigForUpdate()
 		config["items"] = [item for item in config.get("items", []) if item.get("name", "") != name]
 		self.saveConfig(config)
 
@@ -268,7 +272,7 @@ class ConfigManager:
 
 	def setVerbosityLevel(self, value):
 		"""Set the verbosity level setting."""
-		config = self.loadOrCreateConfig()
+		config = self._loadConfigForUpdate()
 		value = (value or "").strip().lower()
 		if value not in VERBOSITY_VALUES:
 			value = VERBOSITY_VALUES[0]
