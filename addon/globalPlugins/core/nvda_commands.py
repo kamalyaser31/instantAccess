@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 from locale import strxfrm
+from functools import wraps
+import logging
 
 import addonHandler
 import api
@@ -12,6 +14,7 @@ import ui
 import wx
 
 addonHandler.initTranslation()
+log = logging.getLogger(__name__)
 
 
 COMMAND_ID_SEPARATOR = "|"
@@ -40,7 +43,7 @@ def buildCommandIdentifier(moduleName, className, scriptName):
 
 def parseCommandIdentifier(commandId):
 	parts = (commandId or "").split(COMMAND_ID_SEPARATOR)
-	if len(parts) != 3:
+	if len(parts) != 3 or not all(parts):
 		return None
 	return {"moduleName": parts[0], "className": parts[1], "scriptName": parts[2]}
 
@@ -100,14 +103,40 @@ class _InstantCommandGesture:
 	identifiers = [identifier]
 	displayName = _("instant Access command")
 
-	def __init__(self, script):
+	def __init__(self, script, onComplete=None, isCancelled=None):
 		self.script = script
+		self.onComplete = onComplete or (lambda success: None)
+		self.isCancelled = isCancelled or (lambda: False)
 
 	def send(self):
 		return
 
 	def executeScript(self, script):
-		return scriptHandler.executeScript(script, self)
+		_runObservedScript(script, self, self.onComplete, self.isCancelled)
+
+
+def _runObservedScript(script, gesture, onComplete, isCancelled):
+	"""Observe errors before NVDA consumes them, and finish only after script execution."""
+	success = False
+
+	@wraps(script)
+	def observedScript(inputGesture):
+		nonlocal success
+		if not isCancelled():
+			script(inputGesture)
+			success = True
+
+	# Preserve NVDA's repeat-count identity for repeated calls to the same script.
+	observedScript.__func__ = getattr(script, "__func__", script)
+	try:
+		if not isCancelled():
+			scriptHandler.executeScript(observedScript, gesture)
+	except Exception:
+		log.exception("Error executing NVDA command")
+	finally:
+		if not success and not isCancelled():
+			ui.message(_("Error: Could not run NVDA command"))
+		onComplete(success and not isCancelled())
 
 
 def _iterScriptableObjects():
@@ -188,25 +217,59 @@ def _resolveBoundScript(moduleName, className, scriptName):
 	return None
 
 
-def _emulateKeyboardScript(scriptName):
+def _emulateKeyboardScript(scriptName, onComplete, isCancelled):
 	if not scriptName.lower().startswith("kb:"):
 		return False
 	try:
 		gesture = keyboardHandler.KeyboardInputGesture.fromName(scriptName[3:])
+		# emulateGesture may queue a script instead of sending to the OS.
+		inScript = False
+
+		def executeScript(script):
+			nonlocal inScript
+			inScript = True
+			try:
+				_runObservedScript(script, gesture, onComplete, isCancelled)
+			finally:
+				inScript = False
+
+		gesture.executeScript = executeScript
+		originalSend = gesture.send
+
+		def send():
+			if isCancelled():
+				onComplete(False)
+				return
+			originalSend()
+			if not inScript:
+				onComplete(True)
+
+		gesture.send = send
+		if isCancelled():
+			onComplete(False)
+			return False
 		inputCore.manager.emulateGesture(gesture)
 		return True
 	except Exception:
+		log.exception("Error emulating NVDA keyboard command")
+		onComplete(False)
 		return False
 
 
-def executeNvdaCommand(commandId):
+def executeNvdaCommand(commandId, onComplete=None, isCancelled=None):
+	onComplete = onComplete or (lambda success: None)
+	isCancelled = isCancelled or (lambda: False)
+	if isCancelled():
+		onComplete(False)
+		return False
 	parsed = parseCommandIdentifier(commandId)
 	if not parsed:
 		ui.message(_("Error: Invalid NVDA command"))
+		onComplete(False)
 		return False
 
-	if _emulateKeyboardScript(parsed["scriptName"]):
-		return True
+	if parsed["scriptName"].lower().startswith("kb:"):
+		return _emulateKeyboardScript(parsed["scriptName"], onComplete, isCancelled)
 
 	script = _resolveBoundScript(
 		moduleName=parsed["moduleName"],
@@ -215,12 +278,14 @@ def executeNvdaCommand(commandId):
 	)
 	if not script:
 		ui.message(_("Error: NVDA command is not currently available"))
+		onComplete(False)
 		return False
 
 	try:
-		gesture = _InstantCommandGesture(script)
+		gesture = _InstantCommandGesture(script, onComplete, isCancelled)
 		scriptHandler.queueScript(script, gesture)
 		return True
 	except Exception:
 		wx.CallAfter(ui.message, _("Error: Could not run NVDA command"))
+		onComplete(False)
 		return False

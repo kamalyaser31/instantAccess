@@ -81,6 +81,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 	onConfigChanged = None
 	onRunItem = None
 	onVerbosityChanged = None
+	executionQueue = None
 
 	def makeSettings(self, settingsSizer):
 		sHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
@@ -150,7 +151,11 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 	def onSave(self):
 		verbosityValue = VERBOSITY_VALUES[self.verbosityChoice.GetSelection()]
-		self.configManager.setVerbosityLevel(verbosityValue)
+		try:
+			self.configManager.setVerbosityLevel(verbosityValue)
+		except (OSError, ValueError):
+			gui.messageBox(_("Could not save settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			return
 		if self.onVerbosityChanged:
 			self.onVerbosityChanged(verbosityValue)
 
@@ -197,34 +202,44 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 		When *oldName* is given the existing item is updated; otherwise a new item is added.
 		"""
-		if oldName:
-			self.configManager.updateItem(
-				oldName,
-				result["name"],
-				result["gesture"],
-				result.get("actions", []),
-				result.get("interval", 0.0),
-				result.get("appName", ""),
-				result.get("stopOnError", True),
+		try:
+			if oldName:
+				self.configManager.updateItem(
+					oldName,
+					result["name"],
+					result["gesture"],
+					result.get("actions", []),
+					result.get("interval", 0.0),
+					result.get("appName", ""),
+					result.get("stopOnError", True),
+				)
+			else:
+				self.configManager.addItem(
+					result["name"],
+					result["gesture"],
+					result.get("actions", []),
+					result.get("interval", 0.0),
+					result.get("appName", ""),
+					result.get("stopOnError", True),
+				)
+			self.refreshList(selectName=result["name"])
+			if self.onConfigChanged:
+				self.onConfigChanged()
+			return True
+		except (OSError, ValueError):
+			gui.messageBox(
+				_("Could not save settings. Restore or import a valid configuration and try again."),
+				ERROR_CAPTION,
+				wx.OK | wx.ICON_ERROR,
 			)
-		else:
-			self.configManager.addItem(
-				result["name"],
-				result["gesture"],
-				result.get("actions", []),
-				result.get("interval", 0.0),
-				result.get("appName", ""),
-				result.get("stopOnError", True),
-			)
-		self.refreshList(selectName=result["name"])
-		if self.onConfigChanged:
-			self.onConfigChanged()
+			return False
 
 	def onAdd(self, event):
 		# Translators: Title of the add item dialog.
 		dialog = InstantAccessItemDialog(self, self.configManager, _("Add item"))
-		if dialog.ShowModal() == wx.ID_OK:
-			self._saveItemResult(dialog.result)
+		while dialog.ShowModal() == wx.ID_OK:
+			if self._saveItemResult(dialog.result):
+				break
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
 
@@ -234,8 +249,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			return
 		# Translators: Title of the edit item dialog.
 		dialog = InstantAccessItemDialog(self, self.configManager, _("Edit item"), existingItem=item)
-		if dialog.ShowModal() == wx.ID_OK:
-			self._saveItemResult(dialog.result, oldName=item["name"])
+		while dialog.ShowModal() == wx.ID_OK:
+			if self._saveItemResult(dialog.result, oldName=item["name"]):
+				break
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
 
@@ -254,8 +270,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			_("Duplicate item"),
 			existingItem=clonedItem,
 		)
-		if dialog.ShowModal() == wx.ID_OK:
-			self._saveItemResult(dialog.result)
+		while dialog.ShowModal() == wx.ID_OK:
+			if self._saveItemResult(dialog.result):
+				break
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
 
@@ -272,7 +289,11 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			)
 			== wx.YES
 		):
-			self.configManager.deleteItem(item["name"])
+			try:
+				self.configManager.deleteItem(item["name"])
+			except (OSError, ValueError):
+				gui.messageBox(_("Could not save settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+				return
 			self.refreshList()
 			if self.items:
 				if deletedIndex < 0:

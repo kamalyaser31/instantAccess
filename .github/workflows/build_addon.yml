@@ -34,7 +34,12 @@ jobs:
         uv sync
 
     - name: Code checks
-      run: uv run ruff check addon/
+      run: |
+        uv run ruff check addon/
+        uv run ruff check --isolated --select F821 addon/globalPlugins/core/keyboard
+
+    - name: Regression tests
+      run: uv run python -m unittest discover -s tests
 
     - name: building addon
       run: uv run scons && uv run scons pot

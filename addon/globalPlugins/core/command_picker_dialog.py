@@ -76,7 +76,12 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		self._loadCommandsAsync()
 
 	def onDestroy(self, event):
+		if event.GetEventObject() is not self:
+			event.Skip()
+			return
 		self._isDestroyed = True
+		if self._loadFuture is not None:
+			self._loadFuture.cancel()
 		if self._filterCallLater is not None:
 			try:
 				self._filterCallLater.Stop()
@@ -124,7 +129,10 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		if not self._isTreeAlive():
 			return
 		self._isPopulatingTree = True
+		self.selectedCommandId = ""
+		self.okButton.Enable(False)
 		self.tree.Freeze()
+		preferredItem = None
 		try:
 			self.tree.DeleteAllItems()
 			root = self.tree.AddRoot("root")
@@ -135,12 +143,30 @@ class NvdaCommandPickerDialog(wx.Dialog):
 				categoryItem = self.tree.AppendItem(root, category)
 				# Placeholder child ensures categories are expandable while keeping startup fast.
 				self.tree.AppendItem(categoryItem, "")
-			self.tree.CollapseAll()
+				if any(
+					command.identifier == preferredCommandId for command in self._filteredGrouped[category]
+				):
+					preferredItem = self._populateCategory(categoryItem, category, preferredCommandId)
+					self.tree.Expand(categoryItem)
+			if preferredItem is not None:
+				self.tree.SelectItem(preferredItem)
+				self.tree.EnsureVisible(preferredItem)
 		finally:
 			self.tree.Thaw()
 			self._isPopulatingTree = False
-		self.selectedCommandId = ""
-		self.okButton.Enable(False)
+		if preferredItem is not None:
+			self._updateSelectionState(preferredItem)
+
+	def _populateCategory(self, item, category, preferredCommandId=""):
+		self.tree.DeleteChildren(item)
+		preferredItem = None
+		for command in sorted(self._filteredGrouped.get(category, []), key=lambda c: strxfrm(c.displayName)):
+			commandItem = self.tree.AppendItem(item, command.displayName)
+			self._itemToCommandId[commandItem.GetID()] = command.identifier
+			if command.identifier == preferredCommandId:
+				preferredItem = commandItem
+		self._populatedCategories.add(category)
+		return preferredItem
 
 	def onFilterChange(self, event):
 		if not self._isTreeAlive():
@@ -175,14 +201,9 @@ class NvdaCommandPickerDialog(wx.Dialog):
 			return
 		if category in self._populatedCategories:
 			return
-		commands = self._filteredGrouped.get(category, [])
 		self.tree.Freeze()
 		try:
-			self.tree.DeleteChildren(item)
-			for command in sorted(commands, key=lambda c: strxfrm(c.displayName)):
-				commandItem = self.tree.AppendItem(item, command.displayName)
-				self._itemToCommandId[commandItem.GetID()] = command.identifier
-			self._populatedCategories.add(category)
+			self._populateCategory(item, category)
 		finally:
 			self.tree.Thaw()
 		self._updateSelectionState()
