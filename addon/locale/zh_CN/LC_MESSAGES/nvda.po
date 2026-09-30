@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: instantAccess 2026.6\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-09-24 07:23+0700\n"
+"POT-Creation-Date: 2026-09-30 17:40+0300\n"
 "PO-Revision-Date: 2026-09-21 20:11+0800\n"
 "Last-Translator: cary-rowen <manchen_0528@outlook.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -12,6 +12,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.9\n"
+
+#. Translators: Announcement of a browsed item as "shortcut, name", e.g. "g, Open Gmail".
+#: addon\globalPlugins\core\browse.py:67
+#, python-brace-format
+msgid "{key}, {name}"
+msgstr ""
+
+#. Translators: Announcement of a browsed item as "name, shortcut", e.g. "Open Gmail, g".
+#: addon\globalPlugins\core\browse.py:69
+#, python-brace-format
+msgid "{name}, {key}"
+msgstr ""
+
+#: addon\globalPlugins\core\browse.py:76
+msgid ""
+"Up and down arrows or Tab and Shift+Tab: browse items. Enter: run the "
+"browsed item. Escape: exit."
+msgstr ""
+
+#. Translators: Shown in the browse help when no items can run in the current application.
+#. Translators: Announced when browsing the layer but no item can run in the current application.
+#: addon\globalPlugins\core\browse.py:82 addon\globalPlugins\core\plugin.py:303
+msgid "No items are available in this application."
+msgstr ""
 
 #: addon\globalPlugins\core\command_picker_dialog.py:27
 msgid "Select NVDA command"
@@ -40,7 +64,7 @@ msgstr "取消(&C)"
 msgid "Please select an NVDA command."
 msgstr "请选择 NVDA 命令。"
 
-#: addon\globalPlugins\core\config_io.py:252
+#: addon\globalPlugins\core\config_io.py:280
 msgid ""
 "The instant Access configuration file appears to be corrupted. Would you "
 "like to restore the previous backup?"
@@ -93,7 +117,7 @@ msgstr "粘贴"
 #. Translators: Category name for the instant Access add-on.
 #. Translators: Title of the instant Access settings panel.
 #: addon\globalPlugins\core\constants.py:47
-#: addon\globalPlugins\core\settings_panel.py:79 buildVars.py:6
+#: addon\globalPlugins\core\settings_panel.py:83 buildVars.py:12
 msgid "instant Access"
 msgstr "instantAccess"
 
@@ -127,6 +151,36 @@ msgstr "初级"
 #: addon\globalPlugins\core\constants.py:67
 msgid "Advanced"
 msgstr "高级"
+
+#. Translators: Choices for how items are announced while browsing the instant Access layer.
+#: addon\globalPlugins\core\constants.py:74
+#, fuzzy
+msgid "Name, then shortcut"
+msgstr "设置快捷键"
+
+#: addon\globalPlugins\core\constants.py:74
+#, fuzzy
+msgid "Shortcut, then name"
+msgstr "快捷键：未设置"
+
+#: addon\globalPlugins\core\constants.py:74
+#, fuzzy
+msgid "Name only"
+msgstr "名称"
+
+#. Translators: Choices for the order of items while browsing the instant Access layer.
+#: addon\globalPlugins\core\constants.py:79
+msgid "Settings list order"
+msgstr ""
+
+#: addon\globalPlugins\core\constants.py:79
+msgid "Alphabetical by name"
+msgstr ""
+
+#: addon\globalPlugins\core\constants.py:79
+#, fuzzy
+msgid "By shortcut"
+msgstr "设置快捷键"
 
 #: addon\globalPlugins\core\executor.py:58
 msgid "Too many items are waiting. Please try again later."
@@ -203,22 +257,22 @@ msgstr "错误：无法打开文件夹"
 msgid "Error: Could not open the file"
 msgstr "错误：无法打开文件"
 
-#: addon\globalPlugins\core\executor.py:366
+#: addon\globalPlugins\core\executor.py:367
 msgid "Error: Could not start the program"
 msgstr "错误：无法启动程序"
 
-#: addon\globalPlugins\core\executor.py:381
+#: addon\globalPlugins\core\executor.py:382
 #: addon\globalPlugins\core\item_dialog.py:767
 msgid "Interval must be a valid number."
 msgstr "操作间隔必须为数字。"
 
-#: addon\globalPlugins\core\executor.py:395
+#: addon\globalPlugins\core\executor.py:396
 #, fuzzy
 msgid "Error: Could not run the action"
 msgstr "错误：无法打开文件夹"
 
 #: addon\globalPlugins\core\item_dialog.py:54
-#: addon\globalPlugins\core\settings_panel.py:39
+#: addon\globalPlugins\core\settings_panel.py:43
 #, python-brace-format
 msgid "{action}: {preview}"
 msgstr "{action}：{preview}"
@@ -234,7 +288,7 @@ msgstr "请按下要设置的快捷键，按 Esc 取消。"
 #. Translators: Column label for item type in the list.
 #: addon\globalPlugins\core\item_dialog.py:109
 #: addon\globalPlugins\core\item_dialog.py:484
-#: addon\globalPlugins\core\settings_panel.py:95
+#: addon\globalPlugins\core\settings_panel.py:99
 msgid "Type"
 msgstr "类型"
 
@@ -244,7 +298,7 @@ msgstr "执行此操作前的等待时间（秒）"
 
 #. Translators: Label for the Test button in the settings panel.
 #: addon\globalPlugins\core\item_dialog.py:139
-#: addon\globalPlugins\core\settings_panel.py:112
+#: addon\globalPlugins\core\settings_panel.py:116
 msgid "&Test"
 msgstr "测试(&T)"
 
@@ -344,7 +398,7 @@ msgstr ""
 
 #. Translators: Column label for item name in the list.
 #: addon\globalPlugins\core\item_dialog.py:476
-#: addon\globalPlugins\core\settings_panel.py:93
+#: addon\globalPlugins\core\settings_panel.py:97
 msgid "Name"
 msgstr "名称"
 
@@ -358,25 +412,25 @@ msgstr "延迟"
 
 #. Translators: Column label for details in the list.
 #: addon\globalPlugins\core\item_dialog.py:486
-#: addon\globalPlugins\core\settings_panel.py:99
+#: addon\globalPlugins\core\settings_panel.py:103
 msgid "Details"
 msgstr "详细信息"
 
 #. Translators: Label for the Add button in the settings panel.
 #: addon\globalPlugins\core\item_dialog.py:490
-#: addon\globalPlugins\core\settings_panel.py:104
+#: addon\globalPlugins\core\settings_panel.py:108
 msgid "&Add"
 msgstr "添加(&A)"
 
 #. Translators: Label for the Edit button in the settings panel.
 #: addon\globalPlugins\core\item_dialog.py:491
-#: addon\globalPlugins\core\settings_panel.py:106
+#: addon\globalPlugins\core\settings_panel.py:110
 msgid "&Edit"
 msgstr "编辑(&E)"
 
 #. Translators: Label for the Delete button in the settings panel.
 #: addon\globalPlugins\core\item_dialog.py:492
-#: addon\globalPlugins\core\settings_panel.py:108
+#: addon\globalPlugins\core\settings_panel.py:112
 msgid "&Delete"
 msgstr "删除(&D)"
 
@@ -407,7 +461,7 @@ msgstr "应用程序名称"
 
 #. Translators: Column label for shortcut in the list.
 #: addon\globalPlugins\core\item_dialog.py:568
-#: addon\globalPlugins\core\settings_panel.py:97
+#: addon\globalPlugins\core\settings_panel.py:101
 msgid "Shortcut"
 msgstr "快捷键"
 
@@ -492,134 +546,156 @@ msgstr "错误：无效的 NVDA 命令"
 msgid "Error: NVDA command is not currently available"
 msgstr "错误：该 NVDA 命令当前不可用"
 
-#: addon\globalPlugins\core\plugin.py:173
+#: addon\globalPlugins\core\plugin.py:211
 msgid "No commands configured."
 msgstr "尚未配置命令。"
 
-#: addon\globalPlugins\core\plugin.py:180
+#: addon\globalPlugins\core\plugin.py:218
 msgid "On"
 msgstr "开启"
 
-#: addon\globalPlugins\core\plugin.py:183
+#: addon\globalPlugins\core\plugin.py:221
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
 msgstr "instantAccess 已开启，已加载 {count} 个命令。"
 
-#: addon\globalPlugins\core\plugin.py:196
+#: addon\globalPlugins\core\plugin.py:235
 msgid "Off"
 msgstr "关闭"
 
-#: addon\globalPlugins\core\plugin.py:198
+#: addon\globalPlugins\core\plugin.py:237
 msgid "instant Access Off"
 msgstr "instantAccess 已关闭。"
 
-#: addon\globalPlugins\core\plugin.py:208
+#: addon\globalPlugins\core\plugin.py:247
 msgid "This gesture has no command assigned."
 msgstr "没有为此手势分配命令。"
 
+#. Translators: Title of the window listing instant Access items available in the current application.
+#: addon\globalPlugins\core\plugin.py:326
+#, fuzzy
+msgid "instant Access items"
+msgstr "instantAccess"
+
 #. Translators: Message announced when current application name could not be determined.
-#: addon\globalPlugins\core\plugin.py:268
+#: addon\globalPlugins\core\plugin.py:339
 msgid "Could not determine current application name."
 msgstr "无法确定当前应用程序名称。"
 
-#: addon\globalPlugins\core\plugin.py:275
+#: addon\globalPlugins\core\plugin.py:346
 msgid "App name copied to clipboard."
 msgstr "应用程序名称已复制到剪贴板。"
 
 #. Translators: Type label for shortcut items containing multiple actions.
-#: addon\globalPlugins\core\settings_panel.py:63
+#: addon\globalPlugins\core\settings_panel.py:67
 msgid "Multiple actions"
 msgstr "多项操作"
 
 #. Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
-#: addon\globalPlugins\core\settings_panel.py:74
+#: addon\globalPlugins\core\settings_panel.py:78
 #, python-brace-format
 msgid "{first} (+{count} more)"
 msgstr "{first}（另有 {count} 项操作）"
 
 #. Translators: Label for the Duplicate button in the settings panel.
-#: addon\globalPlugins\core\settings_panel.py:110
+#: addon\globalPlugins\core\settings_panel.py:114
 msgid "D&uplicate"
 msgstr "复制(&U)"
 
 #. Translators: Label for the Export settings button.
-#: addon\globalPlugins\core\settings_panel.py:114
+#: addon\globalPlugins\core\settings_panel.py:118
 msgid "E&xport settings"
 msgstr "导出设置(&X)"
 
 #. Translators: Label for the Import settings button.
-#: addon\globalPlugins\core\settings_panel.py:116
+#: addon\globalPlugins\core\settings_panel.py:120
 msgid "I&mport settings"
 msgstr "导入设置(&M)"
 
-#: addon\globalPlugins\core\settings_panel.py:121
+#: addon\globalPlugins\core\settings_panel.py:125
 msgid "Verbosity level"
 msgstr "详细程度"
 
-#: addon\globalPlugins\core\settings_panel.py:157
-#: addon\globalPlugins\core\settings_panel.py:295
+#. Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
+#: addon\globalPlugins\core\settings_panel.py:131
+msgid "Enable &browsing items in the instant Access layer"
+msgstr ""
+
+#. Translators: Label for choosing how browsed items are announced.
+#: addon\globalPlugins\core\settings_panel.py:135
+msgid "Browse &announcement"
+msgstr ""
+
+#. Translators: Label for choosing the order of browsed items.
+#: addon\globalPlugins\core\settings_panel.py:141
+#, fuzzy
+msgid "Browse &order"
+msgstr "浏览"
+
+#: addon\globalPlugins\core\settings_panel.py:197
+#: addon\globalPlugins\core\settings_panel.py:335
 #, fuzzy
 msgid "Could not save settings."
 msgstr "无法导出设置。"
 
-#: addon\globalPlugins\core\settings_panel.py:231
+#: addon\globalPlugins\core\settings_panel.py:271
 msgid ""
 "Could not save settings. Restore or import a valid configuration and try "
 "again."
 msgstr ""
 
 #. Translators: Title of the add item dialog.
-#: addon\globalPlugins\core\settings_panel.py:239
+#: addon\globalPlugins\core\settings_panel.py:279
 msgid "Add item"
 msgstr "添加项目"
 
 #. Translators: Title of the edit item dialog.
-#: addon\globalPlugins\core\settings_panel.py:251
+#: addon\globalPlugins\core\settings_panel.py:291
 msgid "Edit item"
 msgstr "编辑项目"
 
-#: addon\globalPlugins\core\settings_panel.py:270
+#: addon\globalPlugins\core\settings_panel.py:310
 msgid "Duplicate item"
 msgstr "复制项目"
 
-#: addon\globalPlugins\core\settings_panel.py:286
+#: addon\globalPlugins\core\settings_panel.py:326
 msgid "Are you sure you would like to delete the selected item?"
 msgstr "确定要删除选定的项目吗？"
 
-#: addon\globalPlugins\core\settings_panel.py:321
+#: addon\globalPlugins\core\settings_panel.py:361
 msgid "Export settings"
 msgstr "导出设置"
 
 #. Translators: Message shown when settings are successfully exported.
-#: addon\globalPlugins\core\settings_panel.py:331
+#: addon\globalPlugins\core\settings_panel.py:371
 msgid "Settings exported successfully."
 msgstr "已成功导出设置。"
 
-#: addon\globalPlugins\core\settings_panel.py:333
+#: addon\globalPlugins\core\settings_panel.py:373
 msgid "Could not export settings."
 msgstr "无法导出设置。"
 
 #. Translators: Warning message before importing settings which will overwrite current configuration.
-#: addon\globalPlugins\core\settings_panel.py:343
+#: addon\globalPlugins\core\settings_panel.py:383
 msgid ""
 "Importing settings will replace your current items. Are you sure you want to "
 "continue?"
 msgstr "导入设置将替换现有项目。确定要继续吗？"
 
-#: addon\globalPlugins\core\settings_panel.py:352
+#: addon\globalPlugins\core\settings_panel.py:392
 msgid "Import settings"
 msgstr "导入设置"
 
 #. Translators: Message shown when settings are successfully imported.
-#: addon\globalPlugins\core\settings_panel.py:369
+#: addon\globalPlugins\core\settings_panel.py:409
 msgid "Settings imported successfully."
 msgstr "已成功导入设置。"
 
-#: addon\globalPlugins\core\settings_panel.py:371
+#: addon\globalPlugins\core\settings_panel.py:411
 msgid "Could not import settings."
 msgstr "无法导入设置。"
 
-#: buildVars.py:7
+#: buildVars.py:14
 msgid ""
 "A powerful productivity tool to launch websites, files, folders, and "
 "programs quickly using a dedicated layer.\n"
@@ -630,11 +706,14 @@ msgstr ""
 "程序。\n"
 "\t支持后台执行和命令行参数，可调整反馈详细程度，并可导入或导出设置。"
 
-#: buildVars.py:10
+#: buildVars.py:19
 #, fuzzy
 msgid ""
 "\n"
 "- Version 2026.6:\n"
+"  - Browse Items in Instant Access Mode: An optional setting lets you move "
+"through available items with the arrow keys or Tab, run one with Enter, and "
+"list them all with F1 or H.\n"
 "  - Configuration & Recovery Safety: Preserve valid backups during recovery, "
 "automatically recover missing configurations from backups, and leave stored "
 "data intact if recovery is declined or fails.\n"

@@ -18,6 +18,7 @@ addon_info = AddonInfo(
 	addon_changelog=_(
 		"""
 - Version 2026.6:
+  - Browse Items in Instant Access Mode: An optional setting lets you move through available items with the arrow keys or Tab, run one with Enter, and list them all with F1 or H.
   - Configuration & Recovery Safety: Preserve valid backups during recovery, automatically recover missing configurations from backups, and leave stored data intact if recovery is declined or fails.
   - Action Serialization: Run shortcuts and action tests through a unified, bounded queue to prevent keyboard and clipboard race conditions.
   - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.

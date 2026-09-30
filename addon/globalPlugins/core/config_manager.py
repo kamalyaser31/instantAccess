@@ -2,7 +2,7 @@
 
 import logging
 from .config_io import ensureConfigFile, loadConfigSafe, loadConfigFromPathStrict, saveConfig
-from .constants import TYPE_SECTIONS, VERBOSITY_VALUES
+from .constants import DEFAULT_SETTINGS, TYPE_SECTIONS, VERBOSITY_VALUES
 
 # Set up logging for better debugging
 log = logging.getLogger(__name__)
@@ -278,4 +278,19 @@ class ConfigManager:
 			value = VERBOSITY_VALUES[0]
 		config.setdefault("settings", {})
 		config["settings"]["verbosity"] = value
+		self.saveConfig(config)
+
+	def getSettings(self):
+		"""Get all settings, with defaults filled in."""
+		settings = dict(DEFAULT_SETTINGS)
+		settings.update(self.loadOrCreateConfig().get("settings", {}))
+		return settings
+
+	def updateSettings(self, **values):
+		"""Save several settings in one write; unknown keys are rejected."""
+		unknown = set(values) - set(DEFAULT_SETTINGS)
+		if unknown:
+			raise ValueError(f"Unknown settings: {sorted(unknown)}")
+		config = self._loadConfigForUpdate()
+		config.setdefault("settings", {}).update(values)
 		self.saveConfig(config)

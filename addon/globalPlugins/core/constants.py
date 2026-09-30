@@ -67,3 +67,32 @@ VERBOSITY_BEGINNER = _("Beginner")
 VERBOSITY_ADVANCED = _("Advanced")
 
 VERBOSITY_VALUES = ("beginner", "advanced")
+
+BROWSE_FORMAT_VALUES = ("nameKey", "keyName", "name")
+
+# Translators: Choices for how items are announced while browsing the instant Access layer.
+BROWSE_FORMAT_LABELS = [_("Name, then shortcut"), _("Shortcut, then name"), _("Name only")]
+
+BROWSE_ORDER_VALUES = ("list", "name", "key")
+
+# Translators: Choices for the order of items while browsing the instant Access layer.
+BROWSE_ORDER_LABELS = [_("Settings list order"), _("Alphabetical by name"), _("By shortcut")]
+
+DEFAULT_SETTINGS = {
+	"verbosity": VERBOSITY_VALUES[0],
+	"browseEnabled": False,
+	"browseFormat": BROWSE_FORMAT_VALUES[0],
+	"browseOrder": BROWSE_ORDER_VALUES[0],
+}
+
+# Layer keys used for browsing, mapped to the plugin script that handles them.
+BROWSE_GESTURES = {
+	"kb:downArrow": "browseNext",
+	"kb:tab": "browseNext",
+	"kb:upArrow": "browsePrevious",
+	"kb:shift+tab": "browsePrevious",
+	"kb:enter": "browseActivate",
+	"kb:numpadEnter": "browseActivate",
+	"kb:f1": "browseHelp",
+	"kb:h": "browseHelp",
+}

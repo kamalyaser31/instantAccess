@@ -18,6 +18,7 @@ Key Features
 ------------
 
 *   **Multi-Action Items:** Assign a sequence of actions to a single shortcut.
+*   **Browse Items Without Remembering Shortcuts:** Optionally move through the items available in the current application with the arrow keys or Tab inside Instant Access mode, press `Enter` to run one, or open a list of all of them.
 *   **Serialized Execution & Safety:** Actions and shortcuts execute through a unified, bounded worker queue to prevent clipboard and keystroke collisions, with automatic cancellation and modifier key recovery.
 *   **Item Duplication:** Clone any configured item with a single click, preserving all actions and settings.
 *   **Action Testing:** Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.
@@ -45,6 +46,27 @@ Built-In Shortcuts
 *   `NVDA+Shift+E`: Announce the name of the currently focused application. This is useful for creating app-specific shortcuts.
 *   `NVDA+Shift+E` (pressed twice quickly): Copy the app name to the clipboard.
 *   `Escape` (while Instant Access mode is active): Deactivate the mode without running a command.
+
+Browsing Items in Instant Access Mode
+-------------------------------------
+
+If you don't remember an item's shortcut, you can browse to it instead. This is off by default: turn it on with **Enable browsing items in the instant Access layer** in the settings panel.
+
+While Instant Access mode is active:
+
+*   `Down Arrow` or `Tab`: Move to and announce the next item.
+*   `Up Arrow` or `Shift+Tab`: Move to and announce the previous item.
+*   `Enter`: Run the item you last moved to, then leave the mode. If you haven't moved to an item yet, `Enter` leaves the mode without running anything.
+*   `F1` or `H`: Open a window listing every item available here, with its shortcut. Instant Access mode closes when the window opens.
+
+The list wraps around, so moving past the last item takes you back to the first. Only items that can run in the focused application are included: global items, plus the items restricted to that application.
+
+Two settings control how browsing sounds:
+
+*   **Browse announcement:** Name, then shortcut (`Open Gmail, g`); Shortcut, then name (`g, Open Gmail`); or Name only.
+*   **Browse order:** Settings list order, alphabetical by name, or by shortcut.
+
+Your own items always come first. If an item uses one of these keys (for example `H` or `F1`), that key keeps running the item, and the remaining browse keys still work. Any other key that has no item assigned leaves the mode, as before.
 
 Configuration
 -------------

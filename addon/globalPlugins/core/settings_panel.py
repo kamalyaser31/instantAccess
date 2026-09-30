@@ -10,6 +10,10 @@ import wx
 from .config_io import loadConfigFromPathStrict, saveConfig
 from .constants import (
 	ALL_FILES_WILDCARD,
+	BROWSE_FORMAT_LABELS,
+	BROWSE_FORMAT_VALUES,
+	BROWSE_ORDER_LABELS,
+	BROWSE_ORDER_VALUES,
 	CONFIRM_CAPTION,
 	ERROR_CAPTION,
 	TEXT_SNIPPET_ACTION_TO_LABEL,
@@ -122,10 +126,24 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			wx.Choice,
 			choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED],
 		)
-		currentVerbosity = (
-			self.configManager.getVerbosityLevel() if self.configManager else VERBOSITY_VALUES[0]
+		self.browseCheckBox = sHelper.addItem(
+			# Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
+			wx.CheckBox(self, label=_("Enable &browsing items in the instant Access layer")),
 		)
-		self.verbosityChoice.SetSelection(VERBOSITY_VALUES.index(currentVerbosity))
+		self.browseFormatChoice = sHelper.addLabeledControl(
+			# Translators: Label for choosing how browsed items are announced.
+			_("Browse &announcement"),
+			wx.Choice,
+			choices=BROWSE_FORMAT_LABELS,
+		)
+		self.browseOrderChoice = sHelper.addLabeledControl(
+			# Translators: Label for choosing the order of browsed items.
+			_("Browse &order"),
+			wx.Choice,
+			choices=BROWSE_ORDER_LABELS,
+		)
+		self.loadSettingsControls()
+		self.browseCheckBox.Bind(wx.EVT_CHECKBOX, lambda event: self.updateBrowseControls())
 
 		self.addButton.Bind(wx.EVT_BUTTON, self.onAdd)
 		self.editButton.Bind(wx.EVT_BUTTON, self.onEdit)
@@ -149,10 +167,32 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		else:
 			event.Skip()
 
+	def loadSettingsControls(self):
+		settings = self.configManager.getSettings() if self.configManager else {}
+		self.verbosityChoice.SetSelection(VERBOSITY_VALUES.index(settings.get("verbosity", VERBOSITY_VALUES[0])))
+		self.browseCheckBox.SetValue(bool(settings.get("browseEnabled", False)))
+		self.browseFormatChoice.SetSelection(
+			BROWSE_FORMAT_VALUES.index(settings.get("browseFormat", BROWSE_FORMAT_VALUES[0])),
+		)
+		self.browseOrderChoice.SetSelection(
+			BROWSE_ORDER_VALUES.index(settings.get("browseOrder", BROWSE_ORDER_VALUES[0])),
+		)
+		self.updateBrowseControls()
+
+	def updateBrowseControls(self):
+		enabled = self.browseCheckBox.GetValue()
+		self.browseFormatChoice.Enable(enabled)
+		self.browseOrderChoice.Enable(enabled)
+
 	def onSave(self):
 		verbosityValue = VERBOSITY_VALUES[self.verbosityChoice.GetSelection()]
 		try:
-			self.configManager.setVerbosityLevel(verbosityValue)
+			self.configManager.updateSettings(
+				verbosity=verbosityValue,
+				browseEnabled=self.browseCheckBox.GetValue(),
+				browseFormat=BROWSE_FORMAT_VALUES[self.browseFormatChoice.GetSelection()],
+				browseOrder=BROWSE_ORDER_VALUES[self.browseOrderChoice.GetSelection()],
+			)
 		except (OSError, ValueError):
 			gui.messageBox(_("Could not save settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return
@@ -360,7 +400,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				saveConfig(self.configManager.getConfigPath(), testConfig)
 				self.refreshList()
 				currentVerbosity = self.configManager.getVerbosityLevel()
-				self.verbosityChoice.SetSelection(VERBOSITY_VALUES.index(currentVerbosity))
+				self.loadSettingsControls()
 				if self.onConfigChanged:
 					self.onConfigChanged()
 				if self.onVerbosityChanged:

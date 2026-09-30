@@ -11,7 +11,10 @@ import gui
 import wx
 
 from .constants import (
+	BROWSE_FORMAT_VALUES,
+	BROWSE_ORDER_VALUES,
 	CONFIRM_CAPTION,
+	DEFAULT_SETTINGS,
 	TEXT_SNIPPET_ACTION_VALUES,
 	TYPE_SECTIONS,
 	VERBOSITY_VALUES,
@@ -26,7 +29,7 @@ _configLock = threading.RLock()
 def _defaultConfig():
 	return {
 		"version": 3,
-		"settings": {"verbosity": VERBOSITY_VALUES[0]},
+		"settings": dict(DEFAULT_SETTINGS),
 		"items": [],
 	}
 
@@ -132,12 +135,7 @@ def _validateConfig(rawConfig):
 		raise ValueError("Invalid config format")
 	if type(rawConfig.get("version", 3)) is not int or rawConfig.get("version", 3) != 3:
 		raise ValueError("Unsupported config version")
-	settings = rawConfig.get("settings", {})
-	if (
-		not isinstance(settings, dict)
-		or settings.get("verbosity", VERBOSITY_VALUES[0]) not in VERBOSITY_VALUES
-	):
-		raise ValueError("Invalid verbosity")
+	_validateSettings(rawConfig.get("settings", {}))
 	names = set()
 	gestures = set()
 	for item in rawConfig["items"]:
@@ -185,16 +183,41 @@ def _validateConfig(rawConfig):
 					parseDelay(data[timingField])
 
 
+_SETTING_CHOICES = {
+	"verbosity": VERBOSITY_VALUES,
+	"browseFormat": BROWSE_FORMAT_VALUES,
+	"browseOrder": BROWSE_ORDER_VALUES,
+}
+
+
+def _validateSettings(settings):
+	if not isinstance(settings, dict):
+		raise ValueError("Invalid settings")
+	for key, choices in _SETTING_CHOICES.items():
+		if settings.get(key, DEFAULT_SETTINGS[key]) not in choices:
+			raise ValueError(f"Invalid {key}")
+	if not isinstance(settings.get("browseEnabled", False), bool):
+		raise ValueError("Invalid browseEnabled")
+
+
+def _normalizeSettings(settings):
+	if not isinstance(settings, dict):
+		settings = {}
+	normalized = {}
+	for key, choices in _SETTING_CHOICES.items():
+		value = settings.get(key, DEFAULT_SETTINGS[key])
+		if isinstance(value, str) and key == "verbosity":
+			value = value.strip().lower()
+		normalized[key] = value if value in choices else DEFAULT_SETTINGS[key]
+	normalized["browseEnabled"] = settings.get("browseEnabled", False) is True
+	return normalized
+
+
 def _normalizeConfig(rawConfig):
 	_validateConfig(rawConfig)
 	if not isinstance(rawConfig, dict):
 		raise ValueError("Invalid config format")
-	settings = rawConfig.get("settings", {})
-	if not isinstance(settings, dict):
-		settings = {}
-	verbosity = (settings.get("verbosity", VERBOSITY_VALUES[0]) or "").strip().lower()
-	if verbosity not in VERBOSITY_VALUES:
-		verbosity = VERBOSITY_VALUES[0]
+	settings = _normalizeSettings(rawConfig.get("settings", {}))
 	rawItems = rawConfig.get("items", [])
 	if not isinstance(rawItems, list):
 		rawItems = []
@@ -203,7 +226,7 @@ def _normalizeConfig(rawConfig):
 		item = _normalizeItem(rawItem)
 		if item is not None:
 			items.append(item)
-	return {"version": 3, "settings": {"verbosity": verbosity}, "items": items}
+	return {"version": 3, "settings": settings, "items": items}
 
 
 def ensureConfigFile(configPath):

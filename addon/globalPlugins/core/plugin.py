@@ -14,8 +14,16 @@ import tones
 import ui
 import wx
 
+from .browse import buildHelpText, formatItem, getUsableItems, resolveItem, sortItems
 from .config_manager import ConfigManager
-from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION, VERBOSITY_VALUES
+from .constants import (
+	BROWSE_GESTURES,
+	CATEGORY_LABEL,
+	DEFAULT_SETTINGS,
+	REPORT_APP_NAME_DESCRIPTION,
+	TOGGLE_DESCRIPTION,
+	VERBOSITY_VALUES,
+)
 from .executor import ExecutionQueue
 from .gestures import expandGestureLayouts, normalizeGestureIdentifier
 from .settings_panel import InstantAccessSettingsPanel
@@ -33,6 +41,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.instantMode = False
 		self.gestureToItems = {}
 		self.loadedCommandCount = 0
+		self.layerItems = []
+		self.browseSettings = dict(DEFAULT_SETTINGS)
+		self.browseGestureScripts = {}
+		self._resetBrowseState()
+		self._keepLayerOpen = False
 		if globalVars.appArgs.secure:
 			self.clearGestureBindings()
 			return
@@ -99,10 +112,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			script = self.script_invalidKey
 
 		def wrappedScript(*args, **kwargs):
+			# Browse scripts set this so the layer stays open for the next key.
+			self._keepLayerOpen = False
 			try:
 				return script(*args, **kwargs)
 			finally:
-				self.finishInstantLayer()
+				if not self._keepLayerOpen:
+					self.finishInstantLayer()
 
 		return wrappedScript
 
@@ -140,6 +156,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def buildInstantGestures(self):
 		items = self.configManager.getItems()
+		self.layerItems = items
+		self.browseSettings = self.configManager.getSettings()
 		self.gestureToItems = {}
 		for item in items:
 			for gesture in item.get("gestures", []):
@@ -151,6 +169,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		instantGestures = {}
 		for gesture in self.gestureToItems.keys():
 			instantGestures[gesture] = "runInstantItem"
+		instantGestures.update(self.buildBrowseGestures())
 		for gesture in self.getToggleGestures():
 			instantGestures[gesture] = "toggleInstantMode"
 		for gesture in self.getReportAppNameGestures():
@@ -158,9 +177,28 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		instantGestures["kb:escape"] = "exitInstantMode"
 		return instantGestures
 
+	def buildBrowseGestures(self):
+		"""Bind browse keys that no item uses; items keep their keys and fall back to browsing."""
+		self.browseGestureScripts = {}
+		if not self.browseSettings.get("browseEnabled"):
+			return {}
+		for gesture, scriptName in BROWSE_GESTURES.items():
+			for expanded in expandGestureLayouts(gesture):
+				self.browseGestureScripts[expanded.lower()] = scriptName
+		return {
+			gesture: scriptName
+			for gesture, scriptName in self.browseGestureScripts.items()
+			if gesture not in self.gestureToItems
+		}
+
+	def _resetBrowseState(self):
+		self.browseItems = None
+		self.browseIndex = -1
+
 	def activateInstantMode(self, speak=True):
 		if not self._enabled:
 			return
+		self._resetBrowseState()
 		instantGestures = self.buildInstantGestures()
 		if self.loadedCommandCount <= 0:
 			self.instantMode = False
@@ -186,6 +224,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if not self.instantMode:
 			return
 		self.instantMode = False
+		self._resetBrowseState()
 		self.clearGestureBindings()
 		bindings = {gesture: "toggleInstantMode" for gesture in self.getToggleGestures()}
 		for gesture in self.getReportAppNameGestures():
@@ -236,23 +275,55 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			items = self.gestureToItems.get(normalized, [])
 			if items:
 				candidateItems.extend(items)
-		if not candidateItems:
-			return
-		currentAppName = self.getCurrentAppName()
-		item = None
-		for candidate in candidateItems:
-			itemAppName = (candidate.get("appName", "") or "").strip().lower()
-			if itemAppName and itemAppName == currentAppName:
-				item = candidate
-				break
+		item = resolveItem(candidateItems, self.getCurrentAppName())
 		if item is None:
-			for candidate in candidateItems:
-				if not (candidate.get("appName", "") or "").strip():
-					item = candidate
-					break
-		if item is None:
+			# The key belongs to an item for another app; let it browse here if it is a browse key.
+			self._runBrowseFallback(identifiers, gesture)
 			return
 		self.queueRunItemExecution(item)
+
+	def _runBrowseFallback(self, identifiers, gesture):
+		for gestureId in identifiers:
+			scriptName = self.browseGestureScripts.get(normalizeGestureIdentifier(gestureId))
+			if scriptName:
+				getattr(self, "script_" + scriptName)(gesture)
+				return
+
+	def getBrowseItems(self):
+		if self.browseItems is None:
+			usable = getUsableItems(self.layerItems, self.getCurrentAppName())
+			self.browseItems = sortItems(usable, self.browseSettings.get("browseOrder"))
+		return self.browseItems
+
+	def moveBrowse(self, step):
+		self._keepLayerOpen = True
+		items = self.getBrowseItems()
+		if not items:
+			# Translators: Announced when browsing the layer but no item can run in the current application.
+			ui.message(_("No items are available in this application."))
+			return
+		if self.browseIndex < 0:
+			self.browseIndex = 0 if step > 0 else len(items) - 1
+		else:
+			self.browseIndex = (self.browseIndex + step) % len(items)
+		ui.message(formatItem(items[self.browseIndex], self.browseSettings.get("browseFormat")))
+
+	def script_browseNext(self, gesture):
+		self.moveBrowse(1)
+
+	def script_browsePrevious(self, gesture):
+		self.moveBrowse(-1)
+
+	def script_browseActivate(self, gesture):
+		if self.browseIndex < 0 or not self.browseItems:
+			self.script_invalidKey(gesture)
+			return
+		self.queueRunItemExecution(self.browseItems[self.browseIndex])
+
+	def script_browseHelp(self, gesture):
+		text = buildHelpText(self.getBrowseItems(), self.browseSettings.get("browseFormat"))
+		# Translators: Title of the window listing instant Access items available in the current application.
+		ui.browseableMessage(text, _("instant Access items"))
 
 	@scriptHandler.script(
 		category=CATEGORY_LABEL,

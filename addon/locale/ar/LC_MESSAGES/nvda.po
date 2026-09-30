@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: instantAccess 2026.6\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-09-24 22:15+0300\n"
+"POT-Creation-Date: 2026-09-30 17:40+0300\n"
 "PO-Revision-Date: 2026-09-24 22:15+0300\n"
 "Last-Translator: Kamal Yaser <kamalyaser31@gmail.com>\n"
 "Language-Team: Arabic <LL@li.org>\n"
@@ -14,38 +15,66 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 "X-Generator: Poedit 3.9\n"
 
-#: addon\globalPlugins\core\command_picker_dialog.py:25
+#. Translators: Announcement of a browsed item as "shortcut, name", e.g. "g, Open Gmail".
+#: addon\globalPlugins\core\browse.py:67
+#, python-brace-format
+msgid "{key}, {name}"
+msgstr "{key}، {name}"
+
+#. Translators: Announcement of a browsed item as "name, shortcut", e.g. "Open Gmail, g".
+#: addon\globalPlugins\core\browse.py:69
+#, python-brace-format
+msgid "{name}, {key}"
+msgstr "{name}، {key}"
+
+#: addon\globalPlugins\core\browse.py:76
+msgid ""
+"Up and down arrows or Tab and Shift+Tab: browse items. Enter: run the "
+"browsed item. Escape: exit."
+msgstr ""
+"السهمان العلوي والسفلي أو Tab وShift+Tab: تصفح العناصر. Enter: تشغيل العنصر "
+"المحدد. Escape: الخروج."
+
+#. Translators: Shown in the browse help when no items can run in the current application.
+#. Translators: Announced when browsing the layer but no item can run in the current application.
+#: addon\globalPlugins\core\browse.py:82 addon\globalPlugins\core\plugin.py:303
+msgid "No items are available in this application."
+msgstr "لا توجد عناصر متاحة في هذا التطبيق."
+
+#: addon\globalPlugins\core\command_picker_dialog.py:27
 msgid "Select NVDA command"
 msgstr "حدد اختصار nvda"
 
 #. Translators: Label for filter field in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:42
+#: addon\globalPlugins\core\command_picker_dialog.py:45
 msgid "Filter"
 msgstr "تصفية"
 
 #. Translators: Label for OK button in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:51
-#: addon\globalPlugins\core\item_dialog.py:136
-#: addon\globalPlugins\core\item_dialog.py:538
+#: addon\globalPlugins\core\command_picker_dialog.py:54
+#: addon\globalPlugins\core\item_dialog.py:137
+#: addon\globalPlugins\core\item_dialog.py:520
 msgid "&OK"
 msgstr "&موافق"
 
 #. Translators: Label for Cancel button in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:53
-#: addon\globalPlugins\core\item_dialog.py:137
-#: addon\globalPlugins\core\item_dialog.py:539
+#: addon\globalPlugins\core\command_picker_dialog.py:56
+#: addon\globalPlugins\core\item_dialog.py:138
+#: addon\globalPlugins\core\item_dialog.py:521
 msgid "&Cancel"
 msgstr "إل&غاء"
 
-#: addon\globalPlugins\core\command_picker_dialog.py:245
+#: addon\globalPlugins\core\command_picker_dialog.py:269
 msgid "Please select an NVDA command."
 msgstr "من فضلك حدد اختصار nvda."
 
-#: addon\globalPlugins\core\config_io.py:185
+#: addon\globalPlugins\core\config_io.py:280
 msgid ""
 "The instant Access configuration file appears to be corrupted. Would you "
 "like to restore the previous backup?"
-msgstr "يبدو أن ملف تهيئة الوصول الفوري تالف. هل ترغب في استعادة النسخة الاحتياطية السابقة؟"
+msgstr ""
+"يبدو أن ملف تهيئة الوصول الفوري تالف. هل ترغب في استعادة النسخة الاحتياطية "
+"السابقة؟"
 
 #: addon\globalPlugins\core\constants.py:26
 msgid "Website"
@@ -64,13 +93,13 @@ msgid "File"
 msgstr "ملف"
 
 #: addon\globalPlugins\core\constants.py:30
-#: addon\globalPlugins\core\item_dialog.py:188
+#: addon\globalPlugins\core\item_dialog.py:189
 msgid "NVDA command"
 msgstr "اختصار nvda"
 
 #: addon\globalPlugins\core\constants.py:31
-#: addon\globalPlugins\core\item_dialog.py:203
-#: addon\globalPlugins\core\item_dialog.py:286
+#: addon\globalPlugins\core\item_dialog.py:204
+#: addon\globalPlugins\core\item_dialog.py:287
 msgid "Text snippet"
 msgstr "نص"
 
@@ -94,7 +123,7 @@ msgstr "لصق"
 #. Translators: Category name for the instant Access add-on.
 #. Translators: Title of the instant Access settings panel.
 #: addon\globalPlugins\core\constants.py:47
-#: addon\globalPlugins\core\settings_panel.py:78 buildVars.py:6
+#: addon\globalPlugins\core\settings_panel.py:83 buildVars.py:12
 msgid "instant Access"
 msgstr "الوصول الفوري"
 
@@ -115,7 +144,7 @@ msgstr "خطأ"
 
 #. Translators: Caption for confirmation dialogs.
 #: addon\globalPlugins\core\constants.py:59
-#: addon\globalPlugins\core\item_dialog.py:684
+#: addon\globalPlugins\core\item_dialog.py:666
 msgid "Confirm"
 msgstr "تأكيد"
 
@@ -129,83 +158,136 @@ msgstr "مبتدئ"
 msgid "Advanced"
 msgstr "متقدم"
 
-#: addon\globalPlugins\core\executor.py:66
+#. Translators: Choices for how items are announced while browsing the instant Access layer.
+#: addon\globalPlugins\core\constants.py:74
+msgid "Name, then shortcut"
+msgstr "الاسم ثم الاختصار"
+
+#: addon\globalPlugins\core\constants.py:74
+msgid "Shortcut, then name"
+msgstr "الاختصار ثم الاسم"
+
+#: addon\globalPlugins\core\constants.py:74
+msgid "Name only"
+msgstr "الاسم فقط"
+
+#. Translators: Choices for the order of items while browsing the instant Access layer.
+#: addon\globalPlugins\core\constants.py:79
+msgid "Settings list order"
+msgstr "ترتيب قائمة الإعدادات"
+
+#: addon\globalPlugins\core\constants.py:79
+msgid "Alphabetical by name"
+msgstr "أبجدياً حسب الاسم"
+
+#: addon\globalPlugins\core\constants.py:79
+msgid "By shortcut"
+msgstr "حسب الاختصار"
+
+#: addon\globalPlugins\core\executor.py:58
+msgid "Too many items are waiting. Please try again later."
+msgstr "هناك عناصر كثيرة قيد الانتظار. يرجى المحاولة لاحقاً."
+
+#: addon\globalPlugins\core\executor.py:76
+msgid "Error: Could not run the item"
+msgstr "خطأ: تعذر تشغيل العنصر"
+
+#: addon\globalPlugins\core\executor.py:124
+msgid "Error: NVDA command did not finish in time"
+msgstr "خطأ: لم ينتهِ أمر NVDA في الوقت المحدد"
+
+#: addon\globalPlugins\core\executor.py:164
+#: addon\globalPlugins\core\item_dialog.py:388
+msgid "Typing delay must be a valid number."
+msgstr "يجب أن يكون رقمًا صالحًا."
+
+#: addon\globalPlugins\core\executor.py:169
 msgid "Error: Text snippet is empty"
 msgstr "حقل النص فارغ"
 
-#: addon\globalPlugins\core\executor.py:71
-#: addon\globalPlugins\core\executor.py:77
+#: addon\globalPlugins\core\executor.py:174
+#: addon\globalPlugins\core\executor.py:180
 msgid "Error: Could not copy text snippet"
 msgstr "خطأ: تعذر نسخ النص"
 
-#: addon\globalPlugins\core\executor.py:80
-#: addon\globalPlugins\core\executor.py:91
-#: addon\globalPlugins\core\executor.py:177
+#: addon\globalPlugins\core\executor.py:183
+#: addon\globalPlugins\core\executor.py:196
+#: addon\globalPlugins\core\executor.py:297
 msgid "Error: Keyboard library is not available"
 msgstr "خطأ: مكتبة لوحة المفاتيح غير مثبتة"
 
-#: addon\globalPlugins\core\executor.py:87
+#: addon\globalPlugins\core\executor.py:192
 msgid "Error: Could not paste text snippet"
 msgstr "خطأ: تعذر لصق النص"
 
-#: addon\globalPlugins\core\executor.py:98
+#: addon\globalPlugins\core\executor.py:202
 msgid "Error: Could not type text snippet"
 msgstr "خطأ: تعذر كتابة النص"
 
-#: addon\globalPlugins\core\executor.py:143
+#: addon\globalPlugins\core\executor.py:250
 #, python-brace-format
 msgid "Error: Could not send keystroke: {key}"
 msgstr "خطأ: تعذر إرسال ضغطة المفتاح: {key}"
 
-#: addon\globalPlugins\core\executor.py:156
+#: addon\globalPlugins\core\executor.py:275
 msgid "Error: URL is empty"
 msgstr "خطأ: الرابط فارغ"
 
-#: addon\globalPlugins\core\executor.py:165
+#: addon\globalPlugins\core\executor.py:282
+#: addon\globalPlugins\core\executor.py:286
 msgid "Error: Could not open the website"
 msgstr "خطأ: تعذر فتح الموقع"
 
-#: addon\globalPlugins\core\executor.py:181
+#: addon\globalPlugins\core\executor.py:301
 msgid "Error: Keystrokes field is empty"
 msgstr "خطأ: حقل ضغطات المفاتيح فارغ"
 
-#: addon\globalPlugins\core\executor.py:187
-#: addon\globalPlugins\core\executor.py:192
-#: addon\globalPlugins\core\executor.py:204
-#: addon\globalPlugins\core\executor.py:224
+#: addon\globalPlugins\core\executor.py:307
+#: addon\globalPlugins\core\executor.py:312
+#: addon\globalPlugins\core\executor.py:324
+#: addon\globalPlugins\core\executor.py:344
 msgid "Error: File not found"
 msgstr "خطأ: الملف غير موجود"
 
-#: addon\globalPlugins\core\executor.py:199
+#: addon\globalPlugins\core\executor.py:319
 msgid "Error: Could not open the item"
 msgstr "خطأ: تعذر فتح العنصر"
 
-#: addon\globalPlugins\core\executor.py:215
+#: addon\globalPlugins\core\executor.py:335
 msgid "Error: Could not open the file"
 msgstr "خطأ: تعذر فتح الملف"
 
-#: addon\globalPlugins\core\executor.py:238
+#: addon\globalPlugins\core\executor.py:367
 msgid "Error: Could not start the program"
 msgstr "خطأ: تعذر تشغيل البرنامج"
 
-#: addon\globalPlugins\core\item_dialog.py:55
-#: addon\globalPlugins\core\settings_panel.py:38
+#: addon\globalPlugins\core\executor.py:382
+#: addon\globalPlugins\core\item_dialog.py:767
+msgid "Interval must be a valid number."
+msgstr "يجب أن يكون الفاصل الزمني رقمًا صالحًا."
+
+#: addon\globalPlugins\core\executor.py:396
+msgid "Error: Could not run the action"
+msgstr "خطأ: تعذر تشغيل الإجراء"
+
+#: addon\globalPlugins\core\item_dialog.py:54
+#: addon\globalPlugins\core\settings_panel.py:43
 #, python-brace-format
 msgid "{action}: {preview}"
 msgstr "{action}: {preview}"
 
-#: addon\globalPlugins\core\item_dialog.py:80
+#: addon\globalPlugins\core\item_dialog.py:79
 msgid "Set shortcut"
 msgstr "تعيين اختصار"
 
-#: addon\globalPlugins\core\item_dialog.py:83
+#: addon\globalPlugins\core\item_dialog.py:82
 msgid "Press the desired shortcut key. Escape cancels."
 msgstr "اضغط على مفتاح الاختصار المطلوب. اضغط Escape للإلغاء."
 
 #. Translators: Column label for item type in the list.
 #: addon\globalPlugins\core\item_dialog.py:109
-#: addon\globalPlugins\core\item_dialog.py:502
-#: addon\globalPlugins\core\settings_panel.py:92
+#: addon\globalPlugins\core\item_dialog.py:484
+#: addon\globalPlugins\core\settings_panel.py:99
 msgid "Type"
 msgstr "النوع"
 
@@ -214,62 +296,62 @@ msgid "Delay before executing this action (seconds)"
 msgstr "مدة التأخير قبل تنفيذ هذا الإجراء (ثواني)"
 
 #. Translators: Label for the Test button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:138
-#: addon\globalPlugins\core\settings_panel.py:109
+#: addon\globalPlugins\core\item_dialog.py:139
+#: addon\globalPlugins\core\settings_panel.py:116
 msgid "&Test"
 msgstr "تج&ربة"
 
-#: addon\globalPlugins\core\item_dialog.py:160
+#: addon\globalPlugins\core\item_dialog.py:161
 msgid "Path or URL"
 msgstr "المسار أو الرابط"
 
-#: addon\globalPlugins\core\item_dialog.py:162
+#: addon\globalPlugins\core\item_dialog.py:163
 msgid "Browse"
 msgstr "تصفح"
 
-#: addon\globalPlugins\core\item_dialog.py:175
+#: addon\globalPlugins\core\item_dialog.py:176
 msgid "Arguments (optional)"
 msgstr "الوسائط (اختياري)"
 
-#: addon\globalPlugins\core\item_dialog.py:190
+#: addon\globalPlugins\core\item_dialog.py:191
 msgid "Select command"
 msgstr "اختر أمرًا"
 
-#: addon\globalPlugins\core\item_dialog.py:216
+#: addon\globalPlugins\core\item_dialog.py:217
 msgid "Snippet action"
 msgstr "إجراء النص"
 
-#: addon\globalPlugins\core\item_dialog.py:230
-#: addon\globalPlugins\core\item_dialog.py:287
+#: addon\globalPlugins\core\item_dialog.py:231
+#: addon\globalPlugins\core\item_dialog.py:288
 msgid "Typing delay"
 msgstr "الفاصل بين الحروف بالثواني"
 
-#: addon\globalPlugins\core\item_dialog.py:283
+#: addon\globalPlugins\core\item_dialog.py:284
 msgid "Keystrokes (one per line, e.g. 'down 5')"
 msgstr "ضغطات المفاتيح (واحدة في كل سطر، مثل: down 5)"
 
-#: addon\globalPlugins\core\item_dialog.py:284
+#: addon\globalPlugins\core\item_dialog.py:285
 msgid "Delay between keystrokes (seconds)"
 msgstr "الفاصل بين الضغطات (ثواني)"
 
-#: addon\globalPlugins\core\item_dialog.py:309
+#: addon\globalPlugins\core\item_dialog.py:310
 msgid "Select a program"
 msgstr "اختر برنامجًا"
 
-#: addon\globalPlugins\core\item_dialog.py:318
+#: addon\globalPlugins\core\item_dialog.py:319
 msgid "Select a folder"
 msgstr "اختر مجلدًا"
 
-#: addon\globalPlugins\core\item_dialog.py:326
+#: addon\globalPlugins\core\item_dialog.py:327
 msgid "Select a file"
 msgstr "اختر ملفًا"
 
-#: addon\globalPlugins\core\item_dialog.py:355
-#: addon\globalPlugins\core\item_dialog.py:768
+#: addon\globalPlugins\core\item_dialog.py:356
+#: addon\globalPlugins\core\item_dialog.py:751
 msgid "All fields are required."
 msgstr "كافة الحقول مطلوبة."
 
-#: addon\globalPlugins\core\item_dialog.py:366
+#: addon\globalPlugins\core\item_dialog.py:367
 #, python-brace-format
 msgid ""
 "The specified path was not found on your system:\n"
@@ -282,27 +364,23 @@ msgstr ""
 "\n"
 "هل ترغب في حفظ هذا الإجراء على أية حال؟"
 
-#: addon\globalPlugins\core\item_dialog.py:375
+#: addon\globalPlugins\core\item_dialog.py:376
 msgid "Delay must be a valid number."
 msgstr "يجب أن يكون رقمًا صالحًا."
 
-#: addon\globalPlugins\core\item_dialog.py:378
+#: addon\globalPlugins\core\item_dialog.py:379
 msgid "Delay must be zero or greater."
 msgstr "يجب أن يكون رقمًا صالحًا."
 
-#: addon\globalPlugins\core\item_dialog.py:387
-msgid "Typing delay must be a valid number."
-msgstr "يجب أن يكون رقمًا صالحًا."
-
-#: addon\globalPlugins\core\item_dialog.py:388
+#: addon\globalPlugins\core\item_dialog.py:389
 msgid "Typing delay must be zero or greater."
 msgstr "يجب أن يكون تأخير الكتابة رقمًا صالحًا."
 
-#: addon\globalPlugins\core\item_dialog.py:397
+#: addon\globalPlugins\core\item_dialog.py:398
 msgid "Delay between keystrokes must be a valid number."
 msgstr "يجب أن يكون الفاصل رقمًا صالحًا."
 
-#: addon\globalPlugins\core\item_dialog.py:398
+#: addon\globalPlugins\core\item_dialog.py:399
 msgid "Delay between keystrokes must be zero or greater."
 msgstr "يجب أن يكون الفاصل صفرًا أو أكبر."
 
@@ -313,280 +391,312 @@ msgid ""
 "\n"
 "Would you like to proceed?"
 msgstr ""
-"سيتم إجراء محاكاة ضغطات المفاتيح أو كتابة النص بعد مهلة قدرها 3 ثوانٍ لتتمكن من الانتقال إلى النافذة المستهدفة.\n"
+"سيتم إجراء محاكاة ضغطات المفاتيح أو كتابة النص بعد مهلة قدرها 3 ثوانٍ لتتمكن "
+"من الانتقال إلى النافذة المستهدفة.\n"
 "\n"
 "هل ترغب في المتابعة؟"
 
 #. Translators: Column label for item name in the list.
-#: addon\globalPlugins\core\item_dialog.py:494
-#: addon\globalPlugins\core\settings_panel.py:90
+#: addon\globalPlugins\core\item_dialog.py:476
+#: addon\globalPlugins\core\settings_panel.py:97
 msgid "Name"
 msgstr "الاسم"
 
-#: addon\globalPlugins\core\item_dialog.py:496
+#: addon\globalPlugins\core\item_dialog.py:478
 msgid "Actions"
 msgstr "الإجراءات"
 
-#: addon\globalPlugins\core\item_dialog.py:503
+#: addon\globalPlugins\core\item_dialog.py:485
 msgid "Delay"
 msgstr "التأخير"
 
 #. Translators: Column label for details in the list.
-#: addon\globalPlugins\core\item_dialog.py:504
-#: addon\globalPlugins\core\settings_panel.py:96
+#: addon\globalPlugins\core\item_dialog.py:486
+#: addon\globalPlugins\core\settings_panel.py:103
 msgid "Details"
 msgstr "تفاصيل"
 
 #. Translators: Label for the Add button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:508
-#: addon\globalPlugins\core\settings_panel.py:101
+#: addon\globalPlugins\core\item_dialog.py:490
+#: addon\globalPlugins\core\settings_panel.py:108
 msgid "&Add"
 msgstr "إ&ضافة"
 
 #. Translators: Label for the Edit button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:509
-#: addon\globalPlugins\core\settings_panel.py:103
+#: addon\globalPlugins\core\item_dialog.py:491
+#: addon\globalPlugins\core\settings_panel.py:110
 msgid "&Edit"
 msgstr "&تحرير"
 
 #. Translators: Label for the Delete button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:510
-#: addon\globalPlugins\core\settings_panel.py:105
+#: addon\globalPlugins\core\item_dialog.py:492
+#: addon\globalPlugins\core\settings_panel.py:112
 msgid "&Delete"
 msgstr "&حذف"
 
-#: addon\globalPlugins\core\item_dialog.py:511
+#: addon\globalPlugins\core\item_dialog.py:493
 msgid "Move &up"
 msgstr "نقل لل&أعلى"
 
-#: addon\globalPlugins\core\item_dialog.py:512
+#: addon\globalPlugins\core\item_dialog.py:494
 msgid "Move &down"
 msgstr "نقل للأ&سفل"
 
-#: addon\globalPlugins\core\item_dialog.py:516
+#: addon\globalPlugins\core\item_dialog.py:498
 msgid "Interval between actions (seconds)"
 msgstr "الفاصل الزمني بين الإجراءات (ثواني)"
 
-#: addon\globalPlugins\core\item_dialog.py:524
+#: addon\globalPlugins\core\item_dialog.py:506
 msgid "Stop executing remaining actions if an action fails"
 msgstr "إيقاف تنفيذ بقية الإجراءات إذا فشل أحدها"
 
-#: addon\globalPlugins\core\item_dialog.py:570
+#: addon\globalPlugins\core\item_dialog.py:552
 msgid "Restrict this shortcut to work in certain apps"
 msgstr "تقييد عمل هذا الاختصار بتطبيقات محددة"
 
-#: addon\globalPlugins\core\item_dialog.py:571
-#: addon\globalPlugins\core\item_dialog.py:573
+#: addon\globalPlugins\core\item_dialog.py:553
+#: addon\globalPlugins\core\item_dialog.py:555
 msgid "App name"
 msgstr "اسم التطبيق"
 
 #. Translators: Column label for shortcut in the list.
-#: addon\globalPlugins\core\item_dialog.py:586
-#: addon\globalPlugins\core\settings_panel.py:94
+#: addon\globalPlugins\core\item_dialog.py:568
+#: addon\globalPlugins\core\settings_panel.py:101
 msgid "Shortcut"
 msgstr "الاختصار"
 
-#: addon\globalPlugins\core\item_dialog.py:618
+#: addon\globalPlugins\core\item_dialog.py:600
 #, python-brace-format
 msgid "Shortcut key: {gesture}"
 msgstr "مفتاح الاختصار: {gesture}"
 
-#: addon\globalPlugins\core\item_dialog.py:620
+#: addon\globalPlugins\core\item_dialog.py:602
 msgid "Shortcut key: Undefined"
 msgstr "مفتاح الاختصار: غير محدد"
 
-#: addon\globalPlugins\core\item_dialog.py:659
+#: addon\globalPlugins\core\item_dialog.py:641
 msgid "Add action"
 msgstr "إضافة إجراء"
 
-#: addon\globalPlugins\core\item_dialog.py:670
+#: addon\globalPlugins\core\item_dialog.py:652
 msgid "Edit action"
 msgstr "تعديل الإجراء"
 
-#: addon\globalPlugins\core\item_dialog.py:683
+#: addon\globalPlugins\core\item_dialog.py:665
 msgid "Are you sure you would like to delete the selected action?"
 msgstr "هل أنت متأكد من رغبتك في حذف العنصر المحدد؟"
 
-#: addon\globalPlugins\core\item_dialog.py:748
-#: addon\globalPlugins\core\item_dialog.py:793
+#: addon\globalPlugins\core\item_dialog.py:731
+#: addon\globalPlugins\core\item_dialog.py:776
 msgid "This shortcut is reserved for instant Access."
 msgstr "هذا الاختصار محجوز لإضافة الوصول الفوري."
 
-#: addon\globalPlugins\core\item_dialog.py:755
-#: addon\globalPlugins\core\item_dialog.py:799
+#: addon\globalPlugins\core\item_dialog.py:738
+#: addon\globalPlugins\core\item_dialog.py:782
 msgid "Invalid shortcut key."
 msgstr "مفتاح الاختصار غير صالح."
 
-#: addon\globalPlugins\core\item_dialog.py:771
+#: addon\globalPlugins\core\item_dialog.py:754
 msgid "At least one action is required."
 msgstr "مطلوب إجراء واحد على الأقل."
 
-#: addon\globalPlugins\core\item_dialog.py:775
+#: addon\globalPlugins\core\item_dialog.py:758
 msgid "App name is required when app restriction is enabled."
 msgstr "اسم التطبيق مطلوب عند تمكين تقييد التطبيق."
 
-#: addon\globalPlugins\core\item_dialog.py:784
-msgid "Interval must be a valid number."
-msgstr "يجب أن يكون الفاصل الزمني رقمًا صالحًا."
-
-#: addon\globalPlugins\core\item_dialog.py:787
+#: addon\globalPlugins\core\item_dialog.py:770
 msgid "Interval must be zero or greater."
 msgstr "يجب أن يكون الفاصل صفرًا أو أكبر."
 
-#: addon\globalPlugins\core\item_dialog.py:806
+#: addon\globalPlugins\core\item_dialog.py:789
 msgid "This name already exists."
 msgstr "هذا الاسم مستخدم بالفعل."
 
 #. Translators: Error shown when an app-specific shortcut conflicts with an existing item.
-#: addon\globalPlugins\core\item_dialog.py:819
+#: addon\globalPlugins\core\item_dialog.py:802
 #, python-brace-format
 msgid "This shortcut is already assigned to '{name}' for this app."
 msgstr "هذا الاختصار معين مسبقًا لـ '{name}' لهذا التطبيق."
 
 #. Translators: Error shown when a global shortcut conflicts with an existing item.
-#: addon\globalPlugins\core\item_dialog.py:822
+#: addon\globalPlugins\core\item_dialog.py:807
 #, python-brace-format
 msgid "This global shortcut is already assigned to '{name}'."
 msgstr "هذا الاختصار العام معين مسبقًا لـ '{name}'."
 
-#: addon\globalPlugins\core\nvda_commands.py:34
+#: addon\globalPlugins\core\nvda_commands.py:37
 #, python-brace-format
 msgid "{category}: {command}"
 msgstr "{category}: {command}"
 
-#: addon\globalPlugins\core\nvda_commands.py:101
+#: addon\globalPlugins\core\nvda_commands.py:104
 msgid "instant Access command"
 msgstr "أمر الوصول الفوري"
 
-#: addon\globalPlugins\core\nvda_commands.py:205
-msgid "Error: Invalid NVDA command"
-msgstr "خطأ: اختصار NVDA غير صالح"
-
-#: addon\globalPlugins\core\nvda_commands.py:217
-msgid "Error: NVDA command is not currently available"
-msgstr "خطأ: اختصار NVDA غير متاح حاليًا"
-
-#: addon\globalPlugins\core\nvda_commands.py:225
+#: addon\globalPlugins\core\nvda_commands.py:138
+#: addon\globalPlugins\core\nvda_commands.py:289
 msgid "Error: Could not run NVDA command"
 msgstr "خطأ: تعذر تشغيل اختصارNVDA"
 
-#: addon\globalPlugins\core\plugin.py:169
+#: addon\globalPlugins\core\nvda_commands.py:267
+msgid "Error: Invalid NVDA command"
+msgstr "خطأ: اختصار NVDA غير صالح"
+
+#: addon\globalPlugins\core\nvda_commands.py:280
+msgid "Error: NVDA command is not currently available"
+msgstr "خطأ: اختصار NVDA غير متاح حاليًا"
+
+#: addon\globalPlugins\core\plugin.py:211
 msgid "No commands configured."
 msgstr "لم يتم إعداد أي أوامر."
 
-#: addon\globalPlugins\core\plugin.py:176
+#: addon\globalPlugins\core\plugin.py:218
 msgid "On"
 msgstr "تشغيل"
 
-#: addon\globalPlugins\core\plugin.py:179
+#: addon\globalPlugins\core\plugin.py:221
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
 msgstr "تم تشغيل الوصول الفوري. تم تحميل {count} من الأوامر"
 
-#: addon\globalPlugins\core\plugin.py:192
+#: addon\globalPlugins\core\plugin.py:235
 msgid "Off"
 msgstr "إيقاف"
 
-#: addon\globalPlugins\core\plugin.py:194
+#: addon\globalPlugins\core\plugin.py:237
 msgid "instant Access Off"
 msgstr "تم إيقاف الوصول الفوري"
 
-#: addon\globalPlugins\core\plugin.py:204
+#: addon\globalPlugins\core\plugin.py:247
 msgid "This gesture has no command assigned."
 msgstr "لم يتم تخصيص أمر لهذا الاختصار."
 
+#. Translators: Title of the window listing instant Access items available in the current application.
+#: addon\globalPlugins\core\plugin.py:326
+msgid "instant Access items"
+msgstr "عناصر الوصول الفوري"
+
 #. Translators: Message announced when current application name could not be determined.
-#: addon\globalPlugins\core\plugin.py:260
+#: addon\globalPlugins\core\plugin.py:339
 msgid "Could not determine current application name."
 msgstr "تعذر تحديد اسم التطبيق الحالي."
 
-#: addon\globalPlugins\core\plugin.py:267
+#: addon\globalPlugins\core\plugin.py:346
 msgid "App name copied to clipboard."
 msgstr "تم نسخ اسم التطبيق إلى الحافظة."
 
 #. Translators: Type label for shortcut items containing multiple actions.
-#: addon\globalPlugins\core\settings_panel.py:62
+#: addon\globalPlugins\core\settings_panel.py:67
 msgid "Multiple actions"
 msgstr "إجراءات متعددة"
 
 #. Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
-#: addon\globalPlugins\core\settings_panel.py:73
+#: addon\globalPlugins\core\settings_panel.py:78
 #, python-brace-format
 msgid "{first} (+{count} more)"
 msgstr "{first} (+{count} more)"
 
 #. Translators: Label for the Duplicate button in the settings panel.
-#: addon\globalPlugins\core\settings_panel.py:107
+#: addon\globalPlugins\core\settings_panel.py:114
 msgid "D&uplicate"
 msgstr "&تكرار"
 
 #. Translators: Label for the Export settings button.
-#: addon\globalPlugins\core\settings_panel.py:111
+#: addon\globalPlugins\core\settings_panel.py:118
 msgid "E&xport settings"
 msgstr "ت&صدير الإعدادات"
 
 #. Translators: Label for the Import settings button.
-#: addon\globalPlugins\core\settings_panel.py:113
+#: addon\globalPlugins\core\settings_panel.py:120
 msgid "I&mport settings"
 msgstr "ا&ستيراد الإعدادات"
 
-#: addon\globalPlugins\core\settings_panel.py:118
+#: addon\globalPlugins\core\settings_panel.py:125
 msgid "Verbosity level"
 msgstr "مستوى الإسهاب"
 
+#. Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
+#: addon\globalPlugins\core\settings_panel.py:131
+msgid "Enable &browsing items in the instant Access layer"
+msgstr "تفعيل ت&صفح العناصر داخل طبقة الوصول الفوري"
+
+#. Translators: Label for choosing how browsed items are announced.
+#: addon\globalPlugins\core\settings_panel.py:135
+msgid "Browse &announcement"
+msgstr "صيغة الإ&علان عند التصفح"
+
+#. Translators: Label for choosing the order of browsed items.
+#: addon\globalPlugins\core\settings_panel.py:141
+msgid "Browse &order"
+msgstr "&ترتيب التصفح"
+
+#: addon\globalPlugins\core\settings_panel.py:197
+#: addon\globalPlugins\core\settings_panel.py:335
+msgid "Could not save settings."
+msgstr "تعذر حفظ الإعدادات."
+
+#: addon\globalPlugins\core\settings_panel.py:271
+msgid ""
+"Could not save settings. Restore or import a valid configuration and try "
+"again."
+msgstr ""
+"تعذر حفظ الإعدادات. استعد النسخة الاحتياطية أو استورد ملف تهيئة صالحاً ثم "
+"حاول ثانية."
+
 #. Translators: Title of the add item dialog.
-#: addon\globalPlugins\core\settings_panel.py:193
+#: addon\globalPlugins\core\settings_panel.py:279
 msgid "Add item"
 msgstr "إضافة عنصر"
 
 #. Translators: Title of the edit item dialog.
-#: addon\globalPlugins\core\settings_panel.py:215
+#: addon\globalPlugins\core\settings_panel.py:291
 msgid "Edit item"
 msgstr "تحرير عنصر"
 
-#. Translators: Title of the duplicate item dialog.
-#: addon\globalPlugins\core\settings_panel.py:242
+#: addon\globalPlugins\core\settings_panel.py:310
 msgid "Duplicate item"
 msgstr "تكرار عنصر"
 
-#: addon\globalPlugins\core\settings_panel.py:266
+#: addon\globalPlugins\core\settings_panel.py:326
 msgid "Are you sure you would like to delete the selected item?"
 msgstr "هل أنت متأكد من رغبتك في حذف العنصر المحدد؟"
 
-#: addon\globalPlugins\core\settings_panel.py:297
+#: addon\globalPlugins\core\settings_panel.py:361
 msgid "Export settings"
 msgstr "تصدير الإعدادات"
 
 #. Translators: Message shown when settings are successfully exported.
-#: addon\globalPlugins\core\settings_panel.py:307
+#: addon\globalPlugins\core\settings_panel.py:371
 msgid "Settings exported successfully."
 msgstr "تم تصدير الإعدادات بنجاح."
 
-#: addon\globalPlugins\core\settings_panel.py:309
+#: addon\globalPlugins\core\settings_panel.py:373
 msgid "Could not export settings."
 msgstr "تعذر تصدير الإعدادات."
 
 #. Translators: Warning message before importing settings which will overwrite current configuration.
-#: addon\globalPlugins\core\settings_panel.py:319
+#: addon\globalPlugins\core\settings_panel.py:383
 msgid ""
 "Importing settings will replace your current items. Are you sure you want to "
 "continue?"
-msgstr "سيؤدي استيراد الإعدادات إلى استبدال عناصرك الحالية. هل أنت متأكد من رغبتك في المتابعة؟"
+msgstr ""
+"سيؤدي استيراد الإعدادات إلى استبدال عناصرك الحالية. هل أنت متأكد من رغبتك في "
+"المتابعة؟"
 
-#: addon\globalPlugins\core\settings_panel.py:328
+#: addon\globalPlugins\core\settings_panel.py:392
 msgid "Import settings"
 msgstr "استيراد الإعدادات"
 
 #. Translators: Message shown when settings are successfully imported.
-#: addon\globalPlugins\core\settings_panel.py:345
+#: addon\globalPlugins\core\settings_panel.py:409
 msgid "Settings imported successfully."
 msgstr "تم استيراد الإعدادات بنجاح."
 
-#: addon\globalPlugins\core\settings_panel.py:347
+#: addon\globalPlugins\core\settings_panel.py:411
 msgid "Could not import settings."
 msgstr "تعذر استيراد الإعدادات."
 
-#: buildVars.py:7
+#: buildVars.py:14
 msgid ""
 "A powerful productivity tool to launch websites, files, folders, and "
 "programs quickly using a dedicated layer.\n"
@@ -598,16 +708,27 @@ msgstr ""
 "تتضمن الميزات: التنفيذ في الخلفية، ومستويات الإسهاب، ووسائط سطر الأوامر، "
 "واستيراد وتصدير الإعدادات."
 
-#: buildVars.py:10
+#: buildVars.py:19
 msgid ""
 "\n"
 "- Version 2026.6:\n"
-"  - Configuration & Recovery Safety: Preserve valid backups during recovery, automatically recover missing configurations from backups, and leave stored data intact if recovery is declined or fails.\n"
-"  - Action Serialization: Run shortcuts and action tests through a unified, bounded queue to prevent keyboard and clipboard race conditions.\n"
-"  - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.\n"
-"  - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths with spaces, corrected key-name buffer capacity in Win32 API, and ensured modifier keys are released upon typing failure.\n"
-"  - UI Robustness: Retain user dialog inputs when disk saves fail, preserve command-picker selection state, and safely initialize in NVDA secure mode.\n"
-"  - Automated Regression Tests: Integrated 41 automated regression tests into CI.\n"
+"  - Browse Items in Instant Access Mode: An optional setting lets you move "
+"through available items with the arrow keys or Tab, run one with Enter, and "
+"list them all with F1 or H.\n"
+"  - Configuration & Recovery Safety: Preserve valid backups during recovery, "
+"automatically recover missing configurations from backups, and leave stored "
+"data intact if recovery is declined or fails.\n"
+"  - Action Serialization: Run shortcuts and action tests through a unified, "
+"bounded queue to prevent keyboard and clipboard race conditions.\n"
+"  - NVDA Command Synchronization: Wait for NVDA script completion so "
+"failures correctly control subsequent actions in multi-action items.\n"
+"  - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths "
+"with spaces, corrected key-name buffer capacity in Win32 API, and ensured "
+"modifier keys are released upon typing failure.\n"
+"  - UI Robustness: Retain user dialog inputs when disk saves fail, preserve "
+"command-picker selection state, and safely initialize in NVDA secure mode.\n"
+"  - Automated Regression Tests: Integrated 41 automated regression tests "
+"into CI.\n"
 "- Version 2026.5:\n"
 "  - Item Duplication: Easily clone items with all actions and settings via a "
 "new Duplicate button.\n"
@@ -640,20 +761,38 @@ msgid ""
 msgstr ""
 "\n"
 "- الإصدار 2026.6:\n"
-"  - أمان التهيئة والتعافي: الحفاظ على النسخ الاحتياطية الصالحة عند الاستعادة، والاستعادة التلقائية للتهيئة المفقودة، وصيانة بيانات القرص عند رفض الاستعادة أو تعثرها.\n"
-"  - تسلسل التنفيذ: تشغيل الاختصارات وتجارب الإجراءات عبر طابور عمل موحد ومحدد لمنع تداخل الحافظة وضغطات المفاتيح.\n"
-"  - مزامنة أوامر NVDA: انتظار اكتمال سكربتات NVDA لضمان تحكم الأخطاء في الإجراءات اللاحقة ضمن العناصر متعددة الإجراءات.\n"
-"  - إصلاحات لوحة المفاتيح وبيئة Windows: تصحيح علامات التنصيص لملفات الدفعات المشتملة على مسافات، وضبط سعة ذاكرة أسماء المفاتيح في Win32، وضمان تحرير مفاتيح التعديل عند إخفاق الكتابة.\n"
-"  - متانة الواجهة: استبقاء مدخلات المستخدم داخل حوار الإجراء عند فشل الحفظ، وحفظ حالة التحديد في منتقي الأوامر، والتهيئة الآمنة في وضع NVDA الآمن.\n"
-"  - اختبارات ارتدادية مؤتمتة: دمج 41 اختباراً ارتدادياً في دورة التكامل المستمر (CI).\n"
+"  - تصفح العناصر داخل وضع الوصول الفوري: إعداد اختياري يتيح التنقل بين "
+"العناصر المتاحة بالأسهم أو Tab، وتشغيل أحدها بـ Enter، وسردها جميعاً بـ F1 أو "
+"H.\n"
+"  - أمان التهيئة والتعافي: الحفاظ على النسخ الاحتياطية الصالحة عند "
+"الاستعادة، والاستعادة التلقائية للتهيئة المفقودة، وصيانة بيانات القرص عند "
+"رفض الاستعادة أو تعثرها.\n"
+"  - تسلسل التنفيذ: تشغيل الاختصارات وتجارب الإجراءات عبر طابور عمل موحد "
+"ومحدد لمنع تداخل الحافظة وضغطات المفاتيح.\n"
+"  - مزامنة أوامر NVDA: انتظار اكتمال سكربتات NVDA لضمان تحكم الأخطاء في "
+"الإجراءات اللاحقة ضمن العناصر متعددة الإجراءات.\n"
+"  - إصلاحات لوحة المفاتيح وبيئة Windows: تصحيح علامات التنصيص لملفات الدفعات "
+"المشتملة على مسافات، وضبط سعة ذاكرة أسماء المفاتيح في Win32، وضمان تحرير "
+"مفاتيح التعديل عند إخفاق الكتابة.\n"
+"  - متانة الواجهة: استبقاء مدخلات المستخدم داخل حوار الإجراء عند فشل الحفظ، "
+"وحفظ حالة التحديد في منتقي الأوامر، والتهيئة الآمنة في وضع NVDA الآمن.\n"
+"  - اختبارات ارتدادية مؤتمتة: دمج 41 اختباراً ارتدادياً في دورة التكامل "
+"المستمر (CI).\n"
 "- الإصدار 2026.5:\n"
-"  - تكرار العناصر: استنساخ العناصر بكافة إجراءاتها وإعداداتها بسهولة عبر زر تكرار جديد.\n"
-"  - اختبار الإجراءات: تجربة الإجراءات منفردة مع مهلة إعداد تلقائية مدتها 3 ثوانٍ لإجراءات الكتابة وضغط المفاتيح.\n"
-"  - إيقاف التنفيذ عند الخطأ: خيار لإيقاف بقية الإجراءات في السلسلة فور تعثر أحدها.\n"
-"  - تكامل النظام: دعم أوامر PATH وسكربتات الدفعات (.bat/.cmd) وبروتوكولات الروابط المخصصة (مثل mailto: و ms-settings:).\n"
-"  - سهولة التنقل بلوحة المفاتيح: Enter للتحرير، Delete للحذف مع التأكيد، و Ctrl+Up/Down لإعادة ترتيب الإجراءات.\n"
-"  - الأمان والتعافي: حفظ ذري للتهيئة، نسخ احتياطي تلقائي (config.json.bak)، ومطالبة باستعادة النسخة عند تلف الملف.\n"
-"  - تحديث أدوات البناء: التوافق التام مع معايير قالب addonTemplate الرسمي (PEP 735، uv، prek.toml).\n"
+"  - تكرار العناصر: استنساخ العناصر بكافة إجراءاتها وإعداداتها بسهولة عبر زر "
+"تكرار جديد.\n"
+"  - اختبار الإجراءات: تجربة الإجراءات منفردة مع مهلة إعداد تلقائية مدتها 3 "
+"ثوانٍ لإجراءات الكتابة وضغط المفاتيح.\n"
+"  - إيقاف التنفيذ عند الخطأ: خيار لإيقاف بقية الإجراءات في السلسلة فور تعثر "
+"أحدها.\n"
+"  - تكامل النظام: دعم أوامر PATH وسكربتات الدفعات (.bat/.cmd) وبروتوكولات "
+"الروابط المخصصة (مثل mailto: و ms-settings:).\n"
+"  - سهولة التنقل بلوحة المفاتيح: Enter للتحرير، Delete للحذف مع التأكيد، و "
+"Ctrl+Up/Down لإعادة ترتيب الإجراءات.\n"
+"  - الأمان والتعافي: حفظ ذري للتهيئة، نسخ احتياطي تلقائي (config.json.bak)، "
+"ومطالبة باستعادة النسخة عند تلف الملف.\n"
+"  - تحديث أدوات البناء: التوافق التام مع معايير قالب addonTemplate الرسمي "
+"(PEP 735، uv، prek.toml).\n"
 "- الإصدار 2026.4:\n"
 "  - ميزة جديدة: محاكاة ضغطات مفاتيح متسلسلة (ماكرو) تتيح للمستخدمين "
 "المحترفين تنفيذ اختصارات لوحة المفاتيح بمهل زمنية مخصصة.\n"
@@ -664,33 +803,6 @@ msgstr ""
 "  - إصلاح التحميل: حل مشكلة حرجة منعت تحميل الإضافة في بعض بيئات NVDA.\n"
 "  - التوثيق: تحديث دليل المستخدم العربي بالكامل لتوفير توجيهات أوضح.\n"
 "  - الاستقرار العام: تحسينات داخلية لتوفير أداء أكثر سلاسة."
-
-#: addon\globalPlugins\core\settings_panel.py:157
-#: addon\globalPlugins\core\settings_panel.py:295
-msgid "Could not save settings."
-msgstr "تعذر حفظ الإعدادات."
-
-#: addon\globalPlugins\core\settings_panel.py:231
-msgid ""
-"Could not save settings. Restore or import a valid configuration and try "
-"again."
-msgstr "تعذر حفظ الإعدادات. استعد النسخة الاحتياطية أو استورد ملف تهيئة صالحاً ثم حاول ثانية."
-
-#: addon\globalPlugins\core\executor.py:58
-msgid "Too many items are waiting. Please try again later."
-msgstr "هناك عناصر كثيرة قيد الانتظار. يرجى المحاولة لاحقاً."
-
-#: addon\globalPlugins\core\executor.py:119
-msgid "Error: NVDA command did not finish in time"
-msgstr "خطأ: لم ينتهِ أمر NVDA في الوقت المحدد"
-
-#: addon\globalPlugins\core\executor.py:75
-msgid "Error: Could not run the item"
-msgstr "خطأ: تعذر تشغيل العنصر"
-
-#: addon\globalPlugins\core\executor.py:395
-msgid "Error: Could not run the action"
-msgstr "خطأ: تعذر تشغيل الإجراء"
 
 #~ msgid "Path"
 #~ msgstr "المسار"
