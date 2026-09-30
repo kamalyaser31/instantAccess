@@ -19,7 +19,7 @@ Key Features
 
 *   **Multi-Action Items:** Assign a sequence of actions to a single shortcut.
 *   **Browse Items Without Remembering Shortcuts:** Optionally move through the items available in the current application with the arrow keys or Tab inside Instant Access mode, press `Enter` to run one, or open a list of all of them.
-*   **Serialized Execution & Safety:** Actions and shortcuts execute through a unified, bounded worker queue to prevent clipboard and keystroke collisions, with automatic cancellation and modifier key recovery.
+*   **Reliable, One-at-a-Time Execution:** Items and action tests run one after another, never at the same time, so they can't mix up your clipboard or keystrokes. If something fails, keys like `Shift` or `Ctrl` are released automatically.
 *   **Item Duplication:** Clone any configured item with a single click, preserving all actions and settings.
 *   **Action Testing:** Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.
 *   **Stop on Error:** Optional setting to abort the rest of an item's action sequence if any action fails to execute.
@@ -36,7 +36,7 @@ Key Features
     *   Simulate keystroke sequences with adjustable delay.
 *   **Centralized Management:** A comprehensive settings panel to add, edit, duplicate, test, and organize your items.
 *   **Safe Import & Export:** Back up and share your configuration in JSON format with confirmation before overwrite and success notifications.
-*   **Atomic Config & Disaster Recovery:** Safe atomic saves prevent corruption, accompanied by automatic backups (`config.json.bak`) and startup recovery prompts.
+*   **Safe Saving & Recovery:** Your configuration is saved in a way that can't leave a half-written file, and a backup (`config.json.bak`) is kept. If the configuration is ever damaged, the add-on offers to restore the backup.
 *   **Adjustable Verbosity:** Choose between detailed feedback (Beginner) or concise tones (Advanced).
 
 Built-In Shortcuts
@@ -164,7 +164,7 @@ This item is for quickly pasting a common response into an email or chat window.
         *   **Snippet Action:** `Paste`
         *   **Text:** `Hello team, I will be available to review this after 2 PM. Thanks!`
 
-Now, when you are in Microsoft Teams, you can press ``NVDA+E` then `G`` to instantly paste that message into the chat. The same shortcut (`G`) can be used for a different global item or for an item in another app.
+Now, when you are in Microsoft Teams, you can press `NVDA+E` then `G` to instantly paste that message into the chat. The same shortcut (`G`) can be used for a different global item or for an item in another app.
 
 ### Example 4: Quick Accessibility Testing Setup
 
@@ -354,7 +354,9 @@ Super User Recipes (Argument-Driven Workflows)
 
 Instant Access supports **passing command-line arguments to applications**, which allows advanced automation. This enables users to open specific files, trigger program features, run scripts, or execute system tasks directly from a shortcut.
 
-The following examples demonstrate practical, specialized workflows that showcase different argument patterns:
+The following examples demonstrate practical, specialized workflows that showcase different argument patterns.
+
+Each recipe suggests its own shortcut, and some reuse keys from the examples above. If you set up several of them, pick keys that don't clash. If you use browsing, remember that `H` and `F1` are also browse keys.
 
 * * *
 
@@ -433,6 +435,8 @@ Open a secure browsing session immediately.
 
 **Program**
 
+**Path:**
+
     C:\Program Files\Mozilla Firefox\firefox.exe
 
 **Arguments:**
@@ -452,6 +456,8 @@ Firefox starts directly in **private browsing**.
 **Shortcut:** V
 
 **Program**
+
+**Path:**
 
     C:\Users\YourName\AppData\Local\Programs\Microsoft VS Code\Code.exe
 
@@ -473,6 +479,8 @@ VS Code launches with the specified project folder already loaded.
 
 **Program**
 
+**Path:**
+
     C:\Windows\System32\cmd.exe
 
 **Arguments:**
@@ -493,6 +501,8 @@ Command Prompt opens and automatically changes to the project directory.
 
 **Program**
 
+**Path:**
+
     C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 
 **Arguments:**
@@ -512,6 +522,8 @@ Windows settings pages can be opened using **ms-settings arguments**.
 **Shortcut:** S
 
 **Program**
+
+**Path:**
 
     explorer.exe
 
@@ -541,6 +553,8 @@ Instantly opens the selected settings page.
 
 **Program**
 
+**Path:**
+
     C:\Program Files\Mozilla Firefox\firefox.exe
 
 **Arguments:**
@@ -552,14 +566,16 @@ Opens Firefox with three research resources in separate tabs.
 
 * * *
 
-### 10\. Open Windows Registry Editor with Specific Hive
+### 10\. Open Another Registry Editor Window
 
-**Purpose:** Launch Registry Editor directly to a specific location.
+**Purpose:** Open a second Registry Editor window, even when one is already open, to compare two keys side by side.
 
-**Name:** Open NVDA Registry Settings
+**Name:** New Registry Editor Window
 **Shortcut:** O
 
 **Program**
+
+**Path:**
 
     C:\Windows\System32\regedit.exe
 
@@ -568,7 +584,7 @@ Opens Firefox with three research resources in separate tabs.
     /m
 
 **Result:**
-Opens Registry Editor in read-only mode for safe browsing.
+Opens a new Registry Editor window. Registry Editor has no read-only mode, so be careful with changes.
 
 * * *
 
@@ -581,25 +597,29 @@ Opens Registry Editor in read-only mode for safe browsing.
 
 **Program**
 
+**Path:**
+
     C:\Windows\System32\eventvwr.exe
 
 **Arguments:**
 
-    /c system
+    /c:System
 
 **Result:**
 Opens Event Viewer focused on system events for troubleshooting.
 
 * * *
 
-### 12\. Run Batch File with Admin Privileges
+### 12\. Run a Maintenance Batch File
 
-**Purpose:** Execute a batch script that requires elevated privileges.
+**Purpose:** Run a batch script through Command Prompt.
 
-**Name:** Admin Batch Script
-**Shortcut:** H
+**Name:** Maintenance Script
+**Shortcut:** J
 
 **Program**
+
+**Path:**
 
     C:\Windows\System32\cmd.exe
 
@@ -608,7 +628,7 @@ Opens Event Viewer focused on system events for troubleshooting.
     /c call C:\Scripts\system_maintenance.bat
 
 **Result:**
-Executes a batch script for system maintenance tasks.
+Runs the batch script with your normal permissions. It does not run it as administrator; if the script needs administrator rights, it will fail or ask for them itself.
 
 * * *
 
@@ -621,6 +641,8 @@ Executes a batch script for system maintenance tasks.
 
 **Program**
 
+**Path:**
+
     C:\Program Files\Git\git-bash.exe
 
 **Arguments:**
@@ -632,14 +654,16 @@ Opens Git Bash in your project directory, ready for version control commands.
 
 * * *
 
-### 14\. Open Windows Performance Monitor
+### 14\. Open Resource Monitor
 
-**Purpose:** Launch Performance Monitor for system monitoring.
+**Purpose:** See which programs are using your CPU, memory, disk, and network.
 
-**Name:** Performance Monitor
+**Name:** Resource Monitor
 **Shortcut:** M
 
 **Program**
+
+**Path:**
 
     C:\Windows\System32\perfmon.exe
 
@@ -648,7 +672,7 @@ Opens Git Bash in your project directory, ready for version control commands.
     /res
 
 **Result:**
-Opens Performance Monitor in Reliability Monitor view for resource tracking.
+Opens Resource Monitor. (Use `/rel` instead of `/res` to open Reliability Monitor.)
 
 * * *
 
@@ -661,11 +685,13 @@ Opens Performance Monitor in Reliability Monitor view for resource tracking.
 
 **Program**
 
+**Path:**
+
     C:\Program Files\VideoLAN\VLC\vlc.exe
 
 **Arguments:**
 
-C:\\Users\\YourName\\Music
+    C:\Users\YourName\Music
 
 **Result:**
 Launches VLC with your music library ready to play.
@@ -680,6 +706,8 @@ Launches VLC with your music library ready to play.
 **Shortcut:** I
 
 **Program**
+
+**Path:**
 
     explorer.exe
 
@@ -697,41 +725,14 @@ Best Practices
 
 These workflows illustrate different automation patterns:
 
-Pattern
-
-Purpose
-
-Application mode
-
-Turn websites into standalone apps
-
-File selection
-
-Navigate to and select specific files
-
-Silent utilities
-
-Run maintenance tools without UI
-
-Browser modes
-
-Open browsers with specific features
-
-Development setup
-
-Launch IDE with project folder
-
-Script execution
-
-Automate system tasks with PowerShell
-
-Settings pages
-
-Open specific Windows configuration
-
-File associations
-
-Open files directly in target applications
+*   **Application mode:** Turn websites into standalone apps.
+*   **File selection:** Navigate to and select specific files.
+*   **Silent utilities:** Run maintenance tools without their interface.
+*   **Browser modes:** Open browsers with specific features.
+*   **Development setup:** Launch an IDE with a project folder.
+*   **Script execution:** Automate system tasks with PowerShell.
+*   **Settings pages:** Open specific Windows settings pages.
+*   **File associations:** Open files directly in target applications.
 
 * * *
 
@@ -747,6 +748,14 @@ Command-line arguments can come from many sources:
 *   URI schemes (`ms-settings:`, `shell:`, etc.)
 
 Experiment with these arguments to create custom workflows tailored to your specific needs!
+
+Developer Details
+-----------------
+
+*   **Developer:** Kamal Yaser
+*   **Email:** [kamalyaser31@gmail.com](mailto:kamalyaser31@gmail.com)
+*   **Telegram:** [@kamalyaser31](https://t.me/kamalyaser31)
+*   **Repository:** [https://github.com/kamalyaser31/instantAccess](https://github.com/kamalyaser31/instantAccess)
 
 License
 -------
