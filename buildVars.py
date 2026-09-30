@@ -24,7 +24,7 @@ addon_info = AddonInfo(
   - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.
   - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths with spaces, corrected key-name buffer capacity in Win32 API, and ensured modifier keys are released upon typing failure.
   - UI Robustness: Retain user dialog inputs when disk saves fail, preserve command-picker selection state, and safely initialize in NVDA secure mode.
-  - Automated Regression Tests: Integrated 41 automated regression tests into CI.
+  - Automated Regression Tests: Integrated 55 automated regression tests into CI.
 - Version 2026.5:
   - Item Duplication: Easily clone items with all actions and settings via a new Duplicate button.
   - Action Testing: Test actions in isolation with automatic 3-second preparation countdown for typing and keystrokes.

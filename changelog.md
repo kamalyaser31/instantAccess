@@ -4,7 +4,17 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2026.6] - 2026-09-24
+## [2026.6] - 2026-09-30
+
+### Added
+- **Browse Items in Instant Access Mode** ([#19](https://github.com/kamalyaser31/instantAccess/issues/19), [#20](https://github.com/kamalyaser31/instantAccess/issues/20)): An optional setting (off by default) lets you move through the items available in the current application with the arrow keys or `Tab`/`Shift+Tab` while Instant Access mode is active, run the announced item with `Enter`, and open a list of all available items with `F1` or `H`. The list wraps around, and settings choose how items are announced (name and shortcut, shortcut and name, or name only) and their order (settings list, alphabetical, or by shortcut). Items bound to any of these keys keep priority.
+- **Automated Regression Suite**: Comprehensive test suite with 55 automated regression tests covering execution, configuration, UI dialogs, and item browsing.
+- **CI Safety Checks**: Dedicated workflow checks for undefined names in vendored libraries (`ruff check --isolated --select F821`) alongside automated regression test execution.
+
+### Changed
+- **Browse Settings**: The settings panel has three new options: enable browsing, the browse announcement format, and the browse order. All settings are now saved in a single write.
+- **Documentation**: Corrected the command-line recipes in the English user guide (`regedit /m` opens a new window rather than a read-only one, `perfmon /res` opens Resource Monitor, `eventvwr` needs `/c:System`, and `cmd /c` does not run a script as administrator), restored the Best Practices table as a list, fixed formatting, and replaced technical jargon in the feature list. Documented browsing in the English, Arabic, and Simplified Chinese guides.
+- **Translations**: Updated the Arabic translation for all new messages; synchronized the Simplified Chinese catalog with the new template.
 
 ### Fixed
 - **Configuration & Recovery Safety**: Preserve valid backups during recovery, automatically recover missing configuration files from existing backups, and leave stored data intact when recovery is declined or fails.
@@ -14,11 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Keyboard Reliability & State Cleanup**: Restore Unicode text typing across platforms, release pressed modifier keys and reset replay flags upon failures, and fix the Windows key-name buffer capacity in Win32 API calls.
 - **Batch File Execution**: Correct Windows batch file (`.bat` / `.cmd`) quoting and argument handling for paths containing spaces.
 - **UI & Picker Enhancements**: Apply action delays accurately during testing, preserve command-picker selection state and lazy-loading, safely handle NVDA secure mode initialization, keep duplicated item names unique beyond 999 copies, and retain dialog input when saving fails.
-
-### Added
-- **Browse Items in Instant Access Mode** ([#19](https://github.com/kamalyaser31/instantAccess/issues/19), [#20](https://github.com/kamalyaser31/instantAccess/issues/20)): An optional setting (off by default) lets you move through the items available in the current application with the arrow keys or `Tab`/`Shift+Tab` while Instant Access mode is active, run the announced item with `Enter`, and open a list of all available items with `F1` or `H`. The list wraps around, and settings choose how items are announced (name and shortcut, shortcut and name, or name only) and their order (settings list, alphabetical, or by shortcut). Items bound to any of these keys keep priority.
-- **Automated Regression Suite**: Comprehensive test suite with 41 automated regression tests covering execution, configuration, and UI dialogs.
-- **CI Safety Checks**: Dedicated workflow checks for undefined names in vendored libraries (`ruff check --isolated --select F821`) alongside automated regression test execution.
 
 ## [2026.5] - 2026-09-20
 
