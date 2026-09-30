@@ -18,13 +18,13 @@ addon_info = AddonInfo(
 	addon_changelog=_(
 		"""
 - Version 2026.6:
-  - Browse Items in Instant Access Mode: An optional setting lets you move through available items with the arrow keys or Tab, run one with Enter, and list them all with F1 or H.
-  - Configuration & Recovery Safety: Preserve valid backups during recovery, automatically recover missing configurations from backups, and leave stored data intact if recovery is declined or fails.
-  - Action Serialization: Run shortcuts and action tests through a unified, bounded queue to prevent keyboard and clipboard race conditions.
-  - NVDA Command Synchronization: Wait for NVDA script completion so failures correctly control subsequent actions in multi-action items.
-  - Windows & Keyboard Fixes: Fixed Windows batch file quoting for paths with spaces, corrected key-name buffer capacity in Win32 API, and ensured modifier keys are released upon typing failure.
-  - UI Robustness: Retain user dialog inputs when disk saves fail, preserve command-picker selection state, and safely initialize in NVDA secure mode.
-  - Automated Regression Tests: Integrated 55 automated regression tests into CI.
+  - Browse your items: In Instant Access mode, use the arrow keys or Tab to hear your items and Enter to run one; F1 or H lists them all. Turn it on in the add-on settings.
+  - Safer settings: A damaged or missing settings file can be restored from the backup, and your items are no longer lost when something goes wrong.
+  - One item at a time: Items now run one after another, so text and keystrokes no longer get mixed up.
+  - NVDA commands finish before the next action starts, and "Stop on error" now works correctly.
+  - Keys like Shift or Ctrl are no longer left pressed if typing fails.
+  - Batch files in folders with spaces in their names now run correctly.
+  - What you typed in a dialog is kept if saving fails.
 - Version 2026.5:
   - Item Duplication: Easily clone items with all actions and settings via a new Duplicate button.
   - Action Testing: Test actions in isolation with automatic 3-second preparation countdown for typing and keystrokes.

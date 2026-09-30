@@ -7,23 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2026.6] - 2026-09-30
 
 ### Added
-- **Browse Items in Instant Access Mode** ([#19](https://github.com/kamalyaser31/instantAccess/issues/19), [#20](https://github.com/kamalyaser31/instantAccess/issues/20)): An optional setting (off by default) lets you move through the items available in the current application with the arrow keys or `Tab`/`Shift+Tab` while Instant Access mode is active, run the announced item with `Enter`, and open a list of all available items with `F1` or `H`. The list wraps around, and settings choose how items are announced (name and shortcut, shortcut and name, or name only) and their order (settings list, alphabetical, or by shortcut). Items bound to any of these keys keep priority.
-- **Automated Regression Suite**: Comprehensive test suite with 55 automated regression tests covering execution, configuration, UI dialogs, and item browsing.
-- **CI Safety Checks**: Dedicated workflow checks for undefined names in vendored libraries (`ruff check --isolated --select F821`) alongside automated regression test execution.
+- **Browse your items without remembering shortcuts** ([#19](https://github.com/kamalyaser31/instantAccess/issues/19), [#20](https://github.com/kamalyaser31/instantAccess/issues/20)): In Instant Access mode, use the arrow keys or `Tab` to hear your items one by one, then press `Enter` to run the one you want. Press `F1` or `H` to see a list of all your items. This is off by default: turn it on in the add-on settings, where you can also choose how items are announced and in what order.
 
 ### Changed
-- **Browse Settings**: The settings panel has three new options: enable browsing, the browse announcement format, and the browse order. All settings are now saved in a single write.
-- **Documentation**: Corrected the command-line recipes in the English user guide (`regedit /m` opens a new window rather than a read-only one, `perfmon /res` opens Resource Monitor, `eventvwr` needs `/c:System`, and `cmd /c` does not run a script as administrator), restored the Best Practices table as a list, fixed formatting, and replaced technical jargon in the feature list. Documented browsing in the English, Arabic, and Simplified Chinese guides.
-- **Translations**: Updated the Arabic translation for all new messages; synchronized the Simplified Chinese catalog with the new template.
+- **User guide**: Browsing is explained in the English, Arabic, and Chinese guides, and several examples in the English guide were corrected and made easier to follow.
+- **Translations**: The Arabic translation is fully up to date.
 
 ### Fixed
-- **Configuration & Recovery Safety**: Preserve valid backups during recovery, automatically recover missing configuration files from existing backups, and leave stored data intact when recovery is declined or fails.
-- **Strict Configuration Validation**: Reject malformed or invalid configuration imports without silently discarding items, retain zero delay values accurately, and reject non-finite or negative timing values.
-- **Action Serialization & Resource Queue**: Serialize shortcut and action testing execution through a single bounded worker queue (`ExecutionQueue`) to prevent keyboard and clipboard race conditions; cancel pending work and interrupt delays when the add-on terminates.
-- **NVDA Script Lifecycle & Error Propagation**: Wait for NVDA commands to finish their script execution before continuing the sequence, and correctly trigger stop-on-error behavior on script, keyboard, or browser failures.
-- **Keyboard Reliability & State Cleanup**: Restore Unicode text typing across platforms, release pressed modifier keys and reset replay flags upon failures, and fix the Windows key-name buffer capacity in Win32 API calls.
-- **Batch File Execution**: Correct Windows batch file (`.bat` / `.cmd`) quoting and argument handling for paths containing spaces.
-- **UI & Picker Enhancements**: Apply action delays accurately during testing, preserve command-picker selection state and lazy-loading, safely handle NVDA secure mode initialization, keep duplicated item names unique beyond 999 copies, and retain dialog input when saving fails.
+- **Safer settings**: If your settings file is damaged or missing, the add-on can restore it from the backup, and your items and backup are no longer lost when something goes wrong.
+- **Checked imports**: A damaged or invalid settings file is refused instead of being imported with items missing.
+- **One item at a time**: When you run several items quickly, they now run one after another, so text and keystrokes no longer get mixed up.
+- **NVDA commands and "Stop on error"**: An item now waits for each NVDA command to finish, and "Stop on error" works correctly when a command, keystroke, or website fails.
+- **No more stuck keys**: Keys like `Shift` or `Ctrl` are no longer left pressed if typing fails or is interrupted.
+- **Batch files**: `.bat` and `.cmd` files in folders with spaces in their names now run correctly.
+- **Dialogs**: What you typed is kept if saving fails, the NVDA command list remembers your choice, and action delays are respected when you test an action.
 
 ## [2026.5] - 2026-09-20
 
