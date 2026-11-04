@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from logHandler import log
 from locale import strxfrm
 
 import addonHandler
@@ -15,15 +15,13 @@ from .nvda_commands import getAllActiveNvdaCommands
 addonHandler.initTranslation()
 
 
-_COMMAND_LOADER = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantAccessCommandPicker")
-
-
 class NvdaCommandPickerDialog(wx.Dialog):
 	def __init__(self, parent, selectedCommandId=""):
 		# Translators: Title of the dialog used to select an NVDA command.
 		wx.Dialog.__init__(
 			self,
 			parent,
+			# Translators: Title of the dialog used to select an NVDA command.
 			title=_("Select NVDA command"),
 			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
 		)
@@ -34,7 +32,6 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		self._populatedCategories = set()
 		self._itemToCommandId = {}
 		self._isDestroyed = False
-		self._loadFuture = None
 		self._filterCallLater = None
 		self._isPopulatingTree = False
 
@@ -73,15 +70,14 @@ class NvdaCommandPickerDialog(wx.Dialog):
 
 		self.filterCtrl.SetFocus()
 		self.CentreOnScreen()
-		self._loadCommandsAsync()
+		# The dialog appears first; the list is read on the next main-loop turn.
+		wx.CallAfter(self._loadCommands)
 
 	def onDestroy(self, event):
 		if event.GetEventObject() is not self:
 			event.Skip()
 			return
 		self._isDestroyed = True
-		if self._loadFuture is not None:
-			self._loadFuture.cancel()
 		if self._filterCallLater is not None:
 			try:
 				self._filterCallLater.Stop()
@@ -99,16 +95,14 @@ class NvdaCommandPickerDialog(wx.Dialog):
 		except Exception:
 			return False
 
-	def _loadCommandsAsync(self):
-		self._loadFuture = _COMMAND_LOADER.submit(getAllActiveNvdaCommands)
-		self._loadFuture.add_done_callback(lambda future: wx.CallAfter(self._onCommandsLoaded, future))
-
-	def _onCommandsLoaded(self, future):
+	def _loadCommands(self):
+		"""Read NVDA's gesture mappings on the main thread: they walk NVDA objects and app modules."""
 		if not self._isTreeAlive():
 			return
 		try:
-			self.commands = future.result()
+			self.commands = getAllActiveNvdaCommands()
 		except Exception:
+			log.exception("instantAccess: Could not collect NVDA commands")
 			self.commands = []
 		self._commandById = {command.identifier: command for command in self.commands}
 		self.filterCtrl.Enable(True)
@@ -266,6 +260,7 @@ class NvdaCommandPickerDialog(wx.Dialog):
 
 	def onOk(self, event):
 		if not self.selectedCommandId:
+			# Translators: Error shown when OK is pressed without choosing an NVDA command.
 			gui.messageBox(_("Please select an NVDA command."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return
 		command = self._commandById.get(self.selectedCommandId)

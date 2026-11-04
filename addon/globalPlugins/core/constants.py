@@ -4,35 +4,38 @@ import addonHandler
 
 addonHandler.initTranslation()
 
-CONFIG_SECTIONS = [
-	"Websites",
-	"Programs",
-	"Folders",
-	"Files",
-	"NvdaCommands",
-	"TextSnippets",
-	"Gestures",
-	"Arguments",
-	"TextSnippetActions",
-	"CommandLabels",
-	"RestrictedApps",
-	"Settings",
-]
-
 TYPE_SECTIONS = ["Websites", "Programs", "Folders", "Files", "NvdaCommands", "TextSnippets", "Keystrokes"]
 
 # Translators: Item types for instant Access entries.
 TYPE_LABELS = [
+	# Translators: Action type that opens a website or URI.
 	_("Website"),
+	# Translators: Action type that starts a program.
 	_("Program"),
+	# Translators: Action type that opens a folder.
 	_("Folder"),
+	# Translators: Action type that opens a file.
 	_("File"),
+	# Translators: Action type that runs an NVDA command.
 	_("NVDA command"),
+	# Translators: Action type that types, copies or pastes text.
 	_("Text snippet"),
+	# Translators: Action type that sends a sequence of key presses.
 	_("Keystrokes"),
 ]
 
 TYPE_TO_LABEL = dict(zip(TYPE_SECTIONS, TYPE_LABELS))
+
+# The stored data key that holds each action type's main value (shown as "path" in the dialogs).
+ACTION_FIELDS = {
+	"Websites": "url",
+	"Programs": "path",
+	"Folders": "path",
+	"Files": "path",
+	"NvdaCommands": "commandId",
+	"TextSnippets": "text",
+	"Keystrokes": "keys",
+}
 
 TEXT_SNIPPET_ACTION_VALUES = ("type", "copy", "paste")
 
@@ -51,6 +54,12 @@ TOGGLE_DESCRIPTION = _("Toggle instant Access mode.")
 
 # Translators: Description for reporting the currently focused application name.
 REPORT_APP_NAME_DESCRIPTION = _("Report current app name.")
+
+# Default gestures of the add-on's own scripts, used when Input Gestures has no mapping.
+ADDON_SCRIPT_GESTURES = {
+	TOGGLE_DESCRIPTION: ["kb:NVDA+e"],
+	REPORT_APP_NAME_DESCRIPTION: ["kb:NVDA+shift+e"],
+}
 
 # Translators: Caption for error message dialogs.
 ERROR_CAPTION = _("Error")

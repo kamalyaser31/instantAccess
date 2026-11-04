@@ -2,7 +2,7 @@
 
 import addonHandler
 import api
-import logging
+from logHandler import log
 import os
 import re
 import shutil
@@ -25,7 +25,6 @@ try:
 except Exception:
 	keyboard = None
 
-log = logging.getLogger(__name__)
 
 
 def _isCancelled(cancelEvent):
@@ -55,6 +54,7 @@ class ExecutionQueue:
 			if self.cancelEvent.is_set():
 				return None
 			if not self._slots.acquire(blocking=False):
+				# Translators: Announced when too many items are queued to run.
 				queueMessage(_("Too many items are waiting. Please try again later."))
 				return None
 			try:
@@ -71,8 +71,9 @@ class ExecutionQueue:
 			try:
 				future.result()
 			except Exception:
-				log.exception("Item execution failed")
+				log.exception("instantAccess: Item execution failed")
 				if not self.cancelEvent.is_set():
+					# Translators: Announced when an item stopped because of an unexpected error.
 					queueMessage(_("Error: Could not run the item"))
 
 	def _run(self, item, preDelay):
@@ -108,12 +109,12 @@ def _executeNvdaAction(commandId, cancelEvent=None, timeout=30):
 		try:
 			executeNvdaCommand(commandId, onComplete=onComplete, isCancelled=isCancelled)
 		except Exception:
-			log.exception("Could not dispatch NVDA command")
+			log.exception("instantAccess: Could not dispatch NVDA command")
 			onComplete(False)
 
 	if wx.IsMainThread():
 		# Item execution is a worker operation. Refuse to deadlock the main loop.
-		log.error("NVDA command execution must be requested from the execution queue")
+		log.error("instantAccess: NVDA command execution must be requested from the execution queue")
 		return False
 	wx.CallAfter(dispatch)
 	deadline = time.monotonic() + timeout
@@ -121,6 +122,7 @@ def _executeNvdaAction(commandId, cancelEvent=None, timeout=30):
 		if isCancelled() or time.monotonic() >= deadline:
 			expired.set()
 			if not _isCancelled(cancelEvent):
+				# Translators: Announced when an NVDA command action takes too long.
 				queueMessage(_("Error: NVDA command did not finish in time"))
 			# A timed-out command must not race subsequent actions, even in continue mode.
 			raise TimeoutError("NVDA command did not finish in time")
@@ -141,17 +143,13 @@ def queueMessage(message):
 		wx.CallAfter(ui.message, message)
 
 
-def _setClipboardText(text):
-	"""Set clipboard text using the appropriate NVDA API."""
+def setClipboardText(text):
+	"""Copy text to the clipboard with NVDA's API. Returns True on success."""
 	try:
-		if hasattr(api, "setClipText"):
-			api.setClipText(text)
-			return True
-		if hasattr(api, "copyToClip"):
-			return bool(api.copyToClip(text, notify=False))
+		return bool(api.copyToClip(text, notify=False))
 	except Exception as e:
-		log.error("Error setting clipboard text: %s", e)
-	return False
+		log.error("instantAccess: Error setting clipboard text: %s", e)
+		return False
 
 
 def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
@@ -161,25 +159,30 @@ def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 	try:
 		typingDelay = parseDelay(typingDelay)
 	except (ValueError, TypeError):
+		# Translators: Announced when a stored typing delay is invalid.
 		queueMessage(_("Typing delay must be a valid number."))
 		return False
 	if _isCancelled(cancelEvent):
 		return False
 	if not text:
+		# Translators: Announced when a text snippet action has no text.
 		queueMessage(_("Error: Text snippet is empty"))
 		return False
 
 	if action == "copy":
-		if not _setClipboardText(text):
+		if not setClipboardText(text):
+			# Translators: Announced when the snippet text could not be copied to the clipboard.
 			queueMessage(_("Error: Could not copy text snippet"))
 			return False
 		return True
 
 	if action == "paste":
-		if not _setClipboardText(text):
+		if not setClipboardText(text):
+			# Translators: Announced when the snippet text could not be copied before pasting.
 			queueMessage(_("Error: Could not copy text snippet"))
 			return False
 		if keyboard is None:
+			# Translators: Announced when simulated key presses are unavailable.
 			queueMessage(_("Error: Keyboard library is not available"))
 			return False
 		try:
@@ -188,17 +191,20 @@ def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 			keyboard.send("ctrl+v")
 			return True
 		except Exception as e:
-			log.error("Error pasting text snippet: %s", e)
+			log.error("instantAccess: Error pasting text snippet: %s", e)
+			# Translators: Announced when pasting a snippet failed.
 			queueMessage(_("Error: Could not paste text snippet"))
 			return False
 
 	if keyboard is None:
+		# Translators: Announced when simulated typing is unavailable.
 		queueMessage(_("Error: Keyboard library is not available"))
 		return False
 	try:
 		return keyboard.write(text, delay=typingDelay, cancel_event=cancelEvent) is not False
 	except Exception as e:
-		log.error("Error typing text snippet: %s", e)
+		log.error("instantAccess: Error typing text snippet: %s", e)
+		# Translators: Announced when typing a snippet failed.
 		queueMessage(_("Error: Could not type text snippet"))
 		return False
 
@@ -245,8 +251,9 @@ def _sendKeystrokeSequence(keys_text, pressDelay, cancelEvent=None):
 			try:
 				keyboard.send(hotkey)
 			except Exception as e:
-				log.error("Keystroke send failed for '%s': %s", hotkey, e)
+				log.error("instantAccess: Keystroke send failed for '%s': %s", hotkey, e)
 				queueMessage(
+					# Translators: Announced when a key press failed. {key} is the key name, for example ctrl+c.
 					_("Error: Could not send keystroke: {key}").format(key=hotkey),
 				)
 				return False
@@ -272,6 +279,7 @@ def executeInstantAction(action, cancelEvent=None):
 	if itemType == "Websites":
 		url = (path or "").strip().strip("'\"")
 		if not url:
+			# Translators: Announced when a website action has no address.
 			queueMessage(_("Error: URL is empty"))
 			return False
 		if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", url):
@@ -279,10 +287,12 @@ def executeInstantAction(action, cancelEvent=None):
 		try:
 			if webbrowser.open(url):
 				return True
+			# Translators: Announced when the browser could not open the address.
 			queueMessage(_("Error: Could not open the website"))
 			return False
 		except Exception as e:
-			log.error("Error opening website: %s", e)
+			log.error("instantAccess: Error opening website: %s", e)
+			# Translators: Announced when opening the address raised an error.
 			queueMessage(_("Error: Could not open the website"))
 			return False
 
@@ -294,45 +304,38 @@ def executeInstantAction(action, cancelEvent=None):
 
 	if itemType == "Keystrokes":
 		if keyboard is None:
+			# Translators: Announced when simulated keystrokes are unavailable.
 			queueMessage(_("Error: Keyboard library is not available"))
 			return False
 		keys_text = (path or "").strip()
 		if not keys_text:
+			# Translators: Announced when a keystrokes action has no keys.
 			queueMessage(_("Error: Keystrokes field is empty"))
 			return False
 		return _sendKeystrokeSequence(keys_text, pressDelay, cancelEvent)
 
 	resolvedPath = expandPath(path or "")
 	if not resolvedPath:
+		# Translators: Announced when the path of an action is empty.
 		queueMessage(_("Error: File not found"))
 		return False
 
-	if itemType == "Folders":
+	if itemType in ("Folders", "Files"):
 		if not os.path.exists(resolvedPath):
+			# Translators: Announced when the folder or file of an action does not exist.
 			queueMessage(_("Error: File not found"))
 			return False
 		try:
 			os.startfile(resolvedPath)
 			return True
 		except Exception as e:
-			log.error("Error opening folder: %s", e)
-			queueMessage(_("Error: Could not open the item"))
-			return False
-
-	if itemType == "Files":
-		if not os.path.exists(resolvedPath):
-			queueMessage(_("Error: File not found"))
-			return False
-		try:
-			os.startfile(resolvedPath)
-			return True
-		except Exception:
-			try:
-				if wx.LaunchDefaultApplication(resolvedPath):
-					return True
-			except Exception as e:
-				log.error("Error opening file: %s", e)
-			queueMessage(_("Error: Could not open the file"))
+			log.error("instantAccess: Error opening %s: %s", itemType, e)
+			if itemType == "Folders":
+				# Translators: Announced when a folder could not be opened.
+				queueMessage(_("Error: Could not open the item"))
+			else:
+				# Translators: Announced when a file could not be opened.
+				queueMessage(_("Error: Could not open the file"))
 			return False
 
 	if itemType == "Programs":
@@ -341,6 +344,7 @@ def executeInstantAction(action, cancelEvent=None):
 			if whichPath:
 				resolvedPath = whichPath
 			else:
+				# Translators: Announced when a program does not exist and is not on the PATH.
 				queueMessage(_("Error: File not found"))
 				return False
 		try:
@@ -363,7 +367,8 @@ def executeInstantAction(action, cancelEvent=None):
 				subprocess.Popen([resolvedPath], cwd=workingDir)
 			return True
 		except Exception as e:
-			log.error("Error starting program: %s", e)
+			log.error("instantAccess: Error starting program: %s", e)
+			# Translators: Announced when a program failed to start.
 			queueMessage(_("Error: Could not start the program"))
 			return False
 
@@ -379,6 +384,7 @@ def executeInstantItem(item, cancelEvent=None):
 	try:
 		interval = parseDelay(item.get("interval", 0.0))
 	except (ValueError, TypeError):
+		# Translators: Announced when the stored interval between actions is invalid.
 		queueMessage(_("Interval must be a valid number."))
 		return False
 	allSucceeded = True
@@ -392,13 +398,14 @@ def executeInstantItem(item, cancelEvent=None):
 		except TimeoutError:
 			return False
 		except Exception:
-			log.exception("Action %d failed for item '%s'", index, item.get("name"))
+			log.exception("instantAccess: Action %d failed for item '%s'", index, item.get("name"))
+			# Translators: Announced when an action raised an unexpected error.
 			queueMessage(_("Error: Could not run the action"))
 			success = False
 		allSucceeded = allSucceeded and success
 		if not success and stopOnError:
 			log.warning(
-				"Action %d failed, stopping sequence for item '%s'",
+				"instantAccess: Action %d failed, stopping sequence for item '%s'",
 				index,
 				item.get("name"),
 			)

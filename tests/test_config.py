@@ -78,7 +78,7 @@ class ConfigTests(unittest.TestCase):
 		manager = cm.ConfigManager(self.path)
 		self.assertEqual(manager.getItems(), [])
 		with self.assertRaises(ValueError):
-			manager.addItem("new", "kb:n", [{"type": "Websites", "path": "https://example.invalid"}])
+			manager.saveItem(None, "new", "kb:n", [{"type": "Websites", "path": "https://example.invalid"}])
 		self.assertEqual(Path(self.path).read_text(), "{broken")
 
 	def test_normal_save_rotates_previous_valid_config(self):
@@ -110,9 +110,44 @@ class ConfigTests(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			io.saveConfig(self.path, self.config)
 
+	def test_no_disk_writes_when_nvda_forbids_them(self):
+		with patch.object(io.NVDAState, "shouldWriteToDisk", return_value=False):
+			cm.ConfigManager(self.path)
+			self.assertFalse(Path(self.path).exists())
+			with self.assertRaises(io.DiskWriteDisabledError):
+				io.saveConfig(self.path, self.config)
+		self.assertFalse(Path(self.path).exists())
+
+	def test_recovery_without_disk_writes_uses_backup_in_memory(self):
+		self.damaged()
+		self.prompt.return_value = wx.YES
+		with patch.object(io.NVDAState, "shouldWriteToDisk", return_value=False):
+			self.assertEqual(io.loadConfigSafe(self.path)["items"][0]["name"], "original")
+		self.assertEqual(Path(self.path).read_text(), "{broken")
+
+	def test_config_is_read_once_and_refreshed_after_save(self):
+		self.write(self.config)
+		manager = cm.ConfigManager(self.path)
+		with patch.object(cm, "loadConfigSafe", wraps=io.loadConfigSafe) as load:
+			manager.getItems()
+			manager.getSettings()
+			manager.getItems()
+			self.assertEqual(load.call_count, 1)
+			manager.saveItem(None, "second", "kb:s", [{"type": "Websites", "path": "https://example.invalid"}])
+			self.assertEqual([item["name"] for item in manager.getItems()], ["original", "second"])
+			self.assertEqual(load.call_count, 2)
+
+	def test_declined_recovery_is_asked_once(self):
+		self.damaged()
+		manager = cm.ConfigManager(self.path)
+		manager.getItems()
+		manager.getItems()
+		self.assertEqual(self.prompt.call_count, 1)
+
 	def test_zero_delays_survive_roundtrip(self):
 		manager = cm.ConfigManager(self.path)
-		manager.addItem(
+		manager.saveItem(
+			None,
 			"zero",
 			"kb:z",
 			[
@@ -132,3 +167,17 @@ class ConfigTests(unittest.TestCase):
 		for value in ("inf", "nan", "-inf", 1e300, -1, True):
 			with self.subTest(value=value), self.assertRaises((ValueError, OverflowError)):
 				io.parseDelay(value)
+
+	def test_edit_keeps_item_position(self):
+		def item(name):
+			return {
+				"name": name,
+				"gesture": "kb:" + name,
+				"actions": [{"type": "Websites", "data": {"url": "https://example.invalid"}}],
+			}
+
+		self.write({"version": 3, "items": [item("a"), item("b"), item("c")]})
+		manager = cm.ConfigManager(self.path)
+		action = {"type": "Websites", "path": "https://example.invalid"}
+		manager.saveItem("b", "renamed", "kb:b", [action])
+		self.assertEqual([entry["name"] for entry in manager.getItems()], ["a", "renamed", "c"])

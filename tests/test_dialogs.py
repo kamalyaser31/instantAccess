@@ -1,3 +1,4 @@
+import sys
 import types
 import unittest
 from unittest.mock import Mock, patch
@@ -35,10 +36,10 @@ class DialogTests(unittest.TestCase):
 		with patch.object(gui, "messageBox"):
 			for value in ("nan", "inf", "-1", "1e300"):
 				self.assertIsNone(
-					dialogs.InstantAccessActionDialog._parseDelayField(None, value, "invalid", "negative")
+					dialogs.parseDelayField(value, "invalid", "negative")
 				)
 			self.assertEqual(
-				dialogs.InstantAccessActionDialog._parseDelayField(None, "0", "invalid", "negative"), 0
+				dialogs.parseDelayField("0", "invalid", "negative"), 0
 			)
 
 	def test_picker_preserves_selected_command_and_keeps_other_categories_lazy(self):
@@ -74,13 +75,50 @@ class DialogTests(unittest.TestCase):
 	def test_child_destroy_does_not_cancel_picker(self):
 		dialog = NvdaCommandPickerDialog.__new__(NvdaCommandPickerDialog)
 		dialog._isDestroyed = False
-		dialog._loadFuture = Mock()
-		dialog._filterCallLater = Mock()
+		timer = dialog._filterCallLater = Mock()
 		event = Mock()
 		dialog.onDestroy(event)
 		self.assertFalse(dialog._isDestroyed)
-		dialog._loadFuture.cancel.assert_not_called()
+		timer.Stop.assert_not_called()
 		event.GetEventObject.return_value = dialog
 		dialog.onDestroy(event)
 		self.assertTrue(dialog._isDestroyed)
-		dialog._loadFuture.cancel.assert_called_once()
+		timer.Stop.assert_called_once()
+
+	def test_commands_load_on_main_thread_only_while_dialog_lives(self):
+		pickerModule = sys.modules["auditcore.command_picker_dialog"]
+		dialog = NvdaCommandPickerDialog.__new__(NvdaCommandPickerDialog)
+		dialog._isDestroyed = True
+		with patch.object(pickerModule, "getAllActiveNvdaCommands") as collect:
+			dialog._loadCommands()
+		collect.assert_not_called()
+		dialog._isDestroyed = False
+		dialog.tree = Mock()
+		dialog.filterCtrl = Mock()
+		dialog.selectedCommandId = ""
+		dialog.populateTree = Mock()
+		command = NvdaCommand("Cat", "Cmd", "mod", "Cls", "script")
+		with patch.object(pickerModule, "getAllActiveNvdaCommands", return_value=[command]):
+			dialog._loadCommands()
+		self.assertEqual(dialog._commandById, {command.identifier: command})
+		dialog.populateTree.assert_called_once_with("")
+
+	def test_settings_test_button_waits_before_typing_items(self):
+		panelModule = sys.modules["auditcore.settings_panel"]
+		for actions, answer, expected in (
+			([{"type": "Keystrokes", "path": "down"}], wx.YES, 3),
+			([{"type": "TextSnippets", "path": "a", "textAction": "paste"}], wx.YES, 3),
+			([{"type": "TextSnippets", "path": "a", "textAction": "copy"}], wx.NO, 0),
+			([{"type": "Keystrokes", "path": "down"}], wx.NO, None),
+		):
+			with self.subTest(actions=actions, answer=answer):
+				item = {"name": "x", "actions": actions}
+				panel = types.SimpleNamespace(
+					getSelectedItem=Mock(return_value=item), onRunItem=Mock(), listCtrl=Mock()
+				)
+				with patch.object(gui, "messageBox", return_value=answer):
+					panelModule.InstantAccessSettingsPanel.onTest(panel, None)
+				if expected is None:
+					panel.onRunItem.assert_not_called()
+				else:
+					panel.onRunItem.assert_called_once_with(item, preDelay=expected)

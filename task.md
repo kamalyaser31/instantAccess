@@ -1,48 +1,7 @@
-# Task: Modernize instantAccess Tooling & Build System to addonTemplate
+# Task: instantAccess 2026.7
 
-- [x] Stage 1: Backup and clean legacy tooling files <!-- id: 0 -->
-  - [x] Delete `.pre-commit-config.yaml` <!-- id: 1 -->
-  - [x] Remove obsolete build artifacts (`*.nvda-addon`, `*.pot`, `.sconsign.dblite`) from root <!-- id: 2 -->
-- [x] Stage 2: Deploy modern template files from addonTemplate <!-- id: 3 -->
-  - [x] Deploy `prek.toml` <!-- id: 4 -->
-  - [x] Deploy `uv.lock` <!-- id: 5 -->
-  - [x] Deploy `site_scons/` <!-- id: 6 -->
-  - [x] Deploy `sconstruct` <!-- id: 7 -->
-  - [x] Deploy `manifest.ini.tpl` and `manifest-translated.ini.tpl` <!-- id: 8 -->
-  - [x] Deploy `.github/workflows/build_addon.yml` <!-- id: 9 -->
-  - [x] Deploy updated `.gitignore` <!-- id: 10 -->
-  - [x] Deploy official `COPYING.txt` <!-- id: 21 -->
-- [x] Stage 3: Align configuration files with instantAccess metadata <!-- id: 11 -->
-  - [x] Configure `pyproject.toml` (PEP 735 dependency groups + instantAccess metadata) <!-- id: 12 -->
-  - [x] Update `buildVars.py` with `SpeechDictionaries` typing and dictionary <!-- id: 13 -->
-- [x] Stage 4: Verification and testing <!-- id: 14 -->
-  - [x] Run `uv sync` <!-- id: 15 -->
-  - [x] Run `uv run scons` and `uv run scons pot` <!-- id: 17 -->
-- [x] Stage 5: Documentation and project state <!-- id: 18 -->
-  - [x] Create `project_state.md` <!-- id: 19 -->
-  - [x] Update `changelog.md` <!-- id: 20 -->
-- [x] Stage 6: Version 2026.5 Development & Enhancement <!-- id: 22 -->
-  - [x] Atomic configuration saving, automatic backup, and recovery (`config_io.py`) <!-- id: 23 -->
-  - [x] Item duplication with unique naming and stop-on-error management (`config_manager.py`) <!-- id: 24 -->
-  - [x] Enhanced execution: PATH resolution, batch files, custom URI schemes, quote stripping (`executor.py`) <!-- id: 25 -->
-  - [x] Action testing with 3s countdown, non-blocking path validation, stop-on-error checkbox, list keyboard navigation (`item_dialog.py`) <!-- id: 26 -->
-  - [x] Settings panel duplicate button, details column, Delete/Enter shortcuts, safe import/export (`settings_panel.py`) <!-- id: 27 -->
-  - [x] Plugin lifecycle reference cleanup and empty app name reporting (`plugin.py`) <!-- id: 28 -->
-  - [x] Native Arabic documentation (`addon/doc/ar/readme.md`) and updated English guide (`readme.md`) <!-- id: 29 -->
-  - [x] Full localization synchronization in `addon/locale/ar/LC_MESSAGES/nvda.po` and POT generation <!-- id: 30 -->
-- [x] Stage 7: Packaging, Release & Store Submission <!-- id: 31 -->
-  - [x] Code linting via `uv run ruff check addon/` (all passed) <!-- id: 32 -->
-  - [x] Final build via `uv run scons` generating `instantAccess-2026.5.nvda-addon` <!-- id: 33 -->
-  - [x] Git staging, commit, and push to main branch <!-- id: 34 -->
-  - [x] GitHub Release `v2026.5` published with attached addon package <!-- id: 35 -->
-  - [x] Submission to official NVDA Add-on Store (`nvaccess/addon-datastore#11721`) accepted and validated <!-- id: 36 -->
-- [x] Stage 8: Version 2026.6 Review, Merge & Documentation Update <!-- id: 37 -->
-  - [x] Line-by-line audit of PR #18 against Clean Code and NVDA accessibility standards <!-- id: 38 -->
-  - [x] Merge PR #18 into main branch via GitHub CLI <!-- id: 39 -->
-  - [x] Safe SystemRoot environment resolution in executor.py <!-- id: 40 -->
-  - [x] Clean variable shadowing in config_io.py <!-- id: 41 -->
-  - [x] Update addon_version to 2026.6 and addon_changelog in buildVars.py <!-- id: 42 -->
-  - [x] Update changelog.md with 2026.6 release notes <!-- id: 43 -->
-  - [x] Update documentation headers and key features in readme.md and addon/doc/ar/readme.md <!-- id: 44 -->
-  - [x] Run full regression test suite (41 tests) and ruff linting <!-- id: 45 -->
-  - [x] Update project_state.md and task.md <!-- id: 46 -->
+The full scope is in [plan-2026.7.md](plan-2026.7.md). M1 to M2d are done in the working tree (2026-11-04). They are not committed and not tested in live NVDA. The readme license line from M2d.1 moved to M4.
+
+- [ ] M3 Refinements (on hold until Kamal says to start): restore clipboard after paste; F1 list runs and filters items; prefill app name; several apps per item; Ctrl+Up/Down reorders items; NVDA+E stops a running item; import can merge; variables (6) with the "Insert variable…" menu; run as administrator; record keystrokes; filter the settings list; disable an item
+- [ ] M4 Release preparation: docs (with the keyboard library license line left over from M2d.1, via readme-writer), translations (msgmerge the .po files against the new template), version 2026.7, changelog, tests, build
+- [ ] M5 Live NVDA test (ask Kamal first: it closes his installed NVDA)

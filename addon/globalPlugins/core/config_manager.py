@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import logging
+from logHandler import log
 from .config_io import ensureConfigFile, loadConfigSafe, loadConfigFromPathStrict, saveConfig
-from .constants import DEFAULT_SETTINGS, TYPE_SECTIONS, VERBOSITY_VALUES
+from .constants import ACTION_FIELDS, DEFAULT_SETTINGS, VERBOSITY_VALUES
+from .gestures import gestureKey
 
-# Set up logging for better debugging
-log = logging.getLogger(__name__)
 
 
 class ConfigManager:
@@ -14,15 +13,29 @@ class ConfigManager:
 	def __init__(self, configPath):
 		"""Initialize the ConfigManager with a configuration file path."""
 		self.configPath = configPath
+		self._cachedConfig = None
 		ensureConfigFile(self.configPath)
 
 	def loadOrCreateConfig(self):
-		"""Load the configuration from file or create a new one if it doesn't exist."""
-		return loadConfigSafe(self.configPath)
+		"""The normalized config, read from disk once and kept until the next save or import.
+
+		NVDA+E rebuilds the layer from it, so the file is not read on every key press, and the
+		backup recovery question is asked at most once per session. Callers must not modify it.
+		"""
+		if self._cachedConfig is None:
+			self._cachedConfig = loadConfigSafe(self.configPath)
+		return self._cachedConfig
 
 	def saveConfig(self, config):
 		"""Save the configuration to file."""
-		saveConfig(self.configPath, config)
+		try:
+			saveConfig(self.configPath, config)
+		finally:
+			self._cachedConfig = None
+
+	def replaceConfig(self, config):
+		"""Replace the whole configuration, as an import does."""
+		self.saveConfig(config)
 
 	def _loadConfigForUpdate(self):
 		"""Do not turn a read-only recovery fallback into a destructive write."""
@@ -33,137 +46,58 @@ class ConfigManager:
 		return self.configPath
 
 	def _actionToPublic(self, storedAction):
-		"""Convert a stored action to a public-facing format."""
-		itemType = storedAction.get("type", "")
-		data = storedAction.get("data", {})
-		if not isinstance(data, dict):
-			data = {}
-		path = ""
-		arguments = ""
-		textAction = "type"
-		typingDelay = 0.05
-		commandLabel = ""
-		pressDelay = 0.05
-		if itemType == "Websites":
-			path = data.get("url", "")
-		elif itemType in ("Programs", "Folders", "Files"):
-			path = data.get("path", "")
-			if itemType == "Programs":
-				arguments = data.get("arguments", "")
-		elif itemType == "NvdaCommands":
-			path = data.get("commandId", "")
-			commandLabel = data.get("commandLabel", "")
-		elif itemType == "TextSnippets":
-			path = data.get("text", "")
-			textAction = data.get("action", "type")
-			try:
-				typingDelay = float(data.get("typingDelay", 0.05))
-			except (ValueError, TypeError):
-				typingDelay = 0.05
-			if typingDelay < 0:
-				typingDelay = 0.05
-		elif itemType == "Keystrokes":
-			path = data.get("keys", "")
-			try:
-				pressDelay = float(data.get("pressDelay", 0.05))
-			except (ValueError, TypeError):
-				pressDelay = 0.05
-			if pressDelay < 0:
-				pressDelay = 0.05
+		"""Stored actions are already normalized; the dialogs call each type's main value "path"."""
+		itemType = storedAction["type"]
+		data = storedAction["data"]
 		return {
 			"type": itemType,
-			"path": path if isinstance(path, str) else "",
-			"arguments": arguments if isinstance(arguments, str) else "",
-			"textAction": textAction if isinstance(textAction, str) else "type",
-			"typingDelay": typingDelay,
-			"commandLabel": commandLabel if isinstance(commandLabel, str) else "",
-			"pressDelay": pressDelay,
-			"delay": float(storedAction.get("delay", 0.0) or 0.0),
+			"path": data[ACTION_FIELDS[itemType]],
+			"arguments": data.get("arguments", ""),
+			"textAction": data.get("action", "type"),
+			"typingDelay": data.get("typingDelay", 0.05),
+			"commandLabel": data.get("commandLabel", ""),
+			"pressDelay": data.get("pressDelay", 0.05),
+			"delay": storedAction.get("delay", 0.0),
 		}
 
 	def _toPublicItem(self, storedItem):
-		"""Convert a stored item to a public-facing format."""
-		actions = [self._actionToPublic(action) for action in storedItem.get("actions", [])]
-		gesture = (storedItem.get("gesture", "") or "").strip().lower()
+		gesture = storedItem["gesture"]
 		return {
-			"name": storedItem.get("name", ""),
-			"appName": (storedItem.get("appName", "") or "").strip().lower(),
-			"interval": float(storedItem.get("interval", 0.0) or 0.0),
-			"stopOnError": bool(storedItem.get("stopOnError", True)),
-			"actions": actions,
+			"name": storedItem["name"],
+			"appName": storedItem.get("appName", ""),
+			"interval": storedItem.get("interval", 0.0),
+			"stopOnError": storedItem.get("stopOnError", True),
+			"actions": [self._actionToPublic(action) for action in storedItem["actions"]],
 			"gestures": [gesture] if gesture else [],
 		}
 
 	def _buildStoredAction(self, action):
-		"""Build a stored action from a public-facing action dictionary."""
+		"""Invalid values are left to saveConfig, which rejects them with ValueError."""
 		itemType = action.get("type", "")
-		if itemType not in TYPE_SECTIONS:
-			itemType = TYPE_SECTIONS[0]
-		delay = action.get("delay", 0.0)
-		try:
-			delay = float(delay)
-		except (ValueError, TypeError):
-			delay = 0.0
-		if delay < 0:
-			delay = 0.0
-		if itemType == "Websites":
-			data = {"url": action.get("path", "")}
-		elif itemType in ("Programs", "Folders", "Files"):
-			data = {"path": action.get("path", "")}
-			if itemType == "Programs" and (action.get("arguments", "") or "").strip():
-				data["arguments"] = action.get("arguments", "").strip()
+		if itemType not in ACTION_FIELDS:
+			raise ValueError(f"Invalid action type: {itemType!r}")
+		data = {ACTION_FIELDS[itemType]: action.get("path", "")}
+		if itemType == "Programs":
+			data["arguments"] = action.get("arguments", "")
 		elif itemType == "NvdaCommands":
-			data = {"commandId": action.get("path", "")}
-			if (action.get("commandLabel", "") or "").strip():
-				data["commandLabel"] = action.get("commandLabel", "").strip()
+			data["commandLabel"] = action.get("commandLabel", "")
 		elif itemType == "TextSnippets":
-			# TextSnippets was previously caught by a catch-all else — now explicit.
-			try:
-				typingDelay = float(action.get("typingDelay", 0.05))
-			except (ValueError, TypeError):
-				typingDelay = 0.05
-			if typingDelay < 0:
-				typingDelay = 0.05
-			data = {
-				"text": action.get("path", ""),
-				"action": (action.get("textAction", "type") or "").strip().lower(),
-				"typingDelay": typingDelay,
-			}
+			data["action"] = (action.get("textAction", "type") or "").strip().lower()
+			data["typingDelay"] = action.get("typingDelay", 0.05)
 		elif itemType == "Keystrokes":
-			try:
-				pressDelay = float(action.get("pressDelay", 0.05))
-			except (ValueError, TypeError):
-				pressDelay = 0.05
-			if pressDelay < 0:
-				pressDelay = 0.05
-			data = {
-				"keys": action.get("path", ""),
-				"pressDelay": pressDelay,
-			}
-		else:
-			# Defensive fallback — TYPE_SECTIONS guard above should prevent reaching here.
-			data = {}
-		return {"type": itemType, "data": data, "delay": delay}
+			data["pressDelay"] = action.get("pressDelay", 0.05)
+		return {"type": itemType, "data": data, "delay": action.get("delay", 0.0)}
 
 	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
-		"""Build a stored item from public-facing item data."""
-		try:
-			interval = float(interval)
-		except (ValueError, TypeError):
-			interval = 0.0
-		if interval < 0:
-			interval = 0.0
-		storedActions = [self._buildStoredAction(action) for action in actions]
 		item = {
 			"name": name,
 			"gesture": (gesture or "").strip().lower(),
 			"interval": interval,
 			"stopOnError": bool(stopOnError),
-			"actions": storedActions,
+			"actions": [self._buildStoredAction(action) for action in actions],
 		}
-		normalizedAppName = (appName or "").strip().lower()
-		if normalizedAppName:
-			item["appName"] = normalizedAppName
+		if (appName or "").strip():
+			item["appName"] = appName
 		return item
 
 	def getItems(self):
@@ -174,27 +108,16 @@ class ConfigManager:
 			try:
 				items.append(self._toPublicItem(storedItem))
 			except Exception as e:
-				log.error("Error converting item to public format: %s", e)
+				log.error("instantAccess: Error converting item to public format: %s", e)
 		return items
 
 	def getAllNames(self):
 		"""Get all configured item names."""
 		return {item.get("name", "") for item in self.getItems()}
 
-	def getGestureToNameMap(self):
-		"""Get a mapping of gestures to item names."""
-		gestureMap = {}
-		for item in self.getItems():
-			name = item.get("name", "")
-			for gesture in item.get("gestures", []):
-				normalized = (gesture or "").strip().lower()
-				if normalized and normalized not in gestureMap:
-					gestureMap[normalized] = name
-		return gestureMap
-
 	def findGestureConflict(self, gesture, appName="", excludeName=""):
 		"""Find if a gesture conflicts with an existing item."""
-		normalizedGesture = (gesture or "").strip().lower()
+		normalizedGesture = gestureKey(gesture)
 		normalizedAppName = (appName or "").strip().lower()
 		if not normalizedGesture:
 			return None
@@ -203,7 +126,7 @@ class ConfigManager:
 				continue
 			itemAppName = (item.get("appName", "") or "").strip().lower()
 			for itemGesture in item.get("gestures", []):
-				if (itemGesture or "").strip().lower() != normalizedGesture:
+				if gestureKey(itemGesture) != normalizedGesture:
 					continue
 				if itemAppName == normalizedAppName:
 					return item
@@ -221,37 +144,28 @@ class ConfigManager:
 				return candidate
 		return candidate
 
-	def addItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
-		"""Add a new item to the configuration."""
+	def saveItem(self, oldName, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
+		"""Add an item, or replace oldName at its place; browsing follows the settings order."""
 		config = self._loadConfigForUpdate()
-		items = [item for item in config.get("items", []) if item.get("name", "") != name]
-		items.append(
-			self._buildStoredItem(
-				name=name,
-				gesture=gesture,
-				actions=actions,
-				interval=interval,
-				appName=appName,
-				stopOnError=stopOnError,
-			),
+		newItem = self._buildStoredItem(
+			name=name,
+			gesture=gesture,
+			actions=actions,
+			interval=interval,
+			appName=appName,
+			stopOnError=stopOnError,
 		)
-		config["items"] = items
-		self.saveConfig(config)
-
-	def updateItem(self, oldName, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
-		"""Update an existing item in the configuration."""
-		config = self._loadConfigForUpdate()
-		items = [item for item in config.get("items", []) if item.get("name", "") not in (oldName, name)]
-		items.append(
-			self._buildStoredItem(
-				name=name,
-				gesture=gesture,
-				actions=actions,
-				interval=interval,
-				appName=appName,
-				stopOnError=stopOnError,
-			),
-		)
+		items = []
+		replaced = False
+		for item in config.get("items", []):
+			itemName = item.get("name", "")
+			if oldName and itemName == oldName and not replaced:
+				items.append(newItem)
+				replaced = True
+			elif itemName not in (oldName, name):
+				items.append(item)
+		if not replaced:
+			items.append(newItem)
 		config["items"] = items
 		self.saveConfig(config)
 
@@ -269,16 +183,6 @@ class ConfigManager:
 		if value not in VERBOSITY_VALUES:
 			value = VERBOSITY_VALUES[0]
 		return value
-
-	def setVerbosityLevel(self, value):
-		"""Set the verbosity level setting."""
-		config = self._loadConfigForUpdate()
-		value = (value or "").strip().lower()
-		if value not in VERBOSITY_VALUES:
-			value = VERBOSITY_VALUES[0]
-		config.setdefault("settings", {})
-		config["settings"]["verbosity"] = value
-		self.saveConfig(config)
 
 	def getSettings(self):
 		"""Get all settings, with defaults filled in."""

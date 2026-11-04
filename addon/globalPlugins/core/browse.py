@@ -2,9 +2,8 @@
 """Pure helpers for browsing items inside the instant Access layer."""
 
 import addonHandler
-import keyboardHandler
 
-from .gestures import formatGestureForDisplay
+from .gestures import formatGestureForDisplay, gestureDisplayText, gestureKey
 
 addonHandler.initTranslation()
 
@@ -25,26 +24,18 @@ def getUsableItems(items, currentAppName):
 	candidatesByGesture = {}
 	for item in items:
 		for gesture in item.get("gestures", []):
-			candidatesByGesture.setdefault(gesture.lower(), []).append(item)
+			candidatesByGesture.setdefault(gestureKey(gesture), []).append(item)
 	usable = []
 	for item in items:
 		gestures = item.get("gestures", [])
-		if gestures and resolveItem(candidatesByGesture[gestures[0].lower()], currentAppName) is item:
+		if gestures and resolveItem(candidatesByGesture[gestureKey(gestures[0])], currentAppName) is item:
 			usable.append(item)
 	return usable
 
 
 def getKeyLabel(item):
 	gestures = item.get("gestures", [])
-	if not gestures:
-		return ""
-	try:
-		label = keyboardHandler.KeyboardInputGesture.fromName(
-			formatGestureForDisplay(gestures[0])
-		).displayName
-	except Exception:
-		label = None
-	return label if isinstance(label, str) and label else formatGestureForDisplay(gestures[0])
+	return gestureDisplayText(gestures[0]) if gestures else ""
 
 
 def sortItems(items, order):

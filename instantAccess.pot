@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 'instantAccess' '2026.6'\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-09-30 18:01+0300\n"
+"POT-Creation-Date: 2026-11-04 10:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,18 +18,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Translators: Announcement of a browsed item as "shortcut, name", e.g. "g, Open Gmail".
-#: addon\globalPlugins\core\browse.py:67
+#: addon\globalPlugins\core\browse.py:58
 #, python-brace-format
 msgid "{key}, {name}"
 msgstr ""
 
 #. Translators: Announcement of a browsed item as "name, shortcut", e.g. "Open Gmail, g".
-#: addon\globalPlugins\core\browse.py:69
+#: addon\globalPlugins\core\browse.py:60
 #, python-brace-format
 msgid "{name}, {key}"
 msgstr ""
 
-#: addon\globalPlugins\core\browse.py:76
+#: addon\globalPlugins\core\browse.py:67
 msgid ""
 "Up and down arrows or Tab and Shift+Tab: browse items. Enter: run the "
 "browsed item. Escape: exit."
@@ -37,319 +37,387 @@ msgstr ""
 
 #. Translators: Shown in the browse help when no items can run in the current application.
 #. Translators: Announced when browsing the layer but no item can run in the current application.
-#: addon\globalPlugins\core\browse.py:82 addon\globalPlugins\core\plugin.py:303
+#: addon\globalPlugins\core\browse.py:73 addon\globalPlugins\core\plugin.py:293
 msgid "No items are available in this application."
 msgstr ""
 
-#: addon\globalPlugins\core\command_picker_dialog.py:27
+#. Translators: Title of the dialog used to select an NVDA command.
+#: addon\globalPlugins\core\command_picker_dialog.py:25
 msgid "Select NVDA command"
 msgstr ""
 
 #. Translators: Label for filter field in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:45
+#: addon\globalPlugins\core\command_picker_dialog.py:42
 msgid "Filter"
 msgstr ""
 
 #. Translators: Label for OK button in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:54
-#: addon\globalPlugins\core\item_dialog.py:137
-#: addon\globalPlugins\core\item_dialog.py:520
+#. Translators: OK button of the action dialog.
+#. Translators: OK button of the item dialog.
+#: addon\globalPlugins\core\command_picker_dialog.py:51
+#: addon\globalPlugins\core\item_dialog.py:240
+#: addon\globalPlugins\core\item_dialog.py:537
 msgid "&OK"
 msgstr ""
 
 #. Translators: Label for Cancel button in NVDA command selection dialog.
-#: addon\globalPlugins\core\command_picker_dialog.py:56
-#: addon\globalPlugins\core\item_dialog.py:138
-#: addon\globalPlugins\core\item_dialog.py:521
+#. Translators: Cancel button of the action dialog.
+#. Translators: Cancel button of the item dialog.
+#: addon\globalPlugins\core\command_picker_dialog.py:53
+#: addon\globalPlugins\core\item_dialog.py:242
+#: addon\globalPlugins\core\item_dialog.py:539
 msgid "&Cancel"
 msgstr ""
 
-#: addon\globalPlugins\core\command_picker_dialog.py:269
+#. Translators: Error shown when OK is pressed without choosing an NVDA command.
+#: addon\globalPlugins\core\command_picker_dialog.py:264
 msgid "Please select an NVDA command."
 msgstr ""
 
-#: addon\globalPlugins\core\config_io.py:280
+#: addon\globalPlugins\core\config_io.py:212
 msgid ""
 "The instant Access configuration file appears to be corrupted. Would you "
 "like to restore the previous backup?"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:26
+#. Translators: Action type that opens a website or URI.
+#: addon\globalPlugins\core\constants.py:12
 msgid "Website"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:27
+#. Translators: Action type that starts a program.
+#: addon\globalPlugins\core\constants.py:14
 msgid "Program"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:28
+#. Translators: Action type that opens a folder.
+#: addon\globalPlugins\core\constants.py:16
 msgid "Folder"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:29
+#. Translators: Action type that opens a file.
+#: addon\globalPlugins\core\constants.py:18
 msgid "File"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:30
-#: addon\globalPlugins\core\item_dialog.py:189
+#. Translators: Action type that runs an NVDA command.
+#. Translators: Label of the read-only field showing the chosen NVDA command.
+#: addon\globalPlugins\core\constants.py:20
+#: addon\globalPlugins\core\item_dialog.py:195
 msgid "NVDA command"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:31
-#: addon\globalPlugins\core\item_dialog.py:204
-#: addon\globalPlugins\core\item_dialog.py:287
+#. Translators: Action type that types, copies or pastes text.
+#. Translators: Label of the text snippet field.
+#: addon\globalPlugins\core\constants.py:22
+#: addon\globalPlugins\core\item_dialog.py:205
+#: addon\globalPlugins\core\item_dialog.py:312
 msgid "Text snippet"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:32
+#. Translators: Action type that sends a sequence of key presses.
+#: addon\globalPlugins\core\constants.py:24
 msgid "Keystrokes"
 msgstr ""
 
 #. Translators: Action labels for text snippet entries.
-#: addon\globalPlugins\core\constants.py:40
+#: addon\globalPlugins\core\constants.py:43
 msgid "Type the text"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:40
+#: addon\globalPlugins\core\constants.py:43
 msgid "Copy"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:40
+#: addon\globalPlugins\core\constants.py:43
 msgid "Paste"
 msgstr ""
 
 #. Translators: Category name for the instant Access add-on.
 #. Translators: Title of the instant Access settings panel.
-#: addon\globalPlugins\core\constants.py:47
-#: addon\globalPlugins\core\settings_panel.py:83 buildVars.py:12
+#: addon\globalPlugins\core\constants.py:50
+#: addon\globalPlugins\core\settings_panel.py:67 buildVars.py:12
 msgid "instant Access"
 msgstr ""
 
 #. Translators: Description for the toggle instant mode command in Input Gestures.
-#: addon\globalPlugins\core\constants.py:50
+#: addon\globalPlugins\core\constants.py:53
 msgid "Toggle instant Access mode."
 msgstr ""
 
 #. Translators: Description for reporting the currently focused application name.
-#: addon\globalPlugins\core\constants.py:53
+#: addon\globalPlugins\core\constants.py:56
 msgid "Report current app name."
 msgstr ""
 
 #. Translators: Caption for error message dialogs.
-#: addon\globalPlugins\core\constants.py:56
+#: addon\globalPlugins\core\constants.py:65
 msgid "Error"
 msgstr ""
 
 #. Translators: Caption for confirmation dialogs.
-#: addon\globalPlugins\core\constants.py:59
-#: addon\globalPlugins\core\item_dialog.py:666
+#. Translators: Title of the question before deleting an action.
+#: addon\globalPlugins\core\constants.py:68
+#: addon\globalPlugins\core\item_dialog.py:680
 msgid "Confirm"
 msgstr ""
 
 #. Translators: Label for beginner verbosity level.
-#: addon\globalPlugins\core\constants.py:64
+#: addon\globalPlugins\core\constants.py:73
 msgid "Beginner"
 msgstr ""
 
 #. Translators: Label for advanced verbosity level.
-#: addon\globalPlugins\core\constants.py:67
+#: addon\globalPlugins\core\constants.py:76
 msgid "Advanced"
 msgstr ""
 
 #. Translators: Choices for how items are announced while browsing the instant Access layer.
-#: addon\globalPlugins\core\constants.py:74
+#: addon\globalPlugins\core\constants.py:83
 msgid "Name, then shortcut"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:74
+#: addon\globalPlugins\core\constants.py:83
 msgid "Shortcut, then name"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:74
+#: addon\globalPlugins\core\constants.py:83
 msgid "Name only"
 msgstr ""
 
 #. Translators: Choices for the order of items while browsing the instant Access layer.
-#: addon\globalPlugins\core\constants.py:79
+#: addon\globalPlugins\core\constants.py:88
 msgid "Settings list order"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:79
+#: addon\globalPlugins\core\constants.py:88
 msgid "Alphabetical by name"
 msgstr ""
 
-#: addon\globalPlugins\core\constants.py:79
+#: addon\globalPlugins\core\constants.py:88
 msgid "By shortcut"
 msgstr ""
 
+#. Translators: Announced when too many items are queued to run.
 #: addon\globalPlugins\core\executor.py:58
 msgid "Too many items are waiting. Please try again later."
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:76
+#. Translators: Announced when an item stopped because of an unexpected error.
+#: addon\globalPlugins\core\executor.py:77
 msgid "Error: Could not run the item"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:124
+#. Translators: Announced when an NVDA command action takes too long.
+#: addon\globalPlugins\core\executor.py:126
 msgid "Error: NVDA command did not finish in time"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:164
-#: addon\globalPlugins\core\item_dialog.py:388
+#. Translators: Announced when a stored typing delay is invalid.
+#. Translators: Error shown when the typing delay is not a number.
+#: addon\globalPlugins\core\executor.py:163
+#: addon\globalPlugins\core\item_dialog.py:407
 msgid "Typing delay must be a valid number."
 msgstr ""
 
+#. Translators: Announced when a text snippet action has no text.
 #: addon\globalPlugins\core\executor.py:169
 msgid "Error: Text snippet is empty"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:174
-#: addon\globalPlugins\core\executor.py:180
+#. Translators: Announced when the snippet text could not be copied to the clipboard.
+#. Translators: Announced when the snippet text could not be copied before pasting.
+#: addon\globalPlugins\core\executor.py:175
+#: addon\globalPlugins\core\executor.py:182
 msgid "Error: Could not copy text snippet"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:183
-#: addon\globalPlugins\core\executor.py:196
-#: addon\globalPlugins\core\executor.py:297
+#. Translators: Announced when simulated key presses are unavailable.
+#. Translators: Announced when simulated typing is unavailable.
+#. Translators: Announced when simulated keystrokes are unavailable.
+#: addon\globalPlugins\core\executor.py:186
+#: addon\globalPlugins\core\executor.py:201
+#: addon\globalPlugins\core\executor.py:308
 msgid "Error: Keyboard library is not available"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:192
+#. Translators: Announced when pasting a snippet failed.
+#: addon\globalPlugins\core\executor.py:196
 msgid "Error: Could not paste text snippet"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:202
+#. Translators: Announced when typing a snippet failed.
+#: addon\globalPlugins\core\executor.py:208
 msgid "Error: Could not type text snippet"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:250
+#. Translators: Announced when a key press failed. {key} is the key name, for example ctrl+c.
+#: addon\globalPlugins\core\executor.py:257
 #, python-brace-format
 msgid "Error: Could not send keystroke: {key}"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:275
+#. Translators: Announced when a website action has no address.
+#: addon\globalPlugins\core\executor.py:283
 msgid "Error: URL is empty"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:282
-#: addon\globalPlugins\core\executor.py:286
+#. Translators: Announced when the browser could not open the address.
+#. Translators: Announced when opening the address raised an error.
+#: addon\globalPlugins\core\executor.py:291
+#: addon\globalPlugins\core\executor.py:296
 msgid "Error: Could not open the website"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:301
+#. Translators: Announced when a keystrokes action has no keys.
+#: addon\globalPlugins\core\executor.py:313
 msgid "Error: Keystrokes field is empty"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:307
-#: addon\globalPlugins\core\executor.py:312
-#: addon\globalPlugins\core\executor.py:324
-#: addon\globalPlugins\core\executor.py:344
+#. Translators: Announced when the path of an action is empty.
+#. Translators: Announced when the folder or file of an action does not exist.
+#. Translators: Announced when a program does not exist and is not on the PATH.
+#: addon\globalPlugins\core\executor.py:320
+#: addon\globalPlugins\core\executor.py:326
+#: addon\globalPlugins\core\executor.py:348
 msgid "Error: File not found"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:319
+#. Translators: Announced when a folder could not be opened.
+#: addon\globalPlugins\core\executor.py:335
 msgid "Error: Could not open the item"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:335
+#. Translators: Announced when a file could not be opened.
+#: addon\globalPlugins\core\executor.py:338
 msgid "Error: Could not open the file"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:367
+#. Translators: Announced when a program failed to start.
+#: addon\globalPlugins\core\executor.py:372
 msgid "Error: Could not start the program"
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:382
-#: addon\globalPlugins\core\item_dialog.py:767
+#. Translators: Announced when the stored interval between actions is invalid.
+#. Translators: Error shown when the interval between actions is not a number.
+#: addon\globalPlugins\core\executor.py:388
+#: addon\globalPlugins\core\item_dialog.py:775
 msgid "Interval must be a valid number."
 msgstr ""
 
-#: addon\globalPlugins\core\executor.py:396
+#. Translators: Announced when an action raised an unexpected error.
+#: addon\globalPlugins\core\executor.py:403
 msgid "Error: Could not run the action"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:54
-#: addon\globalPlugins\core\settings_panel.py:43
+#. Translators: Summary of a text snippet action, e.g. "Paste: Hello".
+#: addon\globalPlugins\core\item_dialog.py:75
 #, python-brace-format
 msgid "{action}: {preview}"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:79
+#: addon\globalPlugins\core\item_dialog.py:130
+msgid ""
+"Keystrokes or text typing will be simulated after a 3-second delay so you "
+"can switch to the target window.\n"
+"\n"
+"Would you like to proceed?"
+msgstr ""
+
+#. Translators: Title of the dialog that captures an item's shortcut.
+#: addon\globalPlugins\core\item_dialog.py:139
 msgid "Set shortcut"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:82
+#. Translators: Instruction in the shortcut capture dialog.
+#: addon\globalPlugins\core\item_dialog.py:143
 msgid "Press the desired shortcut key. Escape cancels."
 msgstr ""
 
+#. Translators: Label of the action type choice.
+#. Translators: Column header for the action type.
 #. Translators: Column label for item type in the list.
-#: addon\globalPlugins\core\item_dialog.py:109
-#: addon\globalPlugins\core\item_dialog.py:484
-#: addon\globalPlugins\core\settings_panel.py:99
+#: addon\globalPlugins\core\item_dialog.py:171
+#: addon\globalPlugins\core\item_dialog.py:485
+#: addon\globalPlugins\core\settings_panel.py:83
 msgid "Type"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:131
-msgid "Delay before executing this action (seconds)"
-msgstr ""
-
-#. Translators: Label for the Test button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:139
-#: addon\globalPlugins\core\settings_panel.py:116
-msgid "&Test"
-msgstr ""
-
-#: addon\globalPlugins\core\item_dialog.py:161
+#. Translators: Label of the path or URL field in the action dialog.
+#: addon\globalPlugins\core\item_dialog.py:177
 msgid "Path or URL"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:163
+#. Translators: Button that opens a file or folder chooser for the action path.
+#: addon\globalPlugins\core\item_dialog.py:180
 msgid "Browse"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:176
+#. Translators: Label of the optional command line arguments field.
+#: addon\globalPlugins\core\item_dialog.py:187
 msgid "Arguments (optional)"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:191
+#. Translators: Button that opens the NVDA command picker.
+#: addon\globalPlugins\core\item_dialog.py:198
 msgid "Select command"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:217
+#. Translators: Label of the choice between typing, copying and pasting a snippet.
+#: addon\globalPlugins\core\item_dialog.py:215
 msgid "Snippet action"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:231
-#: addon\globalPlugins\core\item_dialog.py:288
+#. Translators: Label of the delay between typed characters.
+#: addon\globalPlugins\core\item_dialog.py:224
+#: addon\globalPlugins\core\item_dialog.py:314
 msgid "Typing delay"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:284
+#. Translators: Label of the delay before this action runs.
+#: addon\globalPlugins\core\item_dialog.py:233
+msgid "Delay before executing this action (seconds)"
+msgstr ""
+
+#. Translators: Button that runs only this action, to try it.
+#. Translators: Label for the Test button in the settings panel.
+#: addon\globalPlugins\core\item_dialog.py:244
+#: addon\globalPlugins\core\settings_panel.py:100
+msgid "&Test"
+msgstr ""
+
+#. Translators: Label of the keystrokes field; one key or shortcut per line.
+#: addon\globalPlugins\core\item_dialog.py:307
 msgid "Keystrokes (one per line, e.g. 'down 5')"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:285
+#. Translators: Label of the delay between simulated key presses.
+#: addon\globalPlugins\core\item_dialog.py:309
 msgid "Delay between keystrokes (seconds)"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:310
-msgid "Select a program"
-msgstr ""
-
-#: addon\globalPlugins\core\item_dialog.py:319
+#. Translators: Title of the folder chooser.
+#: addon\globalPlugins\core\item_dialog.py:335
 msgid "Select a folder"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:327
+#. Translators: Titles of the program and file choosers.
+#: addon\globalPlugins\core\item_dialog.py:338
+msgid "Select a program"
+msgstr ""
+
+#: addon\globalPlugins\core\item_dialog.py:338
 msgid "Select a file"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:356
-#: addon\globalPlugins\core\item_dialog.py:751
+#. Translators: Error shown when the action's main field is empty.
+#. Translators: Error shown when the item has no name or no shortcut.
+#: addon\globalPlugins\core\item_dialog.py:373
+#: addon\globalPlugins\core\item_dialog.py:757
 msgid "All fields are required."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:367
+#: addon\globalPlugins\core\item_dialog.py:384
 #, python-brace-format
 msgid ""
 "The specified path was not found on your system:\n"
@@ -358,327 +426,382 @@ msgid ""
 "Would you like to save this action anyway?"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:376
+#. Translators: Error shown when the action delay is not a number.
+#: addon\globalPlugins\core\item_dialog.py:393
 msgid "Delay must be a valid number."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:379
+#. Translators: Error shown when the action delay is negative.
+#: addon\globalPlugins\core\item_dialog.py:395
 msgid "Delay must be zero or greater."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:389
+#. Translators: Error shown when the typing delay is negative.
+#: addon\globalPlugins\core\item_dialog.py:409
 msgid "Typing delay must be zero or greater."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:398
+#. Translators: Error shown when the keystroke delay is not a number.
+#: addon\globalPlugins\core\item_dialog.py:420
 msgid "Delay between keystrokes must be a valid number."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:399
+#. Translators: Error shown when the keystroke delay is negative.
+#: addon\globalPlugins\core\item_dialog.py:422
 msgid "Delay between keystrokes must be zero or greater."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:428
-msgid ""
-"Keystrokes or text typing will be simulated after a 3-second delay so you "
-"can switch to the target window.\n"
-"\n"
-"Would you like to proceed?"
-msgstr ""
-
+#. Translators: Label of the item name field.
 #. Translators: Column label for item name in the list.
-#: addon\globalPlugins\core\item_dialog.py:476
-#: addon\globalPlugins\core\settings_panel.py:97
+#: addon\globalPlugins\core\item_dialog.py:475
+#: addon\globalPlugins\core\settings_panel.py:81
 msgid "Name"
 msgstr ""
 
+#. Translators: Label of the item's action list.
 #: addon\globalPlugins\core\item_dialog.py:478
 msgid "Actions"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:485
+#. Translators: Column header for the delay before an action.
+#: addon\globalPlugins\core\item_dialog.py:487
 msgid "Delay"
 msgstr ""
 
+#. Translators: Column header for the action details.
 #. Translators: Column label for details in the list.
-#: addon\globalPlugins\core\item_dialog.py:486
-#: addon\globalPlugins\core\settings_panel.py:103
+#: addon\globalPlugins\core\item_dialog.py:489
+#: addon\globalPlugins\core\settings_panel.py:87
 msgid "Details"
 msgstr ""
 
+#. Translators: Button that adds an action.
 #. Translators: Label for the Add button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:490
-#: addon\globalPlugins\core\settings_panel.py:108
+#: addon\globalPlugins\core\item_dialog.py:494
+#: addon\globalPlugins\core\settings_panel.py:92
 msgid "&Add"
 msgstr ""
 
+#. Translators: Button that edits the selected action.
 #. Translators: Label for the Edit button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:491
-#: addon\globalPlugins\core\settings_panel.py:110
+#: addon\globalPlugins\core\item_dialog.py:496
+#: addon\globalPlugins\core\settings_panel.py:94
 msgid "&Edit"
 msgstr ""
 
+#. Translators: Button that deletes the selected action.
 #. Translators: Label for the Delete button in the settings panel.
-#: addon\globalPlugins\core\item_dialog.py:492
-#: addon\globalPlugins\core\settings_panel.py:112
+#: addon\globalPlugins\core\item_dialog.py:498
+#: addon\globalPlugins\core\settings_panel.py:96
 msgid "&Delete"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:493
+#. Translators: Button that moves the selected action up.
+#: addon\globalPlugins\core\item_dialog.py:500
 msgid "Move &up"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:494
+#. Translators: Button that moves the selected action down.
+#: addon\globalPlugins\core\item_dialog.py:502
 msgid "Move &down"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:498
+#. Translators: Label of the pause between the item's actions.
+#: addon\globalPlugins\core\item_dialog.py:507
 msgid "Interval between actions (seconds)"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:506
+#. Translators: Checkbox that stops the item when one of its actions fails.
+#: addon\globalPlugins\core\item_dialog.py:516
 msgid "Stop executing remaining actions if an action fails"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:552
-msgid "Restrict this shortcut to work in certain apps"
-msgstr ""
-
-#: addon\globalPlugins\core\item_dialog.py:553
-#: addon\globalPlugins\core\item_dialog.py:555
-msgid "App name"
-msgstr ""
-
+#. Translators: Label of the button that sets the item's shortcut.
 #. Translators: Column label for shortcut in the list.
-#: addon\globalPlugins\core\item_dialog.py:568
-#: addon\globalPlugins\core\settings_panel.py:101
+#: addon\globalPlugins\core\item_dialog.py:529
+#: addon\globalPlugins\core\settings_panel.py:85
 msgid "Shortcut"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:600
+#. Translators: Checkbox that limits the item to the apps named in the next field.
+#: addon\globalPlugins\core\item_dialog.py:571
+msgid "Restrict this shortcut to work in certain apps"
+msgstr ""
+
+#. Translators: Label of the field for the app the item is limited to.
+#. Translators: Hint shown inside the empty app name field.
+#: addon\globalPlugins\core\item_dialog.py:573
+#: addon\globalPlugins\core\item_dialog.py:576
+msgid "App name"
+msgstr ""
+
+#. Translators: Label of the shortcut button. {gesture} is the shortcut, for example g.
+#: addon\globalPlugins\core\item_dialog.py:609
 #, python-brace-format
 msgid "Shortcut key: {gesture}"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:602
+#. Translators: Label of the shortcut button when no shortcut is set.
+#: addon\globalPlugins\core\item_dialog.py:612
 msgid "Shortcut key: Undefined"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:641
+#. Translators: Title of the dialog that adds an action.
+#: addon\globalPlugins\core\item_dialog.py:652
 msgid "Add action"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:652
+#. Translators: Title of the dialog that edits an action.
+#: addon\globalPlugins\core\item_dialog.py:664
 msgid "Edit action"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:665
+#. Translators: Question before deleting an action.
+#: addon\globalPlugins\core\item_dialog.py:678
 msgid "Are you sure you would like to delete the selected action?"
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:731
-#: addon\globalPlugins\core\item_dialog.py:776
+#. Translators: Error shown when the captured shortcut is one of the add-on's own commands.
+#. Translators: Error shown when the item's shortcut is one of the add-on's own commands.
+#: addon\globalPlugins\core\item_dialog.py:735
+#: addon\globalPlugins\core\item_dialog.py:786
 msgid "This shortcut is reserved for instant Access."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:738
-#: addon\globalPlugins\core\item_dialog.py:782
+#. Translators: Error shown when the captured key is not a valid NVDA gesture.
+#. Translators: Error shown when the item's shortcut is not a valid NVDA gesture.
+#: addon\globalPlugins\core\item_dialog.py:743
+#: addon\globalPlugins\core\item_dialog.py:793
 msgid "Invalid shortcut key."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:754
+#. Translators: Error shown when the item has no actions.
+#: addon\globalPlugins\core\item_dialog.py:761
 msgid "At least one action is required."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:758
+#. Translators: Error shown when app restriction is on but the app name is empty.
+#: addon\globalPlugins\core\item_dialog.py:766
 msgid "App name is required when app restriction is enabled."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:770
+#. Translators: Error shown when the interval between actions is negative.
+#: addon\globalPlugins\core\item_dialog.py:777
 msgid "Interval must be zero or greater."
 msgstr ""
 
-#: addon\globalPlugins\core\item_dialog.py:789
+#. Translators: Error shown when another item has the same name.
+#: addon\globalPlugins\core\item_dialog.py:801
 msgid "This name already exists."
 msgstr ""
 
 #. Translators: Error shown when an app-specific shortcut conflicts with an existing item.
-#: addon\globalPlugins\core\item_dialog.py:802
+#: addon\globalPlugins\core\item_dialog.py:814
 #, python-brace-format
 msgid "This shortcut is already assigned to '{name}' for this app."
 msgstr ""
 
 #. Translators: Error shown when a global shortcut conflicts with an existing item.
-#: addon\globalPlugins\core\item_dialog.py:807
+#: addon\globalPlugins\core\item_dialog.py:819
 #, python-brace-format
 msgid "This global shortcut is already assigned to '{name}'."
 msgstr ""
 
+#. Translators: An NVDA command with its category, for example 'Speech: Toggle speech mode'.
 #: addon\globalPlugins\core\nvda_commands.py:37
 #, python-brace-format
 msgid "{category}: {command}"
 msgstr ""
 
-#: addon\globalPlugins\core\nvda_commands.py:104
+#. Translators: Name of the gesture that runs an NVDA command from an item.
+#: addon\globalPlugins\core\nvda_commands.py:98
 msgid "instant Access command"
 msgstr ""
 
-#: addon\globalPlugins\core\nvda_commands.py:138
-#: addon\globalPlugins\core\nvda_commands.py:289
+#. Translators: Announced when an NVDA command action failed.
+#. Translators: Announced when an NVDA command could not be queued.
+#: addon\globalPlugins\core\nvda_commands.py:133
+#: addon\globalPlugins\core\nvda_commands.py:287
 msgid "Error: Could not run NVDA command"
 msgstr ""
 
-#: addon\globalPlugins\core\nvda_commands.py:267
+#. Translators: Announced when the stored NVDA command cannot be read.
+#: addon\globalPlugins\core\nvda_commands.py:263
 msgid "Error: Invalid NVDA command"
 msgstr ""
 
-#: addon\globalPlugins\core\nvda_commands.py:280
+#. Translators: Announced when the chosen NVDA command does not exist in the current context.
+#: addon\globalPlugins\core\nvda_commands.py:277
 msgid "Error: NVDA command is not currently available"
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:211
+#. Translators: Announced when instant Access mode is turned on but no items exist.
+#: addon\globalPlugins\core\plugin.py:201
 msgid "No commands configured."
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:218
+#. Translators: Short announcement when instant Access mode turns on (advanced verbosity).
+#: addon\globalPlugins\core\plugin.py:209
 msgid "On"
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:221
+#. Translators: Announced when instant Access mode turns on. {count} is the number of usable items.
+#: addon\globalPlugins\core\plugin.py:214
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:235
+#. Translators: Short announcement when instant Access mode turns off (advanced verbosity).
+#: addon\globalPlugins\core\plugin.py:229
 msgid "Off"
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:237
+#. Translators: Announced when instant Access mode turns off.
+#: addon\globalPlugins\core\plugin.py:232
 msgid "instant Access Off"
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:247
+#. Translators: Announced when a key with no item is pressed in instant Access mode.
+#: addon\globalPlugins\core\plugin.py:243
 msgid "This gesture has no command assigned."
 msgstr ""
 
 #. Translators: Title of the window listing instant Access items available in the current application.
-#: addon\globalPlugins\core\plugin.py:326
+#: addon\globalPlugins\core\plugin.py:316
 msgid "instant Access items"
 msgstr ""
 
 #. Translators: Message announced when current application name could not be determined.
-#: addon\globalPlugins\core\plugin.py:339
+#: addon\globalPlugins\core\plugin.py:329
 msgid "Could not determine current application name."
 msgstr ""
 
-#: addon\globalPlugins\core\plugin.py:346
+#. Translators: Message announced after the current app name was copied to the clipboard.
+#: addon\globalPlugins\core\plugin.py:334
 msgid "App name copied to clipboard."
 msgstr ""
 
+#. Translators: Error shown when NVDA runs from the launcher or in secure mode, where settings cannot be saved.
+#: addon\globalPlugins\core\settings_panel.py:39
+msgid ""
+"NVDA is running from the launcher or in secure mode, so settings cannot be "
+"saved."
+msgstr ""
+
 #. Translators: Type label for shortcut items containing multiple actions.
-#: addon\globalPlugins\core\settings_panel.py:67
+#: addon\globalPlugins\core\settings_panel.py:51
 msgid "Multiple actions"
 msgstr ""
 
 #. Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
-#: addon\globalPlugins\core\settings_panel.py:78
+#: addon\globalPlugins\core\settings_panel.py:62
 #, python-brace-format
 msgid "{first} (+{count} more)"
 msgstr ""
 
 #. Translators: Label for the Duplicate button in the settings panel.
-#: addon\globalPlugins\core\settings_panel.py:114
+#: addon\globalPlugins\core\settings_panel.py:98
 msgid "D&uplicate"
 msgstr ""
 
 #. Translators: Label for the Export settings button.
-#: addon\globalPlugins\core\settings_panel.py:118
+#: addon\globalPlugins\core\settings_panel.py:102
 msgid "E&xport settings"
 msgstr ""
 
 #. Translators: Label for the Import settings button.
-#: addon\globalPlugins\core\settings_panel.py:120
+#: addon\globalPlugins\core\settings_panel.py:104
 msgid "I&mport settings"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:125
+#. Translators: Label of the choice between spoken messages and short tones.
+#: addon\globalPlugins\core\settings_panel.py:110
 msgid "Verbosity level"
 msgstr ""
 
 #. Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
-#: addon\globalPlugins\core\settings_panel.py:131
+#: addon\globalPlugins\core\settings_panel.py:116
 msgid "Enable &browsing items in the instant Access layer"
 msgstr ""
 
 #. Translators: Label for choosing how browsed items are announced.
-#: addon\globalPlugins\core\settings_panel.py:135
+#: addon\globalPlugins\core\settings_panel.py:120
 msgid "Browse &announcement"
 msgstr ""
 
 #. Translators: Label for choosing the order of browsed items.
-#: addon\globalPlugins\core\settings_panel.py:141
+#: addon\globalPlugins\core\settings_panel.py:126
 msgid "Browse &order"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:197
-#: addon\globalPlugins\core\settings_panel.py:335
+#. Translators: Error shown when the add-on settings could not be saved.
+#. Translators: Error shown when deleting an item could not be saved.
+#: addon\globalPlugins\core\settings_panel.py:183
+#: addon\globalPlugins\core\settings_panel.py:296
 msgid "Could not save settings."
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:271
+#. Translators: Error shown when an item could not be saved.
+#: addon\globalPlugins\core\settings_panel.py:242
 msgid ""
 "Could not save settings. Restore or import a valid configuration and try "
 "again."
 msgstr ""
 
 #. Translators: Title of the add item dialog.
-#: addon\globalPlugins\core\settings_panel.py:279
+#: addon\globalPlugins\core\settings_panel.py:260
 msgid "Add item"
 msgstr ""
 
 #. Translators: Title of the edit item dialog.
-#: addon\globalPlugins\core\settings_panel.py:291
+#: addon\globalPlugins\core\settings_panel.py:266
 msgid "Edit item"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:310
+#. Translators: Title of the duplicate item dialog.
+#: addon\globalPlugins\core\settings_panel.py:276
 msgid "Duplicate item"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:326
+#. Translators: Question before deleting an item.
+#: addon\globalPlugins\core\settings_panel.py:286
 msgid "Are you sure you would like to delete the selected item?"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:361
+#. Translators: Title of the file dialog for exporting settings.
+#: addon\globalPlugins\core\settings_panel.py:330
 msgid "Export settings"
 msgstr ""
 
 #. Translators: Message shown when settings are successfully exported.
-#: addon\globalPlugins\core\settings_panel.py:371
+#: addon\globalPlugins\core\settings_panel.py:340
 msgid "Settings exported successfully."
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:373
+#. Translators: Error shown when the settings file could not be exported.
+#: addon\globalPlugins\core\settings_panel.py:343
 msgid "Could not export settings."
 msgstr ""
 
 #. Translators: Warning message before importing settings which will overwrite current configuration.
-#: addon\globalPlugins\core\settings_panel.py:383
+#: addon\globalPlugins\core\settings_panel.py:353
 msgid ""
 "Importing settings will replace your current items. Are you sure you want to "
 "continue?"
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:392
+#. Translators: Title of the file dialog for importing settings.
+#: addon\globalPlugins\core\settings_panel.py:363
 msgid "Import settings"
 msgstr ""
 
 #. Translators: Message shown when settings are successfully imported.
-#: addon\globalPlugins\core\settings_panel.py:409
+#: addon\globalPlugins\core\settings_panel.py:380
 msgid "Settings imported successfully."
 msgstr ""
 
-#: addon\globalPlugins\core\settings_panel.py:411
+#. Translators: Error shown when a settings file could not be imported.
+#: addon\globalPlugins\core\settings_panel.py:383
 msgid "Could not import settings."
 msgstr ""
 

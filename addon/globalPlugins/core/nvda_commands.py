@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from locale import strxfrm
 from functools import wraps
-import logging
+from logHandler import log
 
 import addonHandler
 import api
@@ -14,7 +14,6 @@ import ui
 import wx
 
 addonHandler.initTranslation()
-log = logging.getLogger(__name__)
 
 
 COMMAND_ID_SEPARATOR = "|"
@@ -34,6 +33,7 @@ class NvdaCommand:
 
 	@property
 	def label(self):
+		# Translators: An NVDA command with its category, for example 'Speech: Toggle speech mode'.
 		return _("{category}: {command}").format(category=self.category, command=self.displayName)
 
 
@@ -89,18 +89,12 @@ def getAllActiveNvdaCommands():
 	return commands
 
 
-def getCommandByIdentifier(commandId):
-	for command in getAllActiveNvdaCommands():
-		if command.identifier == commandId:
-			return command
-	return None
-
-
 class _InstantCommandGesture:
 	wasInSayAll = False
 	_immediate = True
 	identifier = "instantAccess:nvdaCommand"
 	identifiers = [identifier]
+	# Translators: Name of the gesture that runs an NVDA command from an item.
 	displayName = _("instant Access command")
 
 	def __init__(self, script, onComplete=None, isCancelled=None):
@@ -132,9 +126,10 @@ def _runObservedScript(script, gesture, onComplete, isCancelled):
 		if not isCancelled():
 			scriptHandler.executeScript(observedScript, gesture)
 	except Exception:
-		log.exception("Error executing NVDA command")
+		log.exception("instantAccess: Error executing NVDA command")
 	finally:
 		if not success and not isCancelled():
+			# Translators: Announced when an NVDA command action failed.
 			ui.message(_("Error: Could not run NVDA command"))
 		onComplete(success and not isCancelled())
 
@@ -251,7 +246,7 @@ def _emulateKeyboardScript(scriptName, onComplete, isCancelled):
 		inputCore.manager.emulateGesture(gesture)
 		return True
 	except Exception:
-		log.exception("Error emulating NVDA keyboard command")
+		log.exception("instantAccess: Error emulating NVDA keyboard command")
 		onComplete(False)
 		return False
 
@@ -264,6 +259,7 @@ def executeNvdaCommand(commandId, onComplete=None, isCancelled=None):
 		return False
 	parsed = parseCommandIdentifier(commandId)
 	if not parsed:
+		# Translators: Announced when the stored NVDA command cannot be read.
 		ui.message(_("Error: Invalid NVDA command"))
 		onComplete(False)
 		return False
@@ -277,6 +273,7 @@ def executeNvdaCommand(commandId, onComplete=None, isCancelled=None):
 		scriptName=parsed["scriptName"],
 	)
 	if not script:
+		# Translators: Announced when the chosen NVDA command does not exist in the current context.
 		ui.message(_("Error: NVDA command is not currently available"))
 		onComplete(False)
 		return False
@@ -286,6 +283,7 @@ def executeNvdaCommand(commandId, onComplete=None, isCancelled=None):
 		scriptHandler.queueScript(script, gesture)
 		return True
 	except Exception:
+		# Translators: Announced when an NVDA command could not be queued.
 		wx.CallAfter(ui.message, _("Error: Could not run NVDA command"))
 		onComplete(False)
 		return False

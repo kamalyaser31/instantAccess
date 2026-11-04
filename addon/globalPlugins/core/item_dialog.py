@@ -8,6 +8,7 @@ import wx
 
 from .command_picker_dialog import NvdaCommandPickerDialog
 from .constants import (
+	ADDON_SCRIPT_GESTURES,
 	ALL_FILES_WILDCARD,
 	CONFIRM_CAPTION,
 	ERROR_CAPTION,
@@ -24,6 +25,9 @@ from .timing import parseDelay
 from .gestures import (
 	buildGestureNameFromEvent,
 	formatGestureForDisplay,
+	gestureDisplayText,
+	gestureKey,
+	getAddonGestures,
 	normalizeGesture,
 	validateGestureName,
 )
@@ -33,52 +37,109 @@ addonHandler.initTranslation()
 
 def _formatDelay(delayValue):
 	try:
-		number = float(delayValue)
-	except Exception:
+		number = parseDelay(delayValue)
+	except ValueError:
 		number = 0.0
-	if number < 0:
-		number = 0.0
-	formatted = f"{number:.3f}".rstrip("0").rstrip(".")
-	return formatted or "0"
+	return f"{number:.3f}".rstrip("0").rstrip(".") or "0"
+
+
+def parseDelayField(rawValue, invalidMessage, negativeMessage, default="0"):
+	"""Parse a delay field; show the matching error and return None when it is not a valid delay."""
+	text = (rawValue or default).strip()
+	try:
+		return parseDelay(text)
+	except ValueError:
+		try:
+			isNegative = float(text) < 0
+		except ValueError:
+			isNegative = False
+		gui.messageBox(negativeMessage if isNegative else invalidMessage, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+		return None
+
+
+def actionDetails(action, maxLength=50):
+	"""One-line description of an action for lists, cut to maxLength characters."""
+	itemType = action.get("type", "")
+	if itemType in ("TextSnippets", "Keystrokes"):
+		lines = (action.get("path", "") or "").splitlines()
+		firstLine = lines[0].strip() if lines else ""
+		if len(firstLine) > maxLength:
+			firstLine = firstLine[: maxLength - 3] + "..."
+		if itemType == "Keystrokes":
+			return firstLine
+		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(
+			action.get("textAction", "type"),
+			TEXT_SNIPPET_ACTION_TO_LABEL["type"],
+		)
+		# Translators: Summary of a text snippet action, e.g. "Paste: Hello".
+		return _("{action}: {preview}").format(action=actionLabel, preview=firstLine)
+	if itemType == "NvdaCommands":
+		return action.get("commandLabel", "") or action.get("path", "")
+	details = action.get("path", "")
+	arguments = (action.get("arguments", "") or "").strip()
+	if itemType == "Programs" and arguments:
+		details = f"{details} {arguments}"
+	return details
 
 
 def _getActionSummary(action):
 	itemType = action.get("type", "")
 	typeLabel = TYPE_TO_LABEL.get(itemType, itemType).replace("&", "")
-	delayText = _formatDelay(action.get("delay", 0.0))
-	if itemType == "TextSnippets":
-		text = (action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n")
-		firstLine = text.split("\n", 1)[0]
-		if len(firstLine) > 50:
-			firstLine = firstLine[:47] + "..."
-		details = _("{action}: {preview}").format(
-			action=TEXT_SNIPPET_ACTION_TO_LABEL.get(
-				action.get("textAction", "type"),
-				TEXT_SNIPPET_ACTION_TO_LABEL["type"],
-			),
-			preview=firstLine,
-		)
-	elif itemType == "Keystrokes":
-		first_keystroke = (
-			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
-		)
-		if len(first_keystroke) > 50:
-			first_keystroke = first_keystroke[:47] + "..."
-		details = first_keystroke
-	elif itemType == "NvdaCommands":
-		details = action.get("commandLabel", "") or action.get("path", "")
+	return typeLabel, _formatDelay(action.get("delay", 0.0)), actionDetails(action)
+
+
+def _labeledRow(parent, labelText, makeControl, makeButton=None, proportion=1, labelFlag=None, controlFlag=0):
+	"""Build label, control and optional button in one flat row.
+
+	The label is created first so NVDA reads it as the control's name. The row stays flat,
+	because _setRowVisible shows and hides only the row's direct child windows.
+	"""
+	if labelFlag is None:
+		labelFlag = wx.ALIGN_CENTER_VERTICAL
+	space = guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL
+	row = wx.BoxSizer(wx.HORIZONTAL)
+	label = wx.StaticText(parent, wx.ID_ANY, labelText)
+	row.Add(label, 0, labelFlag | wx.RIGHT, space)
+	control = makeControl()
+	button = makeButton() if makeButton else None
+	if button:
+		row.Add(control, proportion, controlFlag | wx.RIGHT, space)
+		row.Add(button, 0)
 	else:
-		details = action.get("path", "")
-		if itemType == "Programs" and action.get("arguments", "").strip():
-			details = f"{details} {action.get('arguments', '').strip()}"
-	return typeLabel, delayText, details
+		row.Add(control, proportion, controlFlag)
+	return row, label, control, button
+
+
+SWITCH_DELAY_SECONDS = 3
+
+
+def actionsNeedSwitchDelay(actions):
+	"""True when an action types or sends keys, so the user needs time to reach the target window."""
+	for action in actions:
+		itemType = action.get("type", "")
+		if itemType == "Keystrokes":
+			return True
+		if itemType == "TextSnippets" and action.get("textAction", "type") in ("type", "paste"):
+			return True
+	return False
+
+
+def confirmSwitchDelay():
+	# Translators: Prompt confirming test of keystroke simulation or text typing with a switch delay.
+	msg = _(
+		"Keystrokes or text typing will be simulated after a 3-second delay so you can switch to the target window.\n\n"
+		"Would you like to proceed?",
+	)
+	return gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES
 
 
 class ShortcutCaptureDialog(wx.Dialog):
 	def __init__(self, parent):
+		# Translators: Title of the dialog that captures an item's shortcut.
 		wx.Dialog.__init__(self, parent, title=_("Set shortcut"), style=wx.DEFAULT_DIALOG_STYLE)
 		self.gestureName = ""
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Instruction in the shortcut capture dialog.
 		label = wx.StaticText(self, wx.ID_ANY, _("Press the desired shortcut key. Escape cancels."))
 		mainSizer.Add(label, 0, wx.ALL, 10)
 		self.SetSizerAndFit(mainSizer)
@@ -106,36 +167,80 @@ class InstantAccessActionDialog(wx.Dialog):
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		sizerHelper = guiHelper.BoxSizerHelper(self, wx.VERTICAL)
 
+		# Translators: Label of the action type choice.
 		self.typeChoice = sizerHelper.addLabeledControl(_("Type"), wx.Choice, choices=TYPE_LABELS)
 		self.typeChoice.SetSelection(0)
 
-		self.pathRow, self.pathCtrl, self.browseButton = self._createPathRow()
+		self.pathRow, self.pathLabel, self.pathCtrl, self.browseButton = _labeledRow(
+			self,
+			# Translators: Label of the path or URL field in the action dialog.
+			_("Path or URL"),
+			lambda: wx.TextCtrl(self, wx.ID_ANY),
+			# Translators: Button that opens a file or folder chooser for the action path.
+			lambda: wx.Button(self, wx.ID_ANY, _("Browse")),
+		)
 		sizerHelper.addItem(self.pathRow, flag=wx.EXPAND)
 
-		self.argumentsRow, self.argumentsCtrl = self._createArgumentsRow()
+		self.argumentsRow, self.argumentsLabel, self.argumentsCtrl, _unused = _labeledRow(
+			self,
+			# Translators: Label of the optional command line arguments field.
+			_("Arguments (optional)"),
+			lambda: wx.TextCtrl(self, wx.ID_ANY),
+		)
 		sizerHelper.addItem(self.argumentsRow, flag=wx.EXPAND)
 
-		self.commandRow, self.commandCtrl, self.commandButton = self._createCommandRow()
+		self.commandRow, self.commandLabel, self.commandCtrl, self.commandButton = _labeledRow(
+			self,
+			# Translators: Label of the read-only field showing the chosen NVDA command.
+			_("NVDA command"),
+			lambda: wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_READONLY),
+			# Translators: Button that opens the NVDA command picker.
+			lambda: wx.Button(self, wx.ID_ANY, _("Select command")),
+		)
 		sizerHelper.addItem(self.commandRow, flag=wx.EXPAND)
 
-		self.snippetRow, self.snippetCtrl = self._createSnippetRow()
+		self.snippetRow, self.snippetLabel, self.snippetCtrl, _unused = _labeledRow(
+			self,
+			# Translators: Label of the text snippet field.
+			_("Text snippet"),
+			lambda: wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 120)),
+			labelFlag=wx.ALIGN_TOP,
+			controlFlag=wx.EXPAND,
+		)
 		sizerHelper.addItem(self.snippetRow, flag=wx.EXPAND)
 
-		self.snippetActionRow, self.snippetActionChoice = self._createSnippetActionRow()
+		self.snippetActionRow, self.snippetActionLabel, self.snippetActionChoice, _unused = _labeledRow(
+			self,
+			# Translators: Label of the choice between typing, copying and pasting a snippet.
+			_("Snippet action"),
+			lambda: wx.Choice(self, wx.ID_ANY, choices=TEXT_SNIPPET_ACTION_LABELS),
+			proportion=0,
+		)
+		self.snippetActionChoice.SetSelection(0)
 		sizerHelper.addItem(self.snippetActionRow, flag=wx.EXPAND)
-		self.typingDelayRow, self.typingDelayCtrl = self._createTypingDelayRow()
+		self.typingDelayRow, self.typingDelayLabel, self.typingDelayCtrl, _unused = _labeledRow(
+			self,
+			# Translators: Label of the delay between typed characters.
+			_("Typing delay"),
+			lambda: wx.TextCtrl(self, wx.ID_ANY),
+			proportion=0,
+		)
 		sizerHelper.addItem(self.typingDelayRow, flag=wx.EXPAND)
 		self.typingDelayCtrl.SetValue("0.05")
 
 		self.delayCtrl = sizerHelper.addLabeledControl(
+			# Translators: Label of the delay before this action runs.
 			_("Delay before executing this action (seconds)"),
 			wx.TextCtrl,
 		)
 		self.delayCtrl.SetValue("0")
 
 		buttonSizer = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		# Translators: OK button of the action dialog.
 		self.okButton = buttonSizer.addButton(self, wx.ID_OK, _("&OK"))
+		# Translators: Cancel button of the action dialog.
 		buttonSizer.addButton(self, wx.ID_CANCEL, _("&Cancel"))
+		# Translators: Button that runs only this action, to try it.
 		self.testButton = buttonSizer.addButton(self, label=_("&Test"))
 
 		mainSizer.Add(sizerHelper.sizer, 1, wx.ALL | wx.EXPAND, 10)
@@ -155,89 +260,6 @@ class InstantAccessActionDialog(wx.Dialog):
 
 		self.updateTypeState()
 		self.CentreOnScreen()
-
-	def _createPathRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Path or URL"))
-		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		button = wx.Button(self, wx.ID_ANY, _("Browse"))
-		row.Add(
-			label,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(ctrl, 1, wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
-		row.Add(button, 0)
-		return row, ctrl, button
-
-	def _createArgumentsRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Arguments (optional)"))
-		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		row.Add(
-			label,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(ctrl, 1)
-		return row, ctrl
-
-	def _createCommandRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("NVDA command"))
-		ctrl = wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_READONLY)
-		button = wx.Button(self, wx.ID_ANY, _("Select command"))
-		row.Add(
-			label,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(ctrl, 1, wx.RIGHT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
-		row.Add(button, 0)
-		return row, ctrl, button
-
-	def _createSnippetRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		self.snippetLabel = wx.StaticText(self, wx.ID_ANY, _("Text snippet"))
-		ctrl = wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 120))
-		row.Add(
-			self.snippetLabel,
-			0,
-			wx.ALIGN_TOP | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(ctrl, 1, wx.EXPAND)
-		return row, ctrl
-
-	def _createSnippetActionRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Snippet action"))
-		choice = wx.Choice(self, wx.ID_ANY, choices=TEXT_SNIPPET_ACTION_LABELS)
-		choice.SetSelection(0)
-		row.Add(
-			label,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(choice, 0)
-		return row, choice
-
-	def _createTypingDelayRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		self.typingDelayLabel = wx.StaticText(self, wx.ID_ANY, _("Typing delay"))
-		ctrl = wx.TextCtrl(self, wx.ID_ANY)
-		row.Add(
-			self.typingDelayLabel,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(ctrl, 0)
-		return row, ctrl
 
 	def _setRowVisible(self, row, visible):
 		for child in row.GetChildren():
@@ -281,10 +303,14 @@ class InstantAccessActionDialog(wx.Dialog):
 
 		# Labels change at runtime to match the currently selected action type.
 		if itemType == "Keystrokes":
+			# Translators: Label of the keystrokes field; one key or shortcut per line.
 			self.snippetLabel.SetLabel(_("Keystrokes (one per line, e.g. 'down 5')"))
+			# Translators: Label of the delay between simulated key presses.
 			self.typingDelayLabel.SetLabel(_("Delay between keystrokes (seconds)"))
 		else:
+			# Translators: Label of the text snippet field.
 			self.snippetLabel.SetLabel(_("Text snippet"))
+			# Translators: Label of the delay between typed characters.
 			self.typingDelayLabel.SetLabel(_("Typing delay"))
 
 		self._setRowVisible(self.pathRow, showPath)
@@ -304,33 +330,23 @@ class InstantAccessActionDialog(wx.Dialog):
 
 	def onBrowse(self, event):
 		itemType = TYPE_SECTIONS[self.typeChoice.GetSelection()]
-		if itemType == "Programs":
-			dialog = wx.FileDialog(
-				self,
-				_("Select a program"),
-				wildcard=ALL_FILES_WILDCARD,
-				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
-			)
-			if dialog.ShowModal() == wx.ID_OK:
-				self.pathCtrl.SetValue(dialog.GetPath())
-			dialog.Destroy()
-			return
 		if itemType == "Folders":
+			# Translators: Title of the folder chooser.
 			dialog = wx.DirDialog(self, _("Select a folder"), style=wx.DD_DIR_MUST_EXIST)
-			if dialog.ShowModal() == wx.ID_OK:
-				self.pathCtrl.SetValue(dialog.GetPath())
-			dialog.Destroy()
-			return
-		if itemType == "Files":
+		elif itemType in ("Programs", "Files"):
+			# Translators: Titles of the program and file choosers.
+			title = _("Select a program") if itemType == "Programs" else _("Select a file")
 			dialog = wx.FileDialog(
 				self,
-				_("Select a file"),
+				title,
 				wildcard=ALL_FILES_WILDCARD,
 				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
 			)
-			if dialog.ShowModal() == wx.ID_OK:
-				self.pathCtrl.SetValue(dialog.GetPath())
-			dialog.Destroy()
+		else:
+			return
+		if dialog.ShowModal() == wx.ID_OK:
+			self.pathCtrl.SetValue(dialog.GetPath())
+		dialog.Destroy()
 
 	def onSelectCommand(self, event):
 		dialog = NvdaCommandPickerDialog(self, selectedCommandId=self.selectedCommandId)
@@ -353,6 +369,7 @@ class InstantAccessActionDialog(wx.Dialog):
 			path = self.pathCtrl.GetValue().strip().strip("'\"")
 
 		if not path.strip():
+			# Translators: Error shown when the action's main field is empty.
 			gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 
@@ -370,33 +387,40 @@ class InstantAccessActionDialog(wx.Dialog):
 				if gui.messageBox(warnMsg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
 					return None
 
-		try:
-			delay = parseDelay((self.delayCtrl.GetValue() or "0").strip())
-		except Exception:
-			gui.messageBox(_("Delay must be a valid number."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
-			return None
-		if delay < 0:
-			gui.messageBox(_("Delay must be zero or greater."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+		delay = parseDelayField(
+			self.delayCtrl.GetValue(),
+			# Translators: Error shown when the action delay is not a number.
+			_("Delay must be a valid number."),
+			# Translators: Error shown when the action delay is negative.
+			_("Delay must be zero or greater."),
+		)
+		if delay is None:
 			return None
 
 		typingDelay = 0.05
 		pressDelay = 0.05
 
 		if itemType == "TextSnippets" and textAction == "type":
-			parsed = self._parseDelayField(
+			parsed = parseDelayField(
 				self.typingDelayCtrl.GetValue(),
+				# Translators: Error shown when the typing delay is not a number.
 				_("Typing delay must be a valid number."),
+				# Translators: Error shown when the typing delay is negative.
 				_("Typing delay must be zero or greater."),
+				default="0.05",
 			)
 			if parsed is None:
 				return None
 			typingDelay = parsed
 
 		elif itemType == "Keystrokes":
-			parsed = self._parseDelayField(
+			parsed = parseDelayField(
 				self.typingDelayCtrl.GetValue(),
+				# Translators: Error shown when the keystroke delay is not a number.
 				_("Delay between keystrokes must be a valid number."),
+				# Translators: Error shown when the keystroke delay is negative.
 				_("Delay between keystrokes must be zero or greater."),
+				default="0.05",
 			)
 			if parsed is None:
 				return None
@@ -417,41 +441,15 @@ class InstantAccessActionDialog(wx.Dialog):
 		result = self.validate(isTesting=True)
 		if not result:
 			return
-		itemType = result.get("type", "")
-		textAction = result.get("textAction", "type")
-		needsSwitchDelay = (
-			itemType == "TextSnippets" and textAction in ("type", "paste")
-		) or itemType == "Keystrokes"
-		if needsSwitchDelay:
-			# Translators: Prompt confirming test of keystroke simulation or text typing with a switch delay.
-			msg = _(
-				"Keystrokes or text typing will be simulated after a 3-second delay so you can switch to the target window.\n\n"
-				"Would you like to proceed?",
-			)
-			if gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) != wx.YES:
-				return
+		needsSwitchDelay = actionsNeedSwitchDelay([result])
+		if needsSwitchDelay and not confirmSwitchDelay():
+			return
 
 		if self.executionQueue is not None:
 			self.executionQueue.submit(
 				{"actions": [result], "stopOnError": True},
-				preDelay=3 if needsSwitchDelay else 0,
+				preDelay=SWITCH_DELAY_SECONDS if needsSwitchDelay else 0,
 			)
-
-	def _parseDelayField(self, raw_value, invalid_msg, negative_msg):
-		"""Parse a delay text field and show an error dialog on invalid input.
-
-		Centralises the duplicated float-parse + range-check pattern (DRY).
-		Returns the parsed float or None if validation fails.
-		"""
-		try:
-			value = parseDelay((raw_value or "0.05").strip())
-		except Exception:
-			gui.messageBox(invalid_msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
-			return None
-		if value < 0:
-			gui.messageBox(negative_msg, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
-			return None
-		return value
 
 	def onOk(self, event):
 		result = self.validate()
@@ -473,28 +471,39 @@ class InstantAccessItemDialog(wx.Dialog):
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		sizerHelper = guiHelper.BoxSizerHelper(self, wx.VERTICAL)
 
+		# Translators: Label of the item name field.
 		self.nameCtrl = sizerHelper.addLabeledControl(_("Name"), wx.TextCtrl)
 
+		# Translators: Label of the item's action list.
 		actionsLabel = wx.StaticText(self, wx.ID_ANY, _("Actions"))
 		sizerHelper.addItem(actionsLabel)
 		self.actionsList = nvdaControls.AutoWidthColumnListCtrl(
 			self,
 			style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN,
 		)
+		# Translators: Column header for the action type.
 		self.actionsList.InsertColumn(0, _("Type"))
+		# Translators: Column header for the delay before an action.
 		self.actionsList.InsertColumn(1, _("Delay"))
+		# Translators: Column header for the action details.
 		self.actionsList.InsertColumn(2, _("Details"))
 		sizerHelper.addItem(self.actionsList, flag=wx.EXPAND, proportion=1)
 
 		actionsButtons = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		# Translators: Button that adds an action.
 		self.addActionButton = actionsButtons.addButton(self, label=_("&Add"))
+		# Translators: Button that edits the selected action.
 		self.editActionButton = actionsButtons.addButton(self, label=_("&Edit"))
+		# Translators: Button that deletes the selected action.
 		self.deleteActionButton = actionsButtons.addButton(self, label=_("&Delete"))
+		# Translators: Button that moves the selected action up.
 		self.moveUpActionButton = actionsButtons.addButton(self, label=_("Move &up"))
+		# Translators: Button that moves the selected action down.
 		self.moveDownActionButton = actionsButtons.addButton(self, label=_("Move &down"))
 		sizerHelper.addItem(actionsButtons.sizer, flag=wx.EXPAND)
 
 		self.intervalCtrl = sizerHelper.addLabeledControl(
+			# Translators: Label of the pause between the item's actions.
 			_("Interval between actions (seconds)"),
 			wx.TextCtrl,
 		)
@@ -503,6 +512,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.stopOnErrorCheck = wx.CheckBox(
 			self,
 			wx.ID_ANY,
+			# Translators: Checkbox that stops the item when one of its actions fails.
 			_("Stop executing remaining actions if an action fails"),
 		)
 		self.stopOnErrorCheck.SetValue(True)
@@ -513,11 +523,19 @@ class InstantAccessItemDialog(wx.Dialog):
 		)
 		sizerHelper.addItem(self.restrictionRow, flag=wx.EXPAND)
 
-		self.shortcutRow, self.shortcutButton = self._createShortcutRow()
+		self.shortcutRow, self.shortcutLabel, self.shortcutButton, _unused = _labeledRow(
+			self,
+			# Translators: Label of the button that sets the item's shortcut.
+			_("Shortcut"),
+			lambda: wx.Button(self, wx.ID_ANY, ""),
+			proportion=0,
+		)
 		sizerHelper.addItem(self.shortcutRow, flag=wx.EXPAND)
 
 		buttonSizer = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		# Translators: OK button of the item dialog.
 		self.okButton = buttonSizer.addButton(self, wx.ID_OK, _("&OK"))
+		# Translators: Cancel button of the item dialog.
 		buttonSizer.addButton(self, wx.ID_CANCEL, _("&Cancel"))
 
 		mainSizer.Add(sizerHelper.sizer, 1, wx.ALL | wx.EXPAND, 10)
@@ -549,9 +567,12 @@ class InstantAccessItemDialog(wx.Dialog):
 
 	def _createRestrictionRow(self):
 		row = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Checkbox that limits the item to the apps named in the next field.
 		check = wx.CheckBox(self, wx.ID_ANY, _("Restrict this shortcut to work in certain apps"))
+		# Translators: Label of the field for the app the item is limited to.
 		appLabel = wx.StaticText(self, wx.ID_ANY, _("App name"))
 		appCtrl = wx.TextCtrl(self, wx.ID_ANY)
+		# Translators: Hint shown inside the empty app name field.
 		appCtrl.SetHint(_("App name"))
 		row.Add(check, 0, wx.ALIGN_CENTER_VERTICAL)
 		row.Add(
@@ -562,19 +583,6 @@ class InstantAccessItemDialog(wx.Dialog):
 		)
 		row.Add(appCtrl, 1, wx.LEFT, guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL)
 		return row, check, appLabel, appCtrl
-
-	def _createShortcutRow(self):
-		row = wx.BoxSizer(wx.HORIZONTAL)
-		label = wx.StaticText(self, wx.ID_ANY, _("Shortcut"))
-		button = wx.Button(self, wx.ID_ANY, "")
-		row.Add(
-			label,
-			0,
-			wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-			guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_HORIZONTAL,
-		)
-		row.Add(button, 0)
-		return row, button
 
 	def _loadExistingItem(self, item):
 		self.nameCtrl.SetValue(item.get("name", ""))
@@ -597,8 +605,10 @@ class InstantAccessItemDialog(wx.Dialog):
 
 	def updateShortcutLabel(self):
 		if self.gesture:
-			label = _("Shortcut key: {gesture}").format(gesture=formatGestureForDisplay(self.gesture))
+			# Translators: Label of the shortcut button. {gesture} is the shortcut, for example g.
+			label = _("Shortcut key: {gesture}").format(gesture=gestureDisplayText(self.gesture))
 		else:
+			# Translators: Label of the shortcut button when no shortcut is set.
 			label = _("Shortcut key: Undefined")
 		self.shortcutButton.SetLabel(label)
 
@@ -638,6 +648,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.updateActionButtons()
 
 	def onAddAction(self, event):
+		# Translators: Title of the dialog that adds an action.
 		dialog = InstantAccessActionDialog(self, _("Add action"))
 		if dialog.ShowModal() == wx.ID_OK:
 			self.actions.append(dialog.result)
@@ -649,6 +660,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		index = self.getSelectedActionIndex()
 		if index == -1:
 			return
+		# Translators: Title of the dialog that edits an action.
 		dialog = InstantAccessActionDialog(self, _("Edit action"), existingAction=self.actions[index])
 		if dialog.ShowModal() == wx.ID_OK:
 			self.actions[index] = dialog.result
@@ -662,7 +674,9 @@ class InstantAccessItemDialog(wx.Dialog):
 			return
 		if (
 			gui.messageBox(
+				# Translators: Question before deleting an action.
 				_("Are you sure you would like to delete the selected action?"),
+				# Translators: Title of the question before deleting an action.
 				_("Confirm"),
 				wx.YES_NO | wx.ICON_QUESTION,
 			)
@@ -674,21 +688,20 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.refreshActionsList(selectIndex=nextIndex)
 		self.actionsList.SetFocus()
 
-	def onMoveActionUp(self, event):
+	def _moveAction(self, step):
 		index = self.getSelectedActionIndex()
-		if index <= 0:
+		target = index + step
+		if index == -1 or not 0 <= target < len(self.actions):
 			return
-		self.actions[index - 1], self.actions[index] = self.actions[index], self.actions[index - 1]
-		self.refreshActionsList(selectIndex=index - 1)
+		self.actions[index], self.actions[target] = self.actions[target], self.actions[index]
+		self.refreshActionsList(selectIndex=target)
 		self.actionsList.SetFocus()
 
+	def onMoveActionUp(self, event):
+		self._moveAction(-1)
+
 	def onMoveActionDown(self, event):
-		index = self.getSelectedActionIndex()
-		if index == -1 or index >= len(self.actions) - 1:
-			return
-		self.actions[index + 1], self.actions[index] = self.actions[index], self.actions[index + 1]
-		self.refreshActionsList(selectIndex=index + 1)
-		self.actionsList.SetFocus()
+		self._moveAction(1)
 
 	def onActionsListKeyDown(self, event):
 		keyCode = event.GetKeyCode()
@@ -704,19 +717,9 @@ class InstantAccessItemDialog(wx.Dialog):
 		event.Skip()
 
 	def getReservedGestures(self):
-		reserved = set(RESERVED_GESTURES)
-		try:
-			import inputCore
-			from .constants import CATEGORY_LABEL, REPORT_APP_NAME_DESCRIPTION, TOGGLE_DESCRIPTION
-
-			categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
-			for desc in (TOGGLE_DESCRIPTION, REPORT_APP_NAME_DESCRIPTION):
-				info = categoryMap.get(desc)
-				if info and getattr(info, "gestures", None):
-					for g in info.gestures:
-						reserved.add(normalizeGesture(g))
-		except Exception:
-			pass
+		reserved = {gestureKey(gesture) for gesture in RESERVED_GESTURES}
+		for description, fallback in ADDON_SCRIPT_GESTURES.items():
+			reserved.update(gestureKey(gesture) for gesture in getAddonGestures(description, fallback))
 		return reserved
 
 	def onSetShortcut(self, event):
@@ -726,8 +729,9 @@ class InstantAccessItemDialog(wx.Dialog):
 			if not gestureName:
 				dialog.Destroy()
 				return
-			if gestureName in self.getReservedGestures():
+			if gestureKey(gestureName) in self.getReservedGestures():
 				gui.messageBox(
+					# Translators: Error shown when the captured shortcut is one of the add-on's own commands.
 					_("This shortcut is reserved for instant Access."),
 					ERROR_CAPTION,
 					wx.OK | wx.ICON_ERROR,
@@ -735,6 +739,7 @@ class InstantAccessItemDialog(wx.Dialog):
 				dialog.Destroy()
 				return
 			if not validateGestureName(formatGestureForDisplay(gestureName)):
+				# Translators: Error shown when the captured key is not a valid NVDA gesture.
 				gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 				dialog.Destroy()
 				return
@@ -748,37 +753,43 @@ class InstantAccessItemDialog(wx.Dialog):
 		appName = self.appNameCtrl.GetValue().strip().lower() if self.restrictToAppsCheck.GetValue() else ""
 
 		if not name or not gesture:
+			# Translators: Error shown when the item has no name or no shortcut.
 			gui.messageBox(_("All fields are required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 		if not self.actions:
+			# Translators: Error shown when the item has no actions.
 			gui.messageBox(_("At least one action is required."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 		if self.restrictToAppsCheck.GetValue() and not appName:
 			gui.messageBox(
+				# Translators: Error shown when app restriction is on but the app name is empty.
 				_("App name is required when app restriction is enabled."),
 				ERROR_CAPTION,
 				wx.OK | wx.ICON_ERROR,
 			)
 			return None
 
-		try:
-			interval = parseDelay((self.intervalCtrl.GetValue() or "0").strip())
-		except Exception:
-			gui.messageBox(_("Interval must be a valid number."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
-			return None
-		if interval < 0:
-			gui.messageBox(_("Interval must be zero or greater."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+		interval = parseDelayField(
+			self.intervalCtrl.GetValue(),
+			# Translators: Error shown when the interval between actions is not a number.
+			_("Interval must be a valid number."),
+			# Translators: Error shown when the interval between actions is negative.
+			_("Interval must be zero or greater."),
+		)
+		if interval is None:
 			return None
 
 		normalizedGesture = normalizeGesture(gesture)
-		if normalizedGesture in self.getReservedGestures():
+		if gestureKey(normalizedGesture) in self.getReservedGestures():
 			gui.messageBox(
+				# Translators: Error shown when the item's shortcut is one of the add-on's own commands.
 				_("This shortcut is reserved for instant Access."),
 				ERROR_CAPTION,
 				wx.OK | wx.ICON_ERROR,
 			)
 			return None
 		if not validateGestureName(formatGestureForDisplay(normalizedGesture)):
+			# Translators: Error shown when the item's shortcut is not a valid NVDA gesture.
 			gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 
@@ -786,6 +797,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		if self.existingItem:
 			allNames.discard(self.existingItem["name"])
 		if name in allNames:
+			# Translators: Error shown when another item has the same name.
 			gui.messageBox(_("This name already exists."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 			return None
 

@@ -5,7 +5,7 @@ import types
 import unittest
 from unittest.mock import Mock, patch
 
-from nvda_stubs import cm, io, plugin
+from nvda_stubs import cm, io, normalizeGestureIdentifier, plugin
 import auditcore.browse as browse
 import globalPluginHandler
 import ui
@@ -135,7 +135,14 @@ class BrowseLayerTests(unittest.TestCase):
 
 	def press(self, instance, scriptName, gestureId="kb:x"):
 		"""Run a bound script through getScript, as NVDA does, so layer closing is exercised."""
-		gesture = types.SimpleNamespace(identifiers=[gestureId])
+		identifiers = [gestureId]
+		if gestureId.startswith("kb("):
+			# NVDA sends a layout-free identifier after the layout-specific one.
+			identifiers.append("kb:" + gestureId.split("):", 1)[1])
+		gesture = types.SimpleNamespace(
+			identifiers=identifiers,
+			normalizedIdentifiers=[normalizeGestureIdentifier(i) for i in identifiers],
+		)
 		with patch.object(
 			globalPluginHandler.GlobalPlugin,
 			"getScript",
@@ -191,11 +198,45 @@ class BrowseLayerTests(unittest.TestCase):
 		self.assertNotIn("Word", text)
 		self.assertFalse(instance.instantMode)
 
+	def test_shortcut_text_comes_from_the_identifier_not_the_layout(self):
+		import auditcore.gestures as gestures
+		import inputCore
+
+		with patch.object(
+			inputCore, "getDisplayTextForGestureIdentifier", return_value=("keyboard", "Ctrl+G"), create=True
+		) as display:
+			self.assertEqual(gestures.gestureDisplayText("kb:control+g"), "Ctrl+G")
+		display.assert_called_once_with("kb:control+g")
+		with patch.object(
+			inputCore, "getDisplayTextForGestureIdentifier", side_effect=LookupError, create=True
+		):
+			self.assertEqual(gestures.gestureDisplayText("kb:control+g"), "control+g")
+
+	def test_modifier_order_and_layout_do_not_matter(self):
+		instance = self.makePlugin(
+			[storedItem("Win item", "kb:windows+alt+x"), storedItem("Ctrl item", "kb:control+shift+y")]
+		)
+		for pressed, expected in (
+			("kb:alt+windows+x", "Win item"),
+			("kb(laptop):windows+alt+x", "Win item"),
+			("kb(desktop):shift+control+y", "Ctrl item"),
+		):
+			with self.subTest(pressed=pressed):
+				instance.executionQueue.submit.reset_mock()
+				instance.activateInstantMode(speak=False)
+				self.press(instance, "runInstantItem", pressed)
+				self.assertEqual(instance.executionQueue.submit.call_args.args[0]["name"], expected)
+
 	def test_no_usable_items_says_so(self):
 		instance = self.makePlugin([storedItem("Word", "kb:w", "winword")])
 		self.press(instance, "browseNext")
 		self.assertEqual(self.messages, ["No items are available in this application."])
 		self.assertTrue(instance.instantMode)
+
+	def test_announced_count_excludes_other_app_items(self):
+		instance = self.makePlugin([storedItem("One", "kb:1"), storedItem("Word", "kb:w", "winword")])
+		instance.activateInstantMode(speak=True)
+		self.assertEqual(self.messages[-1], "instant Access On. 1 commands loaded")
 
 
 if __name__ == "__main__":

@@ -54,7 +54,8 @@ addon_info = AddonInfo(
 )
 pythonSources = ["addon/**/*.py"]
 i18nSources: list[str] = pythonSources + ["buildVars.py"]
-excludedFiles: list[str] = []
+# Running the tests creates __pycache__ folders under addon/; never pack them.
+excludedFiles: list[str] = ["*.pyc", "__pycache__/*"]
 baseLanguage: str = "en"
 markdownExtensions: list[str] = []
 brailleTables: BrailleTables = {}

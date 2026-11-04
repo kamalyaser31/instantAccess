@@ -4,6 +4,22 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Editing keeps the item's place**: After you edit an item, it stays where it was in the list instead of moving to the end.
+- **Testing an item from the settings**: If an item types text or presses keys, the Test button in the settings now asks first and waits 3 seconds, so you can switch to the window you want. Before, the text went into the settings window.
+- **Correct number of commands**: When you turn on Instant Access mode, the number you hear counts only the items you can use in the current program.
+- **Shortcuts with the Windows key**: Items whose shortcut uses the Windows key together with another modifier, such as `Windows+Alt+X`, work reliably again. Before, they could stop working after NVDA restarted.
+- **Running NVDA without installing it**: When NVDA runs from the installer before it is installed, the add-on no longer creates a settings file. If you try to save, a message tells you why it cannot.
+- **Choosing an NVDA command**: The list of NVDA commands is now read in a safer way, which avoids rare errors while it opens.
+
+### Changed
+- **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct now when a keyboard layout without Latin letters, such as Arabic, is active.
+- **Faster mode switching**: Turning on Instant Access mode no longer reads the settings file every time. If the settings file is damaged and you choose not to restore the backup, you are asked only once per session.
+- **Smaller add-on**: Unused parts of the built-in keyboard library were removed, and its license notice was added.
+- **Translations**: The Simplified Chinese translation is up to date, thanks to cary-rowen. Every translatable message now has a note that explains it to translators.
+
 ## [2026.6] - 2026-09-30
 
 ### Added

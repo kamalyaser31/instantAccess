@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import logging
+from logHandler import log
 import os
 
 import addonHandler
@@ -8,7 +8,6 @@ import api
 import globalPluginHandler
 import globalVars
 import gui
-import inputCore
 import scriptHandler
 import tones
 import ui
@@ -17,6 +16,7 @@ import wx
 from .browse import buildHelpText, formatItem, getUsableItems, resolveItem, sortItems
 from .config_manager import ConfigManager
 from .constants import (
+	ADDON_SCRIPT_GESTURES,
 	BROWSE_GESTURES,
 	CATEGORY_LABEL,
 	DEFAULT_SETTINGS,
@@ -24,13 +24,12 @@ from .constants import (
 	TOGGLE_DESCRIPTION,
 	VERBOSITY_VALUES,
 )
-from .executor import ExecutionQueue
-from .gestures import expandGestureLayouts, normalizeGestureIdentifier
+from .executor import ExecutionQueue, setClipboardText
+from .gestures import gestureKey, getAddonGestures
 from .settings_panel import InstantAccessSettingsPanel
 
 addonHandler.initTranslation()
 
-log = logging.getLogger(__name__)
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -72,7 +71,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			# Item not in list, which is fine
 			pass
 		except Exception as e:
-			log.error("Error removing settings panel during termination: %s", e, exc_info=True)
+			log.error("instantAccess: Error removing settings panel during termination: %s", e, exc_info=True)
 
 		InstantAccessSettingsPanel.configManager = None
 		InstantAccessSettingsPanel.onConfigChanged = None
@@ -97,10 +96,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def queueTone(self, frequency, duration):
 		wx.CallAfter(tones.beep, frequency, duration)
 
-	def queueRunItemExecution(self, item):
+	def queueRunItemExecution(self, item, preDelay=0):
 		if not item or not self._enabled:
 			return
-		return self.executionQueue.submit(item)
+		return self.executionQueue.submit(item, preDelay=preDelay)
 
 	def getScript(self, gesture):
 		if not self._enabled:
@@ -123,26 +122,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		return wrappedScript
 
 	def _getGesturesForScript(self, scriptDescription, fallback):
-		"""Return the gesture list bound to scriptDescription, or fallback if not found.
-
-		Reads gesture mappings at call time so changes via Input Gestures dialog are reflected immediately.
-		"""
-		try:
-			categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
-			scriptInfo = categoryMap.get(scriptDescription)
-			if scriptInfo and getattr(scriptInfo, "gestures", None):
-				return list(scriptInfo.gestures)
-		except KeyError:
-			pass
-		except Exception as e:
-			log.warning("Error retrieving gestures for '%s': %s", scriptDescription, e)
-		return fallback
+		return getAddonGestures(scriptDescription, fallback)
 
 	def getToggleGestures(self):
-		return self._getGesturesForScript(TOGGLE_DESCRIPTION, ["kb:NVDA+e"])
+		return self._getGesturesForScript(TOGGLE_DESCRIPTION, ADDON_SCRIPT_GESTURES[TOGGLE_DESCRIPTION])
 
 	def getReportAppNameGestures(self):
-		return self._getGesturesForScript(REPORT_APP_NAME_DESCRIPTION, ["kb:NVDA+shift+e"])
+		return self._getGesturesForScript(
+			REPORT_APP_NAME_DESCRIPTION,
+			ADDON_SCRIPT_GESTURES[REPORT_APP_NAME_DESCRIPTION],
+		)
 
 	def getCurrentAppName(self):
 		try:
@@ -151,7 +140,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			appName = getattr(appModule, "appName", "")
 			return (appName or "").strip().lower()
 		except Exception as e:
-			log.warning("Error getting current app name: %s", e)
+			log.warning("instantAccess: Error getting current app name: %s", e)
 			return ""
 
 	def buildInstantGestures(self):
@@ -161,8 +150,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.gestureToItems = {}
 		for item in items:
 			for gesture in item.get("gestures", []):
-				for expanded in expandGestureLayouts(gesture):
-					self.gestureToItems.setdefault(expanded.lower(), []).append(item)
+				key = gestureKey(gesture)
+				if key:
+					self.gestureToItems.setdefault(key, []).append(item)
 		self.loadedCommandCount = len(
 			{item["name"] for itemsForGesture in self.gestureToItems.values() for item in itemsForGesture},
 		)
@@ -183,8 +173,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if not self.browseSettings.get("browseEnabled"):
 			return {}
 		for gesture, scriptName in BROWSE_GESTURES.items():
-			for expanded in expandGestureLayouts(gesture):
-				self.browseGestureScripts[expanded.lower()] = scriptName
+			self.browseGestureScripts[gestureKey(gesture)] = scriptName
 		return {
 			gesture: scriptName
 			for gesture, scriptName in self.browseGestureScripts.items()
@@ -208,6 +197,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				bindings[gesture] = "reportCurrentAppName"
 			self.bindGestures(bindings)
 			if speak:
+				# Translators: Announced when instant Access mode is turned on but no items exist.
 				ui.message(_("No commands configured."))
 			return
 		self.instantMode = True
@@ -215,9 +205,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.bindGestures(instantGestures)
 		if speak:
 			if self.isAdvancedVerbosity():
+				# Translators: Short announcement when instant Access mode turns on (advanced verbosity).
 				ui.message(_("On"))
 			else:
-				count = self.loadedCommandCount
+				# Items restricted to other apps cannot run here, so they are not counted.
+				count = len(getUsableItems(self.layerItems, self.getCurrentAppName()))
+				# Translators: Announced when instant Access mode turns on. {count} is the number of usable items.
 				ui.message(_("instant Access On. {count} commands loaded").format(count=count))
 
 	def deactivateInstantMode(self, speak=True):
@@ -232,8 +225,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.bindGestures(bindings)
 		if speak:
 			if self.isAdvancedVerbosity():
+				# Translators: Short announcement when instant Access mode turns off (advanced verbosity).
 				ui.message(_("Off"))
 			else:
+				# Translators: Announced when instant Access mode turns off.
 				ui.message(_("instant Access Off"))
 
 	def finishInstantLayer(self):
@@ -244,6 +239,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.isAdvancedVerbosity():
 			self.queueTone(250, 50)
 			return
+		# Translators: Announced when a key with no item is pressed in instant Access mode.
 		ui.message(_("This gesture has no command assigned."))
 		tones.beep(200, 50)
 
@@ -264,17 +260,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.deactivateInstantMode()
 
 	def script_runInstantItem(self, gesture):
-		identifiers = []
-		if hasattr(gesture, "identifiers") and gesture.identifiers:
-			identifiers.extend(gesture.identifiers)
-		elif hasattr(gesture, "identifier"):
-			identifiers.append(gesture.identifier)
+		# NVDA's normalized identifiers, as used by ScriptableObject.getScript, keep modifier order stable.
+		identifiers = list(getattr(gesture, "normalizedIdentifiers", None) or ())
 		candidateItems = []
 		for gestureId in identifiers:
-			normalized = normalizeGestureIdentifier(gestureId)
-			items = self.gestureToItems.get(normalized, [])
-			if items:
-				candidateItems.extend(items)
+			candidateItems.extend(self.gestureToItems.get(gestureId, []))
 		item = resolveItem(candidateItems, self.getCurrentAppName())
 		if item is None:
 			# The key belongs to an item for another app; let it browse here if it is a browse key.
@@ -284,7 +274,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def _runBrowseFallback(self, identifiers, gesture):
 		for gestureId in identifiers:
-			scriptName = self.browseGestureScripts.get(normalizeGestureIdentifier(gestureId))
+			scriptName = self.browseGestureScripts.get(gestureId)
 			if scriptName:
 				getattr(self, "script_" + scriptName)(gesture)
 				return
@@ -339,10 +329,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message(_("Could not determine current application name."))
 			return
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			if hasattr(api, "setClipText"):
-				api.setClipText(appName)
-			elif hasattr(api, "copyToClip"):
-				api.copyToClip(appName, notify=False)
-			ui.message(_("App name copied to clipboard."))
+			if setClipboardText(appName):
+				# Translators: Message announced after the current app name was copied to the clipboard.
+				ui.message(_("App name copied to clipboard."))
 			return
 		ui.message(appName)

@@ -66,10 +66,9 @@ class ExecutionTests(unittest.TestCase):
 
 	def test_typing_uses_real_vendor_without_name_error(self):
 		backend.type_unicode.reset_mock()
-		with patch.object(keyboard, "restore_modifiers"):
-			self.assertTrue(
-				ex.executeInstantAction({"type": "TextSnippets", "path": "abc", "typingDelay": 0})
-			)
+		self.assertTrue(
+			ex.executeInstantAction({"type": "TextSnippets", "path": "abc", "typingDelay": 0})
+		)
 		self.assertEqual([c.args[0] for c in backend.type_unicode.call_args_list], list("abc"))
 
 	def test_invalid_keystroke_is_a_normal_failure(self):
@@ -77,17 +76,7 @@ class ExecutionTests(unittest.TestCase):
 			self.assertFalse(ex.executeInstantAction({"type": "Keystrokes", "path": "bad", "pressDelay": 0}))
 		self.assertIn("Could not send keystroke", self.messages[-1])
 
-	def test_send_restores_replay_state_when_parse_fails(self):
-		keyboard._listener.is_replaying = False
-		with (
-			patch.object(keyboard, "parse_hotkey", side_effect=ValueError("bad")),
-			self.assertRaises(ValueError),
-		):
-			keyboard.send("bad")
-		self.assertFalse(keyboard._listener.is_replaying)
-
 	def test_send_releases_pressed_keys_after_os_failure(self):
-		keyboard._listener.is_replaying = False
 		with (
 			patch.object(keyboard, "parse_hotkey", return_value=(((1,), (2,)),)),
 			patch.object(backend, "press", side_effect=[None, OSError("blocked")]),
@@ -96,34 +85,27 @@ class ExecutionTests(unittest.TestCase):
 			with self.assertRaises(OSError):
 				keyboard.send("ctrl+a")
 			release.assert_called_once_with(1)
-		self.assertFalse(keyboard._listener.is_replaying)
 
-	def test_typing_cancellation_restores_modifiers(self):
+	def test_typing_stops_when_cancelled(self):
 		cancel = threading.Event()
-		with (
-			patch.object(backend, "type_unicode", side_effect=lambda letter: cancel.set()) as typed,
-			patch.object(keyboard, "restore_modifiers") as restore,
-		):
+		with patch.object(backend, "type_unicode", side_effect=lambda letter: cancel.set()) as typed:
 			self.assertFalse(keyboard.write("abc", delay=60, cancel_event=cancel))
 			typed.assert_called_once_with("a")
-			restore.assert_called_once()
 
-	def test_restoring_keys_resets_replay_flag_even_on_failure(self):
-		keyboard._listener.is_replaying = False
-		with patch.object(backend, "press", side_effect=OSError("blocked")):
-			with self.assertRaises(OSError):
-				keyboard.restore_state([1])
-		self.assertFalse(keyboard._listener.is_replaying)
-
-	def test_typing_failure_restores_modifiers(self):
+	def test_line_breaks_are_sent_as_keys(self):
 		with (
-			patch.object(backend, "type_unicode", side_effect=OSError("input failed")),
-			patch.object(keyboard, "restore_modifiers") as restore,
+			patch.object(keyboard, "send") as send,
+			patch.object(backend, "type_unicode") as typed,
 		):
+			self.assertTrue(keyboard.write("a\nb"))
+		send.assert_called_once_with("\n")
+		self.assertEqual([c.args[0] for c in typed.call_args_list], ["a", "b"])
+
+	def test_typing_failure_is_a_normal_failure(self):
+		with patch.object(backend, "type_unicode", side_effect=OSError("input failed")):
 			self.assertFalse(
 				ex.executeInstantAction({"type": "TextSnippets", "path": "abc", "typingDelay": 0})
 			)
-			restore.assert_called_once()
 
 	def test_continue_after_exception_and_stop_on_error(self):
 		for stop, expected in ((False, 2), (True, 1)):
@@ -137,7 +119,7 @@ class ExecutionTests(unittest.TestCase):
 	def test_browser_failure_stops_following_action(self):
 		with (
 			patch.object(ex.webbrowser, "open", return_value=False),
-			patch.object(ex, "_setClipboardText") as copy,
+			patch.object(ex, "setClipboardText") as copy,
 		):
 			self.assertFalse(
 				ex.executeInstantItem(
@@ -164,7 +146,7 @@ class ExecutionTests(unittest.TestCase):
 			patch.object(
 				commands, "_resolveBoundScript", return_value=lambda gesture: events.append("script")
 			),
-			patch.object(ex, "_setClipboardText", side_effect=lambda text: events.append("copy") or True),
+			patch.object(ex, "setClipboardText", side_effect=lambda text: events.append("copy") or True),
 		):
 			future = self.runner().submit(
 				{
@@ -187,7 +169,7 @@ class ExecutionTests(unittest.TestCase):
 			patch.object(
 				commands, "_resolveBoundScript", return_value=Mock(side_effect=ValueError("script failed"))
 			),
-			patch.object(ex, "_setClipboardText") as copied,
+			patch.object(ex, "setClipboardText") as copied,
 		):
 			future = self.runner().submit(
 				{
@@ -203,7 +185,7 @@ class ExecutionTests(unittest.TestCase):
 	def test_nvda_unavailable_stops_item(self):
 		with (
 			patch.object(commands, "_resolveBoundScript", return_value=None),
-			patch.object(ex, "_setClipboardText") as copied,
+			patch.object(ex, "setClipboardText") as copied,
 		):
 			future = self.runner().submit(
 				{
@@ -291,7 +273,7 @@ class ExecutionTests(unittest.TestCase):
 			return True
 
 		with (
-			patch.object(ex, "_setClipboardText", side_effect=copy),
+			patch.object(ex, "setClipboardText", side_effect=copy),
 			patch.object(keyboard, "send", side_effect=lambda key: pasted.append(clipboard[0])),
 		):
 			runner = self.runner()

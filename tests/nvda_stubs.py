@@ -2,6 +2,7 @@
 
 import builtins
 import importlib
+import logging
 from pathlib import Path
 import sys
 import types
@@ -38,10 +39,22 @@ stub("gui.settingsDialogs", SettingsPanel=object)
 gui.settingsDialogs = types.SimpleNamespace(NVDASettingsDialog=types.SimpleNamespace(categoryClasses=[]))
 api = stub("api", copyToClip=lambda *a, **kw: True)
 stub("ui", message=lambda *a: None)
-stub("inputCore", manager=Mock())
+
+
+def normalizeGestureIdentifier(identifier):
+	"""Copy of NVDA's inputCore.normalizeGestureIdentifier (lower case, sorted + parts)."""
+	prefix, main = identifier.lower().split(":", 1)
+	return f"{prefix}:{'+'.join(sorted(main.split('+')))}"
+
+
+stub("inputCore", manager=Mock(), normalizeGestureIdentifier=normalizeGestureIdentifier)
 stub("keyboardHandler", KeyboardInputGesture=Mock())
 stub("scriptHandler", script=lambda **kw: lambda f: f)
 stub("tones", beep=lambda *a: None)
+stub("NVDAState", shouldWriteToDisk=lambda: True)
+nvdaLog = logging.getLogger("nvda")
+nvdaLog.debugWarning = nvdaLog.warning
+stub("logHandler", log=nvdaLog)
 
 
 class BasePlugin:

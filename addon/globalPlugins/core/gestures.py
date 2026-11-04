@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from logHandler import log
+
+import inputCore
 import keyboardHandler
 import wx
+
+from .constants import CATEGORY_LABEL
+
 
 
 def formatGestureForDisplay(gesture):
@@ -11,6 +17,22 @@ def formatGestureForDisplay(gesture):
 	if gesture.lower().startswith("kb:"):
 		return gesture[3:]
 	return gesture
+
+
+def gestureDisplayText(gesture):
+	"""The shortcut as NVDA's Input Gestures dialog shows it (localized key names).
+
+	Built from the identifier alone. KeyboardInputGesture.fromName would ask the active keyboard
+	layout for letters, which gives a wrong label under layouts without Latin letters, such as Arabic.
+	"""
+	name = formatGestureForDisplay(gesture)
+	if not name:
+		return ""
+	try:
+		label = inputCore.getDisplayTextForGestureIdentifier(gestureKey(gesture))[1]
+	except Exception:
+		label = None
+	return label if isinstance(label, str) and label else name
 
 
 def normalizeGesture(gesture):
@@ -25,24 +47,27 @@ def normalizeGesture(gesture):
 	return "kb:" + gesture.lower()
 
 
-def normalizeGestureIdentifier(gestureId):
-	if not gestureId:
-		return ""
-	gestureId = gestureId.strip().lower()
-	if gestureId.startswith("kb("):
-		closeIndex = gestureId.find("):")
-		if closeIndex != -1:
-			return "kb:" + gestureId[closeIndex + 2 :]
-	return gestureId
+def gestureKey(gesture):
+	"""Match NVDA's own lookup: lower case with sorted modifiers, so modifier order never matters.
 
-
-def expandGestureLayouts(gesture):
+	NVDA sends a layout-free kb: identifier with every key press, so one key covers all layouts.
+	"""
 	gesture = (gesture or "").strip()
 	if not gesture:
-		return []
-	if gesture.lower().startswith("kb:"):
-		return [gesture, "kb(laptop):" + gesture[3:]]
-	return [gesture]
+		return ""
+	return inputCore.normalizeGestureIdentifier(gesture)
+
+
+def getAddonGestures(scriptDescription, fallback):
+	"""Gestures bound to one of this add-on's scripts, read at call time so Input Gestures changes apply."""
+	try:
+		categoryMap = inputCore.manager.getAllGestureMappings().get(CATEGORY_LABEL, {})
+		scriptInfo = categoryMap.get(scriptDescription)
+		if scriptInfo and getattr(scriptInfo, "gestures", None):
+			return list(scriptInfo.gestures)
+	except Exception as e:
+		log.warning("instantAccess: Error retrieving gestures for '%s': %s", scriptDescription, e)
+	return list(fallback)
 
 
 def validateGestureName(gestureName):

@@ -1,86 +1,32 @@
 # -*- coding: utf-8 -*-
+"""Windows backend that sends key presses and Unicode characters with SendInput.
+
+Trimmed for instant Access from boppreh/keyboard 0.13.5 (MIT License, see LICENSE.txt in this
+folder). Only the name tables and the sending functions remain; the keyboard hook and its
+message loop were removed because instant Access never listens to the keyboard.
 """
-This is the Windows backend for keyboard events, and is implemented by
-invoking the Win32 API through the ctypes module. This is error prone
-and can introduce very unpythonic failure modes, such as segfaults and
-low level memory leaks. But it is also dependency-free, very performant
-well documented on Microsoft's website and scattered examples.
-
-# TODO:
-- Keypad numbers still print as numbers even when numlock is off.
-- No way to specify if user wants a keypad key or not in `map_char`.
-"""
-
-from __future__ import unicode_literals
-import atexit
-import traceback
-from threading import Lock
-from collections import defaultdict
-
-from ._keyboard_event import KeyboardEvent, KEY_DOWN, KEY_UP
-from ._canonical_names import normalize_name
-
-try:
-	# Force Python2 to convert to unicode and not to str.
-	chr = unichr
-except NameError:
-	pass
-
-# This part is just declaring Win32 API structures using ctypes. In C
-# this would be simply #include "windows.h".
 
 import ctypes
-from ctypes import c_short, c_uint8, c_int, c_uint, c_long, Structure, CFUNCTYPE, POINTER
-from ctypes.wintypes import (
-	WORD,
-	DWORD,
-	BOOL,
-	HHOOK,
-	MSG,
-	LPWSTR,
-	WCHAR,
-	WPARAM,
-	LPARAM,
-	LONG,
-	HMODULE,
-	LPCWSTR,
-	HINSTANCE,
-	HWND,
-)
+from collections import defaultdict
+from ctypes import POINTER, c_int, c_long, c_uint, c_uint8
+from ctypes.wintypes import DWORD, LONG, LPWSTR, WORD
+from threading import Lock
 
-LPMSG = POINTER(MSG)
+from ._canonical_names import normalize_name
+
 ULONG_PTR = POINTER(DWORD)
 
-kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-GetModuleHandleW = kernel32.GetModuleHandleW
-GetModuleHandleW.restype = HMODULE
-GetModuleHandleW.argtypes = [LPCWSTR]
-
 # https://github.com/boppreh/mouse/issues/1
-# user32 = ctypes.windll.user32
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 
-VK_PACKET = 0xE7
-
-INPUT_MOUSE = 0
 INPUT_KEYBOARD = 1
-INPUT_HARDWARE = 2
 
 KEYEVENTF_KEYUP = 0x02
 KEYEVENTF_UNICODE = 0x04
 
-
-class KBDLLHOOKSTRUCT(Structure):
-	_fields_ = [
-		("vk_code", DWORD),
-		("scan_code", DWORD),
-		("flags", DWORD),
-		("time", c_int),
-		("dwExtraInfo", ULONG_PTR),
-	]
+keyboard_state_type = c_uint8 * 256
 
 
-# Included for completeness.
 class MOUSEINPUT(ctypes.Structure):
 	_fields_ = (
 		("dx", LONG),
@@ -125,38 +71,6 @@ class INPUT(ctypes.Structure):
 	)
 
 
-LowLevelKeyboardProc = CFUNCTYPE(c_int, WPARAM, LPARAM, POINTER(KBDLLHOOKSTRUCT))
-
-SetWindowsHookEx = user32.SetWindowsHookExW
-SetWindowsHookEx.argtypes = [c_int, LowLevelKeyboardProc, HINSTANCE, DWORD]
-SetWindowsHookEx.restype = HHOOK
-
-CallNextHookEx = user32.CallNextHookEx
-# CallNextHookEx.argtypes = [c_int , c_int, c_int, POINTER(KBDLLHOOKSTRUCT)]
-CallNextHookEx.restype = c_int
-
-UnhookWindowsHookEx = user32.UnhookWindowsHookEx
-UnhookWindowsHookEx.argtypes = [HHOOK]
-UnhookWindowsHookEx.restype = BOOL
-
-GetMessage = user32.GetMessageW
-GetMessage.argtypes = [LPMSG, HWND, c_uint, c_uint]
-GetMessage.restype = BOOL
-
-TranslateMessage = user32.TranslateMessage
-TranslateMessage.argtypes = [LPMSG]
-TranslateMessage.restype = BOOL
-
-DispatchMessage = user32.DispatchMessageA
-DispatchMessage.argtypes = [LPMSG]
-
-
-keyboard_state_type = c_uint8 * 256
-
-GetKeyboardState = user32.GetKeyboardState
-GetKeyboardState.argtypes = [keyboard_state_type]
-GetKeyboardState.restype = BOOL
-
 GetKeyNameText = user32.GetKeyNameTextW
 GetKeyNameText.argtypes = [c_long, LPWSTR, c_int]
 GetKeyNameText.restype = c_int
@@ -179,27 +93,6 @@ MAPVK_VK_TO_VSC = 0
 MAPVK_VSC_TO_VK = 1
 MAPVK_VK_TO_VSC_EX = 4
 MAPVK_VSC_TO_VK_EX = 3
-
-VkKeyScan = user32.VkKeyScanW
-VkKeyScan.argtypes = [WCHAR]
-VkKeyScan.restype = c_short
-
-LLKHF_INJECTED = 0x00000010
-
-WM_KEYDOWN = 0x0100
-WM_KEYUP = 0x0101
-WM_SYSKEYDOWN = 0x104  # Used for ALT key
-WM_SYSKEYUP = 0x105
-
-
-# This marks the end of Win32 API declarations. The rest is ours.
-
-keyboard_event_types = {
-	WM_KEYDOWN: KEY_DOWN,
-	WM_KEYUP: KEY_UP,
-	WM_SYSKEYDOWN: KEY_DOWN,
-	WM_SYSKEYUP: KEY_UP,
-}
 
 # List taken from the official documentation, but stripped of the OEM-specific keys.
 # Keys are virtual key codes, values are pairs (name, is_keypad).
@@ -522,97 +415,6 @@ keypad_keys = [
 	(83, 46, 0),
 ]
 
-shift_is_pressed = False
-altgr_is_pressed = False
-ignore_next_right_alt = False
-shift_vks = set([0x10, 0xA0, 0xA1])
-
-
-def prepare_intercept(callback):
-	"""
-	Registers a Windows low level keyboard hook. The provided callback will
-	be invoked for each high-level keyboard event, and is expected to return
-	True if the key event should be passed to the next program, or False if
-	the event is to be blocked.
-
-	No event is processed until the Windows messages are pumped (see
-	start_intercept).
-	"""
-	_setup_name_tables()
-
-	def process_key(event_type, vk, scan_code, is_extended):
-		global shift_is_pressed, altgr_is_pressed, ignore_next_right_alt
-		# print(event_type, vk, scan_code, is_extended)
-
-		# Pressing alt-gr also generates an extra "right alt" event
-		if vk == 0xA5 and ignore_next_right_alt:
-			ignore_next_right_alt = False
-			return True
-
-		modifiers = (
-			("shift",) * shift_is_pressed
-			+ ("alt gr",) * altgr_is_pressed
-			+ ("num lock",) * (user32.GetKeyState(0x90) & 1)
-			+ ("caps lock",) * (user32.GetKeyState(0x14) & 1)
-			+ ("scroll lock",) * (user32.GetKeyState(0x91) & 1)
-		)
-		entry = (scan_code, vk, is_extended, modifiers)
-		if entry not in to_name:
-			to_name[entry] = list(get_event_names(*entry))
-
-		names = to_name[entry]
-		name = names[0] if names else None
-
-		# TODO: inaccurate when holding multiple different shifts.
-		if vk in shift_vks:
-			shift_is_pressed = event_type == KEY_DOWN
-		if scan_code == 541 and vk == 162:
-			ignore_next_right_alt = True
-			altgr_is_pressed = event_type == KEY_DOWN
-
-		is_keypad = (scan_code, vk, is_extended) in keypad_keys
-		return callback(
-			KeyboardEvent(event_type=event_type, scan_code=scan_code or -vk, name=name, is_keypad=is_keypad),
-		)
-
-	def low_level_keyboard_handler(nCode, wParam, lParam):
-		try:
-			vk = lParam.contents.vk_code
-			# Ignore the second `alt` DOWN observed in some cases.
-			fake_alt = LLKHF_INJECTED | 0x20
-			# Ignore events generated by SendInput with Unicode.
-			if vk != VK_PACKET and lParam.contents.flags & fake_alt != fake_alt:
-				event_type = keyboard_event_types[wParam]
-				is_extended = lParam.contents.flags & 1
-				scan_code = lParam.contents.scan_code
-				should_continue = process_key(event_type, vk, scan_code, is_extended)
-				if not should_continue:
-					return -1
-		except Exception:
-			print("Error in keyboard hook:")
-			traceback.print_exc()
-
-		return CallNextHookEx(None, nCode, wParam, lParam)
-
-	WH_KEYBOARD_LL = c_int(13)
-	keyboard_callback = LowLevelKeyboardProc(low_level_keyboard_handler)
-	handle = GetModuleHandleW(None)
-	thread_id = DWORD(0)
-	keyboard_hook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboard_callback, handle, thread_id)
-
-	# Register to remove the hook when the interpreter exits. Unfortunately a
-	# try/finally block doesn't seem to work here.
-	atexit.register(UnhookWindowsHookEx, keyboard_callback)
-
-
-def listen(callback):
-	prepare_intercept(callback)
-	msg = LPMSG()
-	while not GetMessage(msg, 0, 0, 0):
-		TranslateMessage(msg)
-		DispatchMessage(msg)
-
-
 def map_name(name):
 	_setup_name_tables()
 
@@ -665,12 +467,3 @@ def type_unicode(character):
 	cbSize = c_int(ctypes.sizeof(INPUT))
 	if SendInput(nInputs, pInputs, cbSize) != nInputs:
 		raise OSError("Could not send Unicode keyboard input")
-
-
-if __name__ == "__main__":
-	_setup_name_tables()
-	import pprint
-
-	pprint.pprint(to_name)
-	pprint.pprint(from_name)
-	# listen(lambda e: print(e.to_json()) or True)

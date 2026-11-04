@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
+from logHandler import log
 import os
 import tempfile
 import threading
 
 import addonHandler
 import gui
+import NVDAState
 import wx
 
 from .constants import (
+	ACTION_FIELDS,
 	BROWSE_FORMAT_VALUES,
 	BROWSE_ORDER_VALUES,
 	CONFIRM_CAPTION,
@@ -19,10 +21,10 @@ from .constants import (
 	TYPE_SECTIONS,
 	VERBOSITY_VALUES,
 )
+from .gestures import gestureKey
 from .timing import parseDelay
 
 addonHandler.initTranslation()
-log = logging.getLogger(__name__)
 _configLock = threading.RLock()
 
 
@@ -34,96 +36,39 @@ def _defaultConfig():
 	}
 
 
-def _toNonNegativeFloat(value, defaultValue=0.0):
-	try:
-		return parseDelay(value)
-	except Exception:
-		return defaultValue
-
-
+# The _normalize* helpers run only after _validateConfig, so they transform values and never repair them.
 def _normalizeActionData(itemType, rawData):
-	if not isinstance(rawData, dict):
-		rawData = {}
-	if itemType == "Websites":
-		url = rawData.get("url", "")
-		if not isinstance(url, str):
-			url = ""
-		return {"url": url}
-	if itemType in ("Programs", "Folders", "Files"):
-		path = rawData.get("path", "")
-		if not isinstance(path, str):
-			path = ""
-		data = {"path": path}
-		if itemType == "Programs":
-			arguments = rawData.get("arguments", "")
-			if isinstance(arguments, str) and arguments.strip():
-				data["arguments"] = arguments.strip()
-		return data
-	if itemType == "NvdaCommands":
-		commandId = rawData.get("commandId", "")
-		if not isinstance(commandId, str):
-			commandId = ""
-		data = {"commandId": commandId}
-		commandLabel = rawData.get("commandLabel", "")
-		if isinstance(commandLabel, str) and commandLabel.strip():
-			data["commandLabel"] = commandLabel.strip()
-		return data
-	if itemType == "TextSnippets":
-		text = rawData.get("text", "")
-		if not isinstance(text, str):
-			text = ""
-		action = (rawData.get("action", TEXT_SNIPPET_ACTION_VALUES[0]) or "").strip().lower()
-		if action not in TEXT_SNIPPET_ACTION_VALUES:
-			action = TEXT_SNIPPET_ACTION_VALUES[0]
-		typingDelay = _toNonNegativeFloat(rawData.get("typingDelay", 0.05), 0.05)
-		return {"text": text, "action": action, "typingDelay": typingDelay}
-	if itemType == "Keystrokes":
-		keys = rawData.get("keys", "")
-		if not isinstance(keys, str):
-			keys = ""
-		pressDelay = _toNonNegativeFloat(rawData.get("pressDelay", 0.05), 0.05)
-		return {"keys": keys, "pressDelay": pressDelay}
-	return {}
+	data = {ACTION_FIELDS[itemType]: rawData[ACTION_FIELDS[itemType]]}
+	if itemType == "Programs" and rawData.get("arguments", "").strip():
+		data["arguments"] = rawData["arguments"].strip()
+	elif itemType == "NvdaCommands" and rawData.get("commandLabel", "").strip():
+		data["commandLabel"] = rawData["commandLabel"].strip()
+	elif itemType == "TextSnippets":
+		data["action"] = rawData.get("action", TEXT_SNIPPET_ACTION_VALUES[0])
+		data["typingDelay"] = parseDelay(rawData.get("typingDelay", 0.05))
+	elif itemType == "Keystrokes":
+		data["pressDelay"] = parseDelay(rawData.get("pressDelay", 0.05))
+	return data
 
 
 def _normalizeAction(rawAction):
-	if not isinstance(rawAction, dict):
-		return None
-	itemType = (rawAction.get("type", "") or "").strip()
-	if itemType not in TYPE_SECTIONS:
-		return None
-	delay = _toNonNegativeFloat(rawAction.get("delay", 0.0), 0.0)
-	data = _normalizeActionData(itemType, rawAction.get("data", {}))
-	return {"type": itemType, "data": data, "delay": delay}
+	itemType = rawAction["type"]
+	return {
+		"type": itemType,
+		"data": _normalizeActionData(itemType, rawAction["data"]),
+		"delay": parseDelay(rawAction.get("delay", 0.0)),
+	}
 
 
 def _normalizeItem(rawItem):
-	if not isinstance(rawItem, dict):
-		return None
-	name = (rawItem.get("name", "") or "").strip()
-	gesture = (rawItem.get("gesture", "") or "").strip().lower()
-	appName = (rawItem.get("appName", "") or "").strip().lower()
-	interval = _toNonNegativeFloat(rawItem.get("interval", 0.0), 0.0)
-	stopOnError = rawItem.get("stopOnError", True)
-	if not isinstance(stopOnError, bool):
-		stopOnError = True
-	if not name or not gesture:
-		return None
-	rawActions = rawItem.get("actions", [])
-	if not isinstance(rawActions, list):
-		rawActions = []
-	actions = []
-	for rawAction in rawActions:
-		action = _normalizeAction(rawAction)
-		if action is not None:
-			actions.append(action)
 	normalizedItem = {
-		"name": name,
-		"gesture": gesture,
-		"interval": interval,
-		"stopOnError": stopOnError,
-		"actions": actions,
+		"name": rawItem["name"].strip(),
+		"gesture": rawItem["gesture"].strip().lower(),
+		"interval": parseDelay(rawItem.get("interval", 0.0)),
+		"stopOnError": rawItem.get("stopOnError", True),
+		"actions": [_normalizeAction(rawAction) for rawAction in rawItem["actions"]],
 	}
+	appName = rawItem.get("appName", "").strip().lower()
 	if appName:
 		normalizedItem["appName"] = appName
 	return normalizedItem
@@ -147,10 +92,10 @@ def _validateConfig(rawConfig):
 		name = item.get("name", "").strip()
 		gesture = item.get("gesture", "").strip().lower()
 		appName = item.get("appName", "").strip().lower()
-		if not name or not gesture or name in names or (gesture, appName) in gestures:
+		if not name or not gesture or name in names or (gestureKey(gesture), appName) in gestures:
 			raise ValueError("Missing or duplicate item name/gesture")
 		names.add(name)
-		gestures.add((gesture, appName))
+		gestures.add((gestureKey(gesture), appName))
 		parseDelay(item.get("interval", 0))
 		if not isinstance(item.get("stopOnError", True), bool):
 			raise ValueError("Invalid stopOnError")
@@ -165,12 +110,7 @@ def _validateConfig(rawConfig):
 			if not isinstance(data, dict):
 				raise ValueError("Invalid action data")
 			itemType = action["type"]
-			requiredField = {
-				"Websites": "url",
-				"NvdaCommands": "commandId",
-				"TextSnippets": "text",
-				"Keystrokes": "keys",
-			}.get(itemType, "path")
+			requiredField = ACTION_FIELDS[itemType]
 			if not isinstance(data.get(requiredField), str) or not data[requiredField].strip():
 				raise ValueError(f"Invalid action {requiredField}")
 			for optionalField in ("arguments", "commandLabel"):
@@ -201,35 +141,25 @@ def _validateSettings(settings):
 
 
 def _normalizeSettings(settings):
-	if not isinstance(settings, dict):
-		settings = {}
-	normalized = {}
-	for key, choices in _SETTING_CHOICES.items():
-		value = settings.get(key, DEFAULT_SETTINGS[key])
-		if isinstance(value, str) and key == "verbosity":
-			value = value.strip().lower()
-		normalized[key] = value if value in choices else DEFAULT_SETTINGS[key]
-	normalized["browseEnabled"] = settings.get("browseEnabled", False) is True
-	return normalized
+	return {key: settings.get(key, defaultValue) for key, defaultValue in DEFAULT_SETTINGS.items()}
 
 
 def _normalizeConfig(rawConfig):
 	_validateConfig(rawConfig)
-	if not isinstance(rawConfig, dict):
-		raise ValueError("Invalid config format")
-	settings = _normalizeSettings(rawConfig.get("settings", {}))
-	rawItems = rawConfig.get("items", [])
-	if not isinstance(rawItems, list):
-		rawItems = []
-	items = []
-	for rawItem in rawItems:
-		item = _normalizeItem(rawItem)
-		if item is not None:
-			items.append(item)
-	return {"version": 3, "settings": settings, "items": items}
+	return {
+		"version": 3,
+		"settings": _normalizeSettings(rawConfig.get("settings", {})),
+		"items": [_normalizeItem(rawItem) for rawItem in rawConfig["items"]],
+	}
+
+
+class DiskWriteDisabledError(OSError):
+	"""NVDA runs from the launcher or in secure mode, where add-ons must not write settings."""
 
 
 def ensureConfigFile(configPath):
+	if not NVDAState.shouldWriteToDisk():
+		return
 	with _configLock:
 		if not os.path.exists(configPath) and not os.path.exists(configPath + ".bak"):
 			saveConfig(configPath, _defaultConfig())
@@ -254,6 +184,8 @@ def _writeConfigAtomic(configPath, config):
 def saveConfig(configPath, config, *, rotateBackup=True):
 	"""Only rotate validated data; recovery must leave the last good backup intact."""
 	normalized = _normalizeConfig(config)
+	if not NVDAState.shouldWriteToDisk():
+		raise DiskWriteDisabledError("NVDA does not allow writing settings now")
 	with _configLock:
 		if rotateBackup and os.path.exists(configPath):
 			try:
@@ -296,22 +228,27 @@ def _tryRecoverFromBackup(backupPath, configPath):
 		recovered = loadConfigFromPathStrict(backupPath)
 		if not _shouldRecoverFromBackup():
 			return None
-		saveConfig(configPath, recovered, rotateBackup=False)
+		if NVDAState.shouldWriteToDisk():
+			saveConfig(configPath, recovered, rotateBackup=False)
 		return recovered
 	except Exception as e:
-		log.error("Failed to restore config from backup %s: %s", backupPath, e)
+		log.error("instantAccess: Failed to restore config from backup %s: %s", backupPath, e)
 		return None
 
 
 def loadConfigSafe(configPath):
 	ensureConfigFile(configPath)
 	backupPath = configPath + ".bak"
+	if not os.path.exists(configPath) and not os.path.exists(backupPath):
+		# Expected from the launcher, where ensureConfigFile must not create the file.
+		log.debugWarning("instantAccess: no config file yet; using defaults")
+		return _defaultConfig()
 	try:
 		with open(configPath, "r", encoding="utf-8") as handle:
 			rawConfig = json.load(handle)
 		return _normalizeConfig(rawConfig)
 	except Exception as e:
-		log.error("Failed to load config from %s: %s", configPath, e)
+		log.error("instantAccess: Failed to load config from %s: %s", configPath, e)
 		recovered = _tryRecoverFromBackup(backupPath, configPath)
 		if recovered is not None:
 			return recovered

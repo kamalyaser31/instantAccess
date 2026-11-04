@@ -7,7 +7,7 @@ from gui.settingsDialogs import SettingsPanel
 import shutil
 import wx
 
-from .config_io import loadConfigFromPathStrict, saveConfig
+from .config_io import DiskWriteDisabledError, loadConfigFromPathStrict
 from .constants import (
 	ALL_FILES_WILDCARD,
 	BROWSE_FORMAT_LABELS,
@@ -16,44 +16,28 @@ from .constants import (
 	BROWSE_ORDER_VALUES,
 	CONFIRM_CAPTION,
 	ERROR_CAPTION,
-	TEXT_SNIPPET_ACTION_TO_LABEL,
 	TYPE_TO_LABEL,
 	VERBOSITY_ADVANCED,
 	VERBOSITY_BEGINNER,
 	VERBOSITY_VALUES,
 )
-from .gestures import formatGestureForDisplay
-from .item_dialog import InstantAccessItemDialog
+from .gestures import gestureDisplayText
+from .item_dialog import (
+	SWITCH_DELAY_SECONDS,
+	InstantAccessItemDialog,
+	actionDetails,
+	actionsNeedSwitchDelay,
+	confirmSwitchDelay,
+)
 
 addonHandler.initTranslation()
 
 
-def _getActionSummary(action):
-	itemType = action.get("type", "")
-	if itemType == "TextSnippets":
-		text_preview = (
-			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0]
-		)
-		if len(text_preview) > 70:
-			text_preview = text_preview[:67] + "..."
-		actionLabel = TEXT_SNIPPET_ACTION_TO_LABEL.get(
-			action.get("textAction", "type"),
-			TEXT_SNIPPET_ACTION_TO_LABEL["type"],
-		)
-		return _("{action}: {preview}").format(action=actionLabel, preview=text_preview)
-	if itemType == "Keystrokes":
-		first_keystroke = (
-			(action.get("path", "") or "").replace("\r\n", "\n").replace("\r", "\n").split("\n", 1)[0].strip()
-		)
-		if len(first_keystroke) > 70:
-			first_keystroke = first_keystroke[:67] + "..."
-		return first_keystroke
-	if itemType == "NvdaCommands":
-		return action.get("commandLabel", "") or action.get("path", "")
-	details = action.get("path", "")
-	if itemType == "Programs" and action.get("arguments", "").strip():
-		details = f"{details} {action.get('arguments', '').strip()}"
-	return details
+def _showSaveError(error, message):
+	if isinstance(error, DiskWriteDisabledError):
+		# Translators: Error shown when NVDA runs from the launcher or in secure mode, where settings cannot be saved.
+		message = _("NVDA is running from the launcher or in secure mode, so settings cannot be saved.")
+	gui.messageBox(message, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 
 
 def _getItemTypeLabel(item):
@@ -71,7 +55,7 @@ def _getItemDetails(item):
 	actions = item.get("actions", [])
 	if not actions:
 		return ""
-	first = _getActionSummary(actions[0])
+	first = actionDetails(actions[0], maxLength=70)
 	if len(actions) == 1:
 		return first
 	# Translators: Summary for items with multiple actions. {first} is the first action summary and {count} the total action count.
@@ -122,6 +106,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 		# Translators: Label for verbosity level selection.
 		self.verbosityChoice = sHelper.addLabeledControl(
+			# Translators: Label of the choice between spoken messages and short tones.
 			_("Verbosity level"),
 			wx.Choice,
 			choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED],
@@ -193,8 +178,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				browseFormat=BROWSE_FORMAT_VALUES[self.browseFormatChoice.GetSelection()],
 				browseOrder=BROWSE_ORDER_VALUES[self.browseOrderChoice.GetSelection()],
 			)
-		except (OSError, ValueError):
-			gui.messageBox(_("Could not save settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+		except (OSError, ValueError) as error:
+			# Translators: Error shown when the add-on settings could not be saved.
+			_showSaveError(error, _("Could not save settings."))
 			return
 		if self.onVerbosityChanged:
 			self.onVerbosityChanged(verbosityValue)
@@ -215,7 +201,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		selectedIndex = -1
 		for index, item in enumerate(self.items):
 			typeLabel = _getItemTypeLabel(item)
-			gestureText = ", ".join([formatGestureForDisplay(g) for g in item.get("gestures", [])])
+			gestureText = ", ".join(gestureDisplayText(g) for g in item.get("gestures", []))
 			self.listCtrl.InsertItem(index, item["name"])
 			self.listCtrl.SetItem(index, 1, typeLabel)
 			self.listCtrl.SetItem(index, 2, gestureText)
@@ -238,83 +224,56 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			return None
 
 	def _saveItemResult(self, result, oldName=None):
-		"""Persist a dialog result and refresh the UI.
-
-		When *oldName* is given the existing item is updated; otherwise a new item is added.
-		"""
+		"""Persist a dialog result and refresh the UI; oldName replaces that item in place."""
 		try:
-			if oldName:
-				self.configManager.updateItem(
-					oldName,
-					result["name"],
-					result["gesture"],
-					result.get("actions", []),
-					result.get("interval", 0.0),
-					result.get("appName", ""),
-					result.get("stopOnError", True),
-				)
-			else:
-				self.configManager.addItem(
-					result["name"],
-					result["gesture"],
-					result.get("actions", []),
-					result.get("interval", 0.0),
-					result.get("appName", ""),
-					result.get("stopOnError", True),
-				)
-			self.refreshList(selectName=result["name"])
-			if self.onConfigChanged:
-				self.onConfigChanged()
-			return True
-		except (OSError, ValueError):
-			gui.messageBox(
+			self.configManager.saveItem(
+				oldName,
+				result["name"],
+				result["gesture"],
+				result.get("actions", []),
+				result.get("interval", 0.0),
+				result.get("appName", ""),
+				result.get("stopOnError", True),
+			)
+		except (OSError, ValueError) as error:
+			_showSaveError(
+				error,
+				# Translators: Error shown when an item could not be saved.
 				_("Could not save settings. Restore or import a valid configuration and try again."),
-				ERROR_CAPTION,
-				wx.OK | wx.ICON_ERROR,
 			)
 			return False
+		self.refreshList(selectName=result["name"])
+		if self.onConfigChanged:
+			self.onConfigChanged()
+		return True
+
+	def _runItemDialog(self, title, existingItem=None, oldName=None):
+		dialog = InstantAccessItemDialog(self, self.configManager, title, existingItem=existingItem)
+		while dialog.ShowModal() == wx.ID_OK:
+			if self._saveItemResult(dialog.result, oldName=oldName):
+				break
+		dialog.Destroy()
+		self.listCtrl.SetFocus()
 
 	def onAdd(self, event):
 		# Translators: Title of the add item dialog.
-		dialog = InstantAccessItemDialog(self, self.configManager, _("Add item"))
-		while dialog.ShowModal() == wx.ID_OK:
-			if self._saveItemResult(dialog.result):
-				break
-		dialog.Destroy()
-		self.listCtrl.SetFocus()
+		self._runItemDialog(_("Add item"))
 
 	def onEdit(self, event):
 		item = self.getSelectedItem()
-		if not item:
-			return
-		# Translators: Title of the edit item dialog.
-		dialog = InstantAccessItemDialog(self, self.configManager, _("Edit item"), existingItem=item)
-		while dialog.ShowModal() == wx.ID_OK:
-			if self._saveItemResult(dialog.result, oldName=item["name"]):
-				break
-		dialog.Destroy()
-		self.listCtrl.SetFocus()
+		if item:
+			# Translators: Title of the edit item dialog.
+			self._runItemDialog(_("Edit item"), existingItem=item, oldName=item["name"])
 
 	def onDuplicate(self, event):
 		item = self.getSelectedItem()
 		if not item:
 			return
-		uniqueName = self.configManager.getUniqueItemName(item.get("name", ""))
 		clonedItem = dict(item)
-		clonedItem["name"] = uniqueName
+		clonedItem["name"] = self.configManager.getUniqueItemName(item.get("name", ""))
 		clonedItem["gestures"] = []
 		# Translators: Title of the duplicate item dialog.
-		dialog = InstantAccessItemDialog(
-			self,
-			self.configManager,
-			_("Duplicate item"),
-			existingItem=clonedItem,
-		)
-		while dialog.ShowModal() == wx.ID_OK:
-			if self._saveItemResult(dialog.result):
-				break
-		dialog.Destroy()
-		self.listCtrl.SetFocus()
+		self._runItemDialog(_("Duplicate item"), existingItem=clonedItem)
 
 	def onDelete(self, event):
 		item = self.getSelectedItem()
@@ -323,6 +282,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		deletedIndex = self.listCtrl.GetFirstSelected()
 		if (
 			gui.messageBox(
+				# Translators: Question before deleting an item.
 				_("Are you sure you would like to delete the selected item?"),
 				CONFIRM_CAPTION,
 				wx.YES_NO | wx.ICON_QUESTION,
@@ -331,8 +291,9 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		):
 			try:
 				self.configManager.deleteItem(item["name"])
-			except (OSError, ValueError):
-				gui.messageBox(_("Could not save settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			except (OSError, ValueError) as error:
+				# Translators: Error shown when deleting an item could not be saved.
+				_showSaveError(error, _("Could not save settings."))
 				return
 			self.refreshList()
 			if self.items:
@@ -349,8 +310,15 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		item = self.getSelectedItem()
 		if not item:
 			return
+		preDelay = 0
+		if actionsNeedSwitchDelay(item.get("actions", [])):
+			# Without the delay the item types into this settings window.
+			if not confirmSwitchDelay():
+				self.listCtrl.SetFocus()
+				return
+			preDelay = SWITCH_DELAY_SECONDS
 		if self.onRunItem:
-			self.onRunItem(item)
+			self.onRunItem(item, preDelay=preDelay)
 		self.listCtrl.SetFocus()
 
 	def onExportSettings(self, event):
@@ -358,6 +326,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			return
 		dialog = wx.FileDialog(
 			self,
+			# Translators: Title of the file dialog for exporting settings.
 			_("Export settings"),
 			wildcard=ALL_FILES_WILDCARD,
 			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
@@ -370,6 +339,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				# Translators: Message shown when settings are successfully exported.
 				gui.messageBox(_("Settings exported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
 			except Exception:
+				# Translators: Error shown when the settings file could not be exported.
 				gui.messageBox(_("Could not export settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
@@ -389,6 +359,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			return
 		dialog = wx.FileDialog(
 			self,
+			# Translators: Title of the file dialog for importing settings.
 			_("Import settings"),
 			wildcard=ALL_FILES_WILDCARD,
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
@@ -397,7 +368,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			sourcePath = dialog.GetPath()
 			try:
 				testConfig = loadConfigFromPathStrict(sourcePath)
-				saveConfig(self.configManager.getConfigPath(), testConfig)
+				self.configManager.replaceConfig(testConfig)
 				self.refreshList()
 				currentVerbosity = self.configManager.getVerbosityLevel()
 				self.loadSettingsControls()
@@ -407,7 +378,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 					self.onVerbosityChanged(currentVerbosity)
 				# Translators: Message shown when settings are successfully imported.
 				gui.messageBox(_("Settings imported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
-			except Exception:
-				gui.messageBox(_("Could not import settings."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+			except Exception as error:
+				# Translators: Error shown when a settings file could not be imported.
+				_showSaveError(error, _("Could not import settings."))
 		dialog.Destroy()
 		self.listCtrl.SetFocus()
