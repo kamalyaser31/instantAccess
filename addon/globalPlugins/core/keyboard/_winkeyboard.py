@@ -21,6 +21,7 @@ user32 = ctypes.WinDLL("user32", use_last_error=True)
 
 INPUT_KEYBOARD = 1
 
+KEYEVENTF_EXTENDEDKEY = 0x01
 KEYEVENTF_KEYUP = 0x02
 KEYEVENTF_UNICODE = 0x04
 
@@ -426,6 +427,15 @@ def map_name(name):
 		yield scan_code or -vk, modifiers
 
 
+# Page Up/Down, End, Home, the arrows, Insert and Delete. Without the extended flag Windows
+# takes them for their numeric keypad twins, and Shift+End moves without selecting.
+EXTENDED_VKS = frozenset((0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E))
+
+
+def _with_extended_flag(vk, event_type):
+	return event_type | KEYEVENTF_EXTENDEDKEY if vk in EXTENDED_VKS else event_type
+
+
 def _send_event(code, event_type):
 	if code == 541:
 		# Alt-gr is made of ctrl+alt. Just sending even 541 doesn't do anything.
@@ -433,11 +443,11 @@ def _send_event(code, event_type):
 		user32.keybd_event(0x12, code, event_type, 0)
 	elif code > 0:
 		vk = scan_code_to_vk.get(code, 0)
-		user32.keybd_event(vk, code, event_type, 0)
+		user32.keybd_event(vk, code, _with_extended_flag(vk, event_type), 0)
 	else:
 		# Negative scan code is a way to indicate we don't have a scan code,
 		# and the value actually contains the Virtual key code.
-		user32.keybd_event(-code, 0, event_type, 0)
+		user32.keybd_event(-code, 0, _with_extended_flag(-code, event_type), 0)
 
 
 def press(code):

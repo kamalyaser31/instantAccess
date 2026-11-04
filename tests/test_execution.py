@@ -356,6 +356,33 @@ class ExecutionTests(unittest.TestCase):
 		list(env["get_event_names"](1, 1, 0, ()))
 		self.assertEqual(calls, [(32, 32)])
 
+	def test_navigation_keys_are_sent_as_extended_keys(self):
+		tree = ast.parse(
+			(ROOT / "addon/globalPlugins/core/keyboard/_winkeyboard.py").read_text(encoding="utf-8")
+		)
+		wanted = {"EXTENDED_VKS", "_with_extended_flag", "_send_event"}
+		nodes = [
+			n
+			for n in tree.body
+			if getattr(n, "name", None) in wanted
+			or (isinstance(n, ast.Assign) and getattr(n.targets[0], "id", None) in wanted)
+		]
+		sent = []
+		env = {
+			"KEYEVENTF_EXTENDEDKEY": 1,
+			"scan_code_to_vk": {79: 0x23, 30: 0x41, 42: 0xA0},
+			"user32": types.SimpleNamespace(keybd_event=lambda *args: sent.append(args)),
+		}
+		exec(compile(ast.Module(body=nodes, type_ignores=[]), "<extended-test>", "exec"), env)
+		for code in (42, 79, 30):
+			env["_send_event"](code, 0)
+		env["_send_event"](79, 2)
+		env["_send_event"](-0x25, 0)
+		self.assertEqual(
+			sent,
+			[(0xA0, 42, 0, 0), (0x23, 79, 1, 0), (0x41, 30, 0, 0), (0x23, 79, 3, 0), (0x25, 0, 1, 0)],
+		)
+
 	@unittest.skipUnless(os.name == "nt", "Windows cmd quoting test")
 	def test_batch_paths_and_arguments_on_windows(self):
 		with tempfile.TemporaryDirectory(prefix="instant access ") as td:

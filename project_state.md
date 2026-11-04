@@ -23,7 +23,7 @@
 - `tests/`: 41 automated regression tests and isolated stubs (`test_config.py`, `test_dialogs.py`, `test_execution.py`).
 
 ## Pending Work
-- Version 2026.7 is planned in `plan-2026.7.md`. M1 to M2d are done in the working tree (2026-11-04): the cleanup, four bug fixes, the simplification, the NVDA practice fixes, and the keyboard library trim. They are committed on the local branch `feat/2026.7` (not pushed, not merged into main) and not tested in live NVDA. The readme license line from M2d.1 moved to M4. M3 (twelve refinements) waits for Kamal.
+- Version 2026.7 is planned in `plan-2026.7.md`. M1 to M2d are done in the working tree (2026-11-04): the cleanup, four bug fixes, the simplification, the NVDA practice fixes, and the keyboard library trim. They are committed on the local branch `feat/2026.7` (not pushed, not merged into main). They passed a live test in portable NVDA 2026.2 on 2026-11-04. That test found the old M2.5 bug: Shift with navigation keys selected nothing, because `_winkeyboard._send_event` never set `KEYEVENTF_EXTENDEDKEY`. The fix is in the working tree, passed live in portable NVDA, and is not committed: `EXTENDED_VKS` (Page Up/Down, End, Home, arrows, Insert, Delete) get the flag on press and release. The readme license line from M2d.1 moved to M4. M3 (twelve refinements) waits for Kamal.
 - Interfaces after M2:
   - Gesture lookups use `gestures.gestureKey` (`inputCore.normalizeGestureIdentifier`), and the layer reads `gesture.normalizedIdentifiers`.
   - `gestures.gestureDisplayText` gives NVDA's localized key names.
@@ -44,7 +44,7 @@
 - The build excludes `*.pyc` and `__pycache__/*` (`buildVars.excludedFiles`). The package has 33 files.
 - Decisions (2026-11-04): M3.3 reads `gui.mainFrame.prevFocus` instead of adding `event_foreground`. No `speakOnDemand` on the add-on's scripts.
 - Decisions: Programs actions keep launching a new instance (no "switch to window" option). Named buffers (#22) and `Space`+key describe (#20) are out of scope. Letter shortcuts work under the Arabic layout, so no layout handling is needed.
-- `tests/` now has 64 tests (`test_browse.py` included). `tests/nvda_stubs.py` also stubs `NVDAState`, `logHandler`, and `inputCore.normalizeGestureIdentifier`, which is a copy of NVDA's algorithm.
+- `tests/` now has 65 tests (`test_browse.py` included). `tests/nvda_stubs.py` also stubs `NVDAState`, `logHandler`, and `inputCore.normalizeGestureIdentifier`, which is a copy of NVDA's algorithm.
 
 ## Recent Changes (2026-09-24 - Version 2026.6)
 - Merged PR #18 fixing configuration recovery, action ordering, and execution failure handling.
