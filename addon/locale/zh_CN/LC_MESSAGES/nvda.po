@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: instantAccess 2026.6\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
 "POT-Creation-Date: 2026-09-30 18:01+0300\n"
-"PO-Revision-Date: 2026-09-21 20:11+0800\n"
+"PO-Revision-Date: 2026-10-01 00:17+0800\n"
 "Last-Translator: cary-rowen <manchen_0528@outlook.com>\n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -17,25 +17,25 @@ msgstr ""
 #: addon\globalPlugins\core\browse.py:67
 #, python-brace-format
 msgid "{key}, {name}"
-msgstr ""
+msgstr "{key}，{name}"
 
 #. Translators: Announcement of a browsed item as "name, shortcut", e.g. "Open Gmail, g".
 #: addon\globalPlugins\core\browse.py:69
 #, python-brace-format
 msgid "{name}, {key}"
-msgstr ""
+msgstr "{name}，{key}"
 
 #: addon\globalPlugins\core\browse.py:76
 msgid ""
 "Up and down arrows or Tab and Shift+Tab: browse items. Enter: run the "
 "browsed item. Escape: exit."
-msgstr ""
+msgstr "按上光标、下光标、Tab 或 Shift+Tab 浏览项目；按 Enter 运行当前浏览到的项目；按 Esc 退出。"
 
 #. Translators: Shown in the browse help when no items can run in the current application.
 #. Translators: Announced when browsing the layer but no item can run in the current application.
 #: addon\globalPlugins\core\browse.py:82 addon\globalPlugins\core\plugin.py:303
 msgid "No items are available in this application."
-msgstr ""
+msgstr "当前应用程序中没有可用的项目。"
 
 #: addon\globalPlugins\core\command_picker_dialog.py:27
 msgid "Select NVDA command"
@@ -154,47 +154,41 @@ msgstr "高级"
 
 #. Translators: Choices for how items are announced while browsing the instant Access layer.
 #: addon\globalPlugins\core\constants.py:74
-#, fuzzy
 msgid "Name, then shortcut"
-msgstr "设置快捷键"
+msgstr "先读名称，再读快捷键"
 
 #: addon\globalPlugins\core\constants.py:74
-#, fuzzy
 msgid "Shortcut, then name"
-msgstr "快捷键：未设置"
+msgstr "先读快捷键，再读名称"
 
 #: addon\globalPlugins\core\constants.py:74
-#, fuzzy
 msgid "Name only"
-msgstr "名称"
+msgstr "仅读名称"
 
 #. Translators: Choices for the order of items while browsing the instant Access layer.
 #: addon\globalPlugins\core\constants.py:79
 msgid "Settings list order"
-msgstr ""
+msgstr "按设置列表顺序"
 
 #: addon\globalPlugins\core\constants.py:79
 msgid "Alphabetical by name"
-msgstr ""
+msgstr "按名称排序"
 
 #: addon\globalPlugins\core\constants.py:79
-#, fuzzy
 msgid "By shortcut"
-msgstr "设置快捷键"
+msgstr "按快捷键排序"
 
 #: addon\globalPlugins\core\executor.py:58
 msgid "Too many items are waiting. Please try again later."
-msgstr ""
+msgstr "等待执行的项目过多，请稍后再试。"
 
 #: addon\globalPlugins\core\executor.py:76
-#, fuzzy
 msgid "Error: Could not run the item"
-msgstr "错误：无法打开文件夹"
+msgstr "错误：无法运行项目"
 
 #: addon\globalPlugins\core\executor.py:124
-#, fuzzy
 msgid "Error: NVDA command did not finish in time"
-msgstr "错误：该 NVDA 命令当前不可用"
+msgstr "错误：NVDA 命令执行超时"
 
 #: addon\globalPlugins\core\executor.py:164
 #: addon\globalPlugins\core\item_dialog.py:388
@@ -267,9 +261,8 @@ msgid "Interval must be a valid number."
 msgstr "操作间隔必须为数字。"
 
 #: addon\globalPlugins\core\executor.py:396
-#, fuzzy
 msgid "Error: Could not run the action"
-msgstr "错误：无法打开文件夹"
+msgstr "错误：无法执行操作"
 
 #: addon\globalPlugins\core\item_dialog.py:54
 #: addon\globalPlugins\core\settings_panel.py:43
@@ -548,7 +541,7 @@ msgstr "错误：该 NVDA 命令当前不可用"
 
 #: addon\globalPlugins\core\plugin.py:211
 msgid "No commands configured."
-msgstr "尚未配置命令。"
+msgstr "尚未配置项目。"
 
 #: addon\globalPlugins\core\plugin.py:218
 msgid "On"
@@ -557,7 +550,7 @@ msgstr "开启"
 #: addon\globalPlugins\core\plugin.py:221
 #, python-brace-format
 msgid "instant Access On. {count} commands loaded"
-msgstr "instantAccess 已开启，已加载 {count} 个命令。"
+msgstr "instantAccess 已开启，已加载 {count} 个项目。"
 
 #: addon\globalPlugins\core\plugin.py:235
 msgid "Off"
@@ -569,13 +562,12 @@ msgstr "instantAccess 已关闭。"
 
 #: addon\globalPlugins\core\plugin.py:247
 msgid "This gesture has no command assigned."
-msgstr "没有为此手势分配命令。"
+msgstr "此按键没有对应的项目。"
 
 #. Translators: Title of the window listing instant Access items available in the current application.
 #: addon\globalPlugins\core\plugin.py:326
-#, fuzzy
 msgid "instant Access items"
-msgstr "instantAccess"
+msgstr "instantAccess 项目"
 
 #. Translators: Message announced when current application name could not be determined.
 #: addon\globalPlugins\core\plugin.py:339
@@ -619,30 +611,28 @@ msgstr "详细程度"
 #. Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
 #: addon\globalPlugins\core\settings_panel.py:131
 msgid "Enable &browsing items in the instant Access layer"
-msgstr ""
+msgstr "在 instantAccess 模式中启用项目浏览(&B)"
 
 #. Translators: Label for choosing how browsed items are announced.
 #: addon\globalPlugins\core\settings_panel.py:135
 msgid "Browse &announcement"
-msgstr ""
+msgstr "浏览时的朗读方式(&A)"
 
 #. Translators: Label for choosing the order of browsed items.
 #: addon\globalPlugins\core\settings_panel.py:141
-#, fuzzy
 msgid "Browse &order"
-msgstr "浏览"
+msgstr "浏览顺序(&O)"
 
 #: addon\globalPlugins\core\settings_panel.py:197
 #: addon\globalPlugins\core\settings_panel.py:335
-#, fuzzy
 msgid "Could not save settings."
-msgstr "无法导出设置。"
+msgstr "无法保存设置。"
 
 #: addon\globalPlugins\core\settings_panel.py:271
 msgid ""
 "Could not save settings. Restore or import a valid configuration and try "
 "again."
-msgstr ""
+msgstr "无法保存设置。请先恢复备份或导入有效配置，然后重试。"
 
 #. Translators: Title of the add item dialog.
 #: addon\globalPlugins\core\settings_panel.py:279
@@ -707,7 +697,6 @@ msgstr ""
 "\t支持后台执行和命令行参数，可调整反馈详细程度，并可导入或导出设置。"
 
 #: buildVars.py:19
-#, fuzzy
 msgid ""
 "\n"
 "- Version 2026.6:\n"
@@ -754,6 +743,14 @@ msgid ""
 "performance."
 msgstr ""
 "\n"
+"- 版本 2026.6：\n"
+"  - 浏览项目：在 instantAccess 模式中，按方向键或 Tab 逐项浏览，插件会读出当前项目；按 Enter 运行当前项目，按 F1 或 H 列出所有可用项目。可在插件设置中启用此功能。\n"
+"  - 配置更安全：配置文件损坏或丢失时可从备份恢复，发生故障时不会再丢失项目。\n"
+"  - 项目依次执行：项目会逐一运行，避免文本输入与按键序列互相干扰。\n"
+"  - NVDA 命令执行完毕后才会继续下一项操作，并且“出错时停止”功能现在可以正常工作。\n"
+"  - 文本输入失败时，会自动释放 Shift、Ctrl 等修饰键。\n"
+"  - 路径中包含空格的批处理文件现在可以正常运行。\n"
+"  - 保存失败时，对话框中已输入的内容会予以保留。\n"
 "- 版本 2026.5：\n"
 "  - 项目复制：新增“复制”按钮，可连同项目的所有操作和设置一并创建副本。\n"
 "  - 操作测试：可单独测试各项操作；测试文本输入或按键序列前会自动倒计时 3 "
