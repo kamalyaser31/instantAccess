@@ -23,7 +23,7 @@
 - `tests/`: 41 automated regression tests and isolated stubs (`test_config.py`, `test_dialogs.py`, `test_execution.py`).
 
 ## Pending Work
-- Version 2026.7 is planned in `plan-2026.7.md`. M1 to M2d are done in the working tree (2026-11-04): the cleanup, four bug fixes, the simplification, the NVDA practice fixes, and the keyboard library trim. They are not committed and not tested in live NVDA. The readme license line from M2d.1 moved to M4. M3 (twelve refinements) waits for Kamal.
+- Version 2026.7 is planned in `plan-2026.7.md`. M1 to M2d are done in the working tree (2026-11-04): the cleanup, four bug fixes, the simplification, the NVDA practice fixes, and the keyboard library trim. They are committed on the local branch `feat/2026.7` (not pushed, not merged into main) and not tested in live NVDA. The readme license line from M2d.1 moved to M4. M3 (twelve refinements) waits for Kamal.
 - Interfaces after M2:
   - Gesture lookups use `gestures.gestureKey` (`inputCore.normalizeGestureIdentifier`), and the layer reads `gesture.normalizedIdentifiers`.
   - `gestures.gestureDisplayText` gives NVDA's localized key names.
