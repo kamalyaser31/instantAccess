@@ -10,6 +10,8 @@ from .command_picker_dialog import NvdaCommandPickerDialog
 from .constants import (
 	ADDON_SCRIPT_GESTURES,
 	ALL_FILES_WILDCARD,
+	ANNOUNCE_LABELS,
+	ANNOUNCE_VALUES,
 	CONFIRM_CAPTION,
 	ERROR_CAPTION,
 	RESERVED_GESTURES,
@@ -20,9 +22,11 @@ from .constants import (
 	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 )
-from .executor import expandPath
+from .executor import expandPath, isValidKeystroke
 from .timing import parseDelay
 from .gestures import (
+	gestureToKeystroke,
+	parseAppNames,
 	buildGestureNameFromEvent,
 	formatGestureForDisplay,
 	gestureDisplayText,
@@ -133,6 +137,15 @@ def confirmSwitchDelay():
 	return gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES
 
 
+def previousAppName():
+	"""The app that had focus before NVDA's own settings opened, or "" if it is unknown."""
+	try:
+		appName = gui.mainFrame.prevFocus.appModule.appName.lower()
+	except Exception:
+		return ""
+	return "" if appName == "nvda" else appName
+
+
 class ShortcutCaptureDialog(wx.Dialog):
 	def __init__(self, parent):
 		# Translators: Title of the dialog that captures an item's shortcut.
@@ -189,6 +202,10 @@ class InstantAccessActionDialog(wx.Dialog):
 		)
 		sizerHelper.addItem(self.argumentsRow, flag=wx.EXPAND)
 
+		# Translators: Checkbox that starts a program with administrator rights.
+		self.runAsAdminCheck = wx.CheckBox(self, wx.ID_ANY, _("Run as &administrator"))
+		sizerHelper.addItem(self.runAsAdminCheck)
+
 		self.commandRow, self.commandLabel, self.commandCtrl, self.commandButton = _labeledRow(
 			self,
 			# Translators: Label of the read-only field showing the chosen NVDA command.
@@ -199,11 +216,13 @@ class InstantAccessActionDialog(wx.Dialog):
 		)
 		sizerHelper.addItem(self.commandRow, flag=wx.EXPAND)
 
-		self.snippetRow, self.snippetLabel, self.snippetCtrl, _unused = _labeledRow(
+		self.snippetRow, self.snippetLabel, self.snippetCtrl, self.addKeystrokeButton = _labeledRow(
 			self,
 			# Translators: Label of the text snippet field.
 			_("Text snippet"),
 			lambda: wx.TextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 120)),
+			# Translators: Button that captures a key press and adds it to the keystrokes field.
+			lambda: wx.Button(self, wx.ID_ANY, _("Add keystroke")),
 			labelFlag=wx.ALIGN_TOP,
 			controlFlag=wx.EXPAND,
 		)
@@ -252,6 +271,7 @@ class InstantAccessActionDialog(wx.Dialog):
 		self.snippetActionChoice.Bind(wx.EVT_CHOICE, self.onSnippetActionChange)
 		self.browseButton.Bind(wx.EVT_BUTTON, self.onBrowse)
 		self.commandButton.Bind(wx.EVT_BUTTON, self.onSelectCommand)
+		self.addKeystrokeButton.Bind(wx.EVT_BUTTON, self.onAddKeystroke)
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
 		self.testButton.Bind(wx.EVT_BUTTON, self.onTestAction)
 
@@ -272,6 +292,7 @@ class InstantAccessActionDialog(wx.Dialog):
 			self.typeChoice.SetSelection(TYPE_SECTIONS.index(itemType))
 		self.pathCtrl.SetValue(action.get("path", ""))
 		self.argumentsCtrl.SetValue(action.get("arguments", ""))
+		self.runAsAdminCheck.SetValue(bool(action.get("runAsAdmin", False)))
 		self.selectedCommandId = action.get("path", "") if itemType == "NvdaCommands" else ""
 		self.selectedCommandLabel = action.get("commandLabel", "")
 		if self.selectedCommandLabel:
@@ -315,8 +336,10 @@ class InstantAccessActionDialog(wx.Dialog):
 
 		self._setRowVisible(self.pathRow, showPath)
 		self._setRowVisible(self.argumentsRow, showArguments)
+		self.runAsAdminCheck.Show(showArguments)
 		self._setRowVisible(self.commandRow, showCommand)
 		self._setRowVisible(self.snippetRow, showSnippetArea)
+		self.addKeystrokeButton.Show(itemType == "Keystrokes")
 		self._setRowVisible(self.snippetActionRow, showSnippetActionChoice)
 		self._setRowVisible(self.typingDelayRow, showDelayField)
 		self.browseButton.Enable(itemType in ("Programs", "Folders", "Files"))
@@ -346,6 +369,19 @@ class InstantAccessActionDialog(wx.Dialog):
 			return
 		if dialog.ShowModal() == wx.ID_OK:
 			self.pathCtrl.SetValue(dialog.GetPath())
+		dialog.Destroy()
+
+	def onAddKeystroke(self, event):
+		dialog = ShortcutCaptureDialog(self)
+		if dialog.ShowModal() == wx.ID_OK:
+			keystroke = gestureToKeystroke(dialog.gestureName)
+			if isValidKeystroke(keystroke):
+				text = self.snippetCtrl.GetValue()
+				if text and not text.endswith("\n"):
+					text += "\n"
+				self.snippetCtrl.SetValue(text + keystroke)
+			else:
+				gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 		dialog.Destroy()
 
 	def onSelectCommand(self, event):
@@ -430,6 +466,7 @@ class InstantAccessActionDialog(wx.Dialog):
 			"type": itemType,
 			"path": path,
 			"arguments": arguments,
+			"runAsAdmin": itemType == "Programs" and self.runAsAdminCheck.GetValue(),
 			"textAction": textAction,
 			"typingDelay": typingDelay,
 			"pressDelay": pressDelay,
@@ -518,6 +555,19 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.stopOnErrorCheck.SetValue(True)
 		sizerHelper.addItem(self.stopOnErrorCheck)
 
+		self.announceChoice = sizerHelper.addLabeledControl(
+			# Translators: Label of the choice whether this item speaks its name when it runs.
+			_("Announce the name when this item runs"),
+			wx.Choice,
+			choices=ANNOUNCE_LABELS,
+		)
+		self.announceChoice.SetSelection(0)
+
+		# Translators: Checkbox that turns an item on or off without deleting it.
+		self.enabledCheck = wx.CheckBox(self, wx.ID_ANY, _("Enabled"))
+		self.enabledCheck.SetValue(True)
+		sizerHelper.addItem(self.enabledCheck)
+
 		self.restrictionRow, self.restrictToAppsCheck, self.appNameLabel, self.appNameCtrl = (
 			self._createRestrictionRow()
 		)
@@ -569,11 +619,11 @@ class InstantAccessItemDialog(wx.Dialog):
 		row = wx.BoxSizer(wx.HORIZONTAL)
 		# Translators: Checkbox that limits the item to the apps named in the next field.
 		check = wx.CheckBox(self, wx.ID_ANY, _("Restrict this shortcut to work in certain apps"))
-		# Translators: Label of the field for the app the item is limited to.
-		appLabel = wx.StaticText(self, wx.ID_ANY, _("App name"))
+		# Translators: Label of the field for the apps the item is limited to.
+		appLabel = wx.StaticText(self, wx.ID_ANY, _("App names, separated by commas"))
 		appCtrl = wx.TextCtrl(self, wx.ID_ANY)
-		# Translators: Hint shown inside the empty app name field.
-		appCtrl.SetHint(_("App name"))
+		# Translators: Hint shown inside the empty app names field.
+		appCtrl.SetHint(_("notepad, winword"))
 		row.Add(check, 0, wx.ALIGN_CENTER_VERTICAL)
 		row.Add(
 			appLabel,
@@ -592,6 +642,8 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.actions = [dict(action) for action in item.get("actions", [])]
 		self.intervalCtrl.SetValue(_formatDelay(item.get("interval", 0.0)))
 		self.stopOnErrorCheck.SetValue(bool(item.get("stopOnError", True)))
+		self.announceChoice.SetSelection(ANNOUNCE_VALUES.index(item.get("announceName", ANNOUNCE_VALUES[0])))
+		self.enabledCheck.SetValue(bool(item.get("enabled", True)))
 		appName = (item.get("appName", "") or "").strip()
 		if appName:
 			self.restrictToAppsCheck.SetValue(True)
@@ -619,6 +671,8 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.Layout()
 
 	def onRestrictionToggle(self, event):
+		if self.restrictToAppsCheck.GetValue() and not self.appNameCtrl.GetValue().strip():
+			self.appNameCtrl.SetValue(previousAppName())
 		self.updateRestrictionState()
 
 	def getSelectedActionIndex(self):
@@ -750,7 +804,7 @@ class InstantAccessItemDialog(wx.Dialog):
 	def validate(self):
 		name = self.nameCtrl.GetValue().strip()
 		gesture = self.gesture
-		appName = self.appNameCtrl.GetValue().strip().lower() if self.restrictToAppsCheck.GetValue() else ""
+		appName = ", ".join(parseAppNames(self.appNameCtrl.GetValue())) if self.restrictToAppsCheck.GetValue() else ""
 
 		if not name or not gesture:
 			# Translators: Error shown when the item has no name or no shortcut.
@@ -826,6 +880,8 @@ class InstantAccessItemDialog(wx.Dialog):
 			"appName": appName,
 			"interval": interval,
 			"stopOnError": self.stopOnErrorCheck.GetValue(),
+			"enabled": self.enabledCheck.GetValue(),
+			"announceName": ANNOUNCE_VALUES[self.announceChoice.GetSelection()],
 			"actions": [dict(action) for action in self.actions],
 		}
 

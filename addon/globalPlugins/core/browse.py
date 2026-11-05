@@ -3,7 +3,8 @@
 
 import addonHandler
 
-from .gestures import formatGestureForDisplay, gestureDisplayText, gestureKey
+from .constants import ANNOUNCE_VALUES
+from .gestures import formatGestureForDisplay, gestureDisplayText, gestureKey, parseAppNames
 
 addonHandler.initTranslation()
 
@@ -11,7 +12,7 @@ addonHandler.initTranslation()
 def resolveItem(candidates, currentAppName):
 	"""Pick the item a gesture runs in the current app: app-specific first, then global."""
 	for candidate in candidates:
-		if candidate.get("appName", "") and candidate["appName"] == currentAppName:
+		if currentAppName in parseAppNames(candidate.get("appName", "")):
 			return candidate
 	for candidate in candidates:
 		if not candidate.get("appName", ""):
@@ -31,6 +32,12 @@ def getUsableItems(items, currentAppName):
 		if gestures and resolveItem(candidatesByGesture[gestureKey(gestures[0])], currentAppName) is item:
 			usable.append(item)
 	return usable
+
+
+def shouldAnnounceName(item, announceByDefault):
+	"""An item's own choice wins over the general setting."""
+	choice = item.get("announceName", ANNOUNCE_VALUES[0])
+	return announceByDefault if choice == ANNOUNCE_VALUES[0] else choice == ANNOUNCE_VALUES[1]
 
 
 def getKeyLabel(item):

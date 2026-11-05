@@ -133,6 +133,49 @@ class BrowseLayerTests(unittest.TestCase):
 		instance.activateInstantMode(speak=False)
 		return instance
 
+	def test_an_item_can_name_several_apps(self):
+		global_item = {"name": "global"}
+		editors = {"name": "editors", "appName": "notepad, winword"}
+		self.assertIs(browse.resolveItem([global_item, editors], "winword"), editors)
+		self.assertIs(browse.resolveItem([global_item, editors], "excel"), global_item)
+		self.assertIsNone(browse.resolveItem([editors], ""))
+
+	def test_app_names_accept_both_commas_and_ignore_blanks(self):
+		from auditcore.gestures import parseAppNames
+
+		self.assertEqual(parseAppNames(" Notepad ,,\u060cWinword, notepad"), ["notepad", "winword"])
+		self.assertEqual(parseAppNames(""), [])
+
+	def test_captured_keys_become_keystroke_names(self):
+		from auditcore.gestures import gestureToKeystroke
+
+		self.assertEqual(gestureToKeystroke("control+shift+downArrow"), "control+shift+down")
+		self.assertEqual(gestureToKeystroke("pagedown"), "page down")
+		self.assertEqual(gestureToKeystroke("alt+f4"), "alt+f4")
+
+	def test_item_choice_overrides_the_general_announce_setting(self):
+		from auditcore.browse import shouldAnnounceName
+
+		for general, choice, expected in (
+			(True, "default", True),
+			(False, "default", False),
+			(False, "on", True),
+			(True, "off", False),
+		):
+			with self.subTest(general=general, choice=choice):
+				self.assertEqual(shouldAnnounceName({"announceName": choice}, general), expected)
+		self.assertTrue(shouldAnnounceName({}, True))
+
+	def test_disabled_items_leave_the_layer(self):
+		action = {"type": "Websites", "data": {"url": "https://example.invalid"}}
+		items = [
+			{"name": "On", "gesture": "kb:y", "actions": [action]},
+			{"name": "Off", "gesture": "kb:z", "enabled": False, "actions": [action]},
+		]
+		instance = self.makePlugin(items)
+		self.assertNotIn("Off", [item["name"] for item in instance.layerItems])
+		self.assertNotIn("kb:z", instance.gestureToItems)
+
 	def press(self, instance, scriptName, gestureId="kb:x"):
 		"""Run a bound script through getScript, as NVDA does, so layer closing is exercised."""
 		identifiers = [gestureId]

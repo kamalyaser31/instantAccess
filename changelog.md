@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Run as administrator**: A program action can now start the program with administrator rights. Windows shows its usual prompt, and if you decline it, the add-on says "Cancelled".
+- **Reorder your items**: In the settings list, press `Ctrl+Up` or `Ctrl+Down` to move the selected item.
+- **Announce the item name or not**: A new option in the settings turns off speaking an item's name when it runs, for all items. Each item can also follow this option, always announce, or never announce.
+- **Turn an item off**: Untick "Enabled" in an item to stop using it without deleting it. The settings list marks it as disabled.
+- **Filter the settings list**: Type in the new Filter field to find items by name.
+- **Several apps for one item**: The app field now takes several names separated by commas, such as `notepad, winword`.
+- **Merge when importing**: After you choose a settings file, you can replace everything or merge. Merging adds the items that have a new name and a free shortcut, keeps your settings, and tells you how many were added and skipped.
+- **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button adds the key you press as a new line, so you do not need to type key names.
+
 ### Fixed
 - **Editing keeps the item's place**: After you edit an item, it stays where it was in the list instead of moving to the end.
 - **Testing an item from the settings**: If an item types text or presses keys, the Test button in the settings now asks first and waits 3 seconds, so you can switch to the window you want. Before, the text went into the settings window.
@@ -16,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Choosing an NVDA command**: The list of NVDA commands is now read in a safer way, which avoids rare errors while it opens.
 
 ### Changed
+- **Your clipboard is kept**: After a text snippet is pasted, the text you had copied before comes back to the clipboard. Only text can be restored.
+- **App name filled in for you**: When you tick "Restrict this shortcut to work in certain apps", the app name field is filled with the program you were using before you opened the settings. You can still change it.
 - **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct now when a keyboard layout without Latin letters, such as Arabic, is active.
 - **Faster mode switching**: Turning on Instant Access mode no longer reads the settings file every time. If the settings file is damaged and you choose not to restore the backup, you are asked only once per session.
 - **Smaller add-on**: Unused parts of the built-in keyboard library were removed, and its license notice was added.

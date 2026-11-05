@@ -87,8 +87,15 @@ BROWSE_ORDER_VALUES = ("list", "name", "key")
 # Translators: Choices for the order of items while browsing the instant Access layer.
 BROWSE_ORDER_LABELS = [_("Settings list order"), _("Alphabetical by name"), _("By shortcut")]
 
+# An item follows the general setting, or overrides it.
+ANNOUNCE_VALUES = ("default", "on", "off")
+
+# Translators: Choices for whether one item speaks its name when it runs.
+ANNOUNCE_LABELS = [_("Use the general setting"), _("Announce"), _("Do not announce")]
+
 DEFAULT_SETTINGS = {
 	"verbosity": VERBOSITY_VALUES[0],
+	"announceName": True,
 	"browseEnabled": False,
 	"browseFormat": BROWSE_FORMAT_VALUES[0],
 	"browseOrder": BROWSE_ORDER_VALUES[0],

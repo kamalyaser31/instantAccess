@@ -13,7 +13,14 @@ import tones
 import ui
 import wx
 
-from .browse import buildHelpText, formatItem, getUsableItems, resolveItem, sortItems
+from .browse import (
+	buildHelpText,
+	formatItem,
+	getUsableItems,
+	resolveItem,
+	shouldAnnounceName,
+	sortItems,
+)
 from .config_manager import ConfigManager
 from .constants import (
 	ADDON_SCRIPT_GESTURES,
@@ -99,7 +106,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def queueRunItemExecution(self, item, preDelay=0):
 		if not item or not self._enabled:
 			return
-		return self.executionQueue.submit(item, preDelay=preDelay)
+		announce = shouldAnnounceName(item, self.configManager.getSettings()["announceName"])
+		return self.executionQueue.submit(item, preDelay=preDelay, announce=announce)
 
 	def getScript(self, gesture):
 		if not self._enabled:
@@ -144,7 +152,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return ""
 
 	def buildInstantGestures(self):
-		items = self.configManager.getItems()
+		items = [item for item in self.configManager.getItems() if item.get("enabled", True)]
 		self.layerItems = items
 		self.browseSettings = self.configManager.getSettings()
 		self.gestureToItems = {}

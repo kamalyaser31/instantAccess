@@ -2,8 +2,8 @@
 
 from logHandler import log
 from .config_io import ensureConfigFile, loadConfigSafe, loadConfigFromPathStrict, saveConfig
-from .constants import ACTION_FIELDS, DEFAULT_SETTINGS, VERBOSITY_VALUES
-from .gestures import gestureKey
+from .constants import ACTION_FIELDS, ANNOUNCE_VALUES, DEFAULT_SETTINGS, VERBOSITY_VALUES
+from .gestures import appNamesConflict, gestureKey
 
 
 
@@ -53,6 +53,7 @@ class ConfigManager:
 			"type": itemType,
 			"path": data[ACTION_FIELDS[itemType]],
 			"arguments": data.get("arguments", ""),
+			"runAsAdmin": data.get("runAsAdmin", False),
 			"textAction": data.get("action", "type"),
 			"typingDelay": data.get("typingDelay", 0.05),
 			"commandLabel": data.get("commandLabel", ""),
@@ -67,6 +68,8 @@ class ConfigManager:
 			"appName": storedItem.get("appName", ""),
 			"interval": storedItem.get("interval", 0.0),
 			"stopOnError": storedItem.get("stopOnError", True),
+			"enabled": storedItem.get("enabled", True),
+			"announceName": storedItem.get("announceName", ANNOUNCE_VALUES[0]),
 			"actions": [self._actionToPublic(action) for action in storedItem["actions"]],
 			"gestures": [gesture] if gesture else [],
 		}
@@ -79,6 +82,7 @@ class ConfigManager:
 		data = {ACTION_FIELDS[itemType]: action.get("path", "")}
 		if itemType == "Programs":
 			data["arguments"] = action.get("arguments", "")
+			data["runAsAdmin"] = bool(action.get("runAsAdmin", False))
 		elif itemType == "NvdaCommands":
 			data["commandLabel"] = action.get("commandLabel", "")
 		elif itemType == "TextSnippets":
@@ -88,12 +92,24 @@ class ConfigManager:
 			data["pressDelay"] = action.get("pressDelay", 0.05)
 		return {"type": itemType, "data": data, "delay": action.get("delay", 0.0)}
 
-	def _buildStoredItem(self, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
+	def _buildStoredItem(
+		self,
+		name,
+		gesture,
+		actions,
+		interval=0.0,
+		appName="",
+		stopOnError=True,
+		enabled=True,
+		announceName=ANNOUNCE_VALUES[0],
+	):
 		item = {
 			"name": name,
 			"gesture": (gesture or "").strip().lower(),
 			"interval": interval,
 			"stopOnError": bool(stopOnError),
+			"enabled": bool(enabled),
+			"announceName": announceName,
 			"actions": [self._buildStoredAction(action) for action in actions],
 		}
 		if (appName or "").strip():
@@ -118,17 +134,15 @@ class ConfigManager:
 	def findGestureConflict(self, gesture, appName="", excludeName=""):
 		"""Find if a gesture conflicts with an existing item."""
 		normalizedGesture = gestureKey(gesture)
-		normalizedAppName = (appName or "").strip().lower()
 		if not normalizedGesture:
 			return None
 		for item in self.getItems():
 			if excludeName and item.get("name", "") == excludeName:
 				continue
-			itemAppName = (item.get("appName", "") or "").strip().lower()
 			for itemGesture in item.get("gestures", []):
 				if gestureKey(itemGesture) != normalizedGesture:
 					continue
-				if itemAppName == normalizedAppName:
+				if appNamesConflict(item.get("appName", ""), appName):
 					return item
 		return None
 
@@ -144,7 +158,18 @@ class ConfigManager:
 				return candidate
 		return candidate
 
-	def saveItem(self, oldName, name, gesture, actions, interval=0.0, appName="", stopOnError=True):
+	def saveItem(
+		self,
+		oldName,
+		name,
+		gesture,
+		actions,
+		interval=0.0,
+		appName="",
+		stopOnError=True,
+		enabled=True,
+		announceName=ANNOUNCE_VALUES[0],
+	):
 		"""Add an item, or replace oldName at its place; browsing follows the settings order."""
 		config = self._loadConfigForUpdate()
 		newItem = self._buildStoredItem(
@@ -154,6 +179,8 @@ class ConfigManager:
 			interval=interval,
 			appName=appName,
 			stopOnError=stopOnError,
+			enabled=enabled,
+			announceName=announceName,
 		)
 		items = []
 		replaced = False
@@ -168,6 +195,40 @@ class ConfigManager:
 			items.append(newItem)
 		config["items"] = items
 		self.saveConfig(config)
+
+	def mergeItems(self, imported):
+		"""Add imported items with a new name and a free shortcut; settings stay. Returns (added, skipped)."""
+		config = self._loadConfigForUpdate()
+		items = config.get("items", [])
+		added = 0
+		for item in imported.get("items", []):
+			names = [existing["name"] for existing in items]
+			clash = any(
+				gestureKey(existing["gesture"]) == gestureKey(item["gesture"])
+				and appNamesConflict(existing.get("appName", ""), item.get("appName", ""))
+				for existing in items
+			)
+			if item["name"] not in names and not clash:
+				items.append(item)
+				added += 1
+		if added:
+			self.saveConfig(config)
+		return added, len(imported.get("items", [])) - added
+
+	def moveItem(self, name, step):
+		"""Swap an item with its neighbour; False when it cannot move that way."""
+		config = self._loadConfigForUpdate()
+		items = config.get("items", [])
+		names = [item.get("name", "") for item in items]
+		if name not in names:
+			return False
+		index = names.index(name)
+		target = index + step
+		if not 0 <= target < len(items):
+			return False
+		items[index], items[target] = items[target], items[index]
+		self.saveConfig(config)
+		return True
 
 	def deleteItem(self, name):
 		"""Delete an item from the configuration."""

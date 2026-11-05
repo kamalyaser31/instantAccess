@@ -16,12 +16,13 @@ from .constants import (
 	BROWSE_FORMAT_VALUES,
 	BROWSE_ORDER_VALUES,
 	CONFIRM_CAPTION,
+	ANNOUNCE_VALUES,
 	DEFAULT_SETTINGS,
 	TEXT_SNIPPET_ACTION_VALUES,
 	TYPE_SECTIONS,
 	VERBOSITY_VALUES,
 )
-from .gestures import gestureKey
+from .gestures import appNamesConflict, gestureKey, parseAppNames
 from .timing import parseDelay
 
 addonHandler.initTranslation()
@@ -48,6 +49,8 @@ def _normalizeActionData(itemType, rawData):
 		data["typingDelay"] = parseDelay(rawData.get("typingDelay", 0.05))
 	elif itemType == "Keystrokes":
 		data["pressDelay"] = parseDelay(rawData.get("pressDelay", 0.05))
+	if itemType == "Programs" and rawData.get("runAsAdmin"):
+		data["runAsAdmin"] = True
 	return data
 
 
@@ -68,9 +71,13 @@ def _normalizeItem(rawItem):
 		"stopOnError": rawItem.get("stopOnError", True),
 		"actions": [_normalizeAction(rawAction) for rawAction in rawItem["actions"]],
 	}
-	appName = rawItem.get("appName", "").strip().lower()
+	appName = ", ".join(parseAppNames(rawItem.get("appName", "")))
 	if appName:
 		normalizedItem["appName"] = appName
+	if rawItem.get("enabled", True) is False:
+		normalizedItem["enabled"] = False
+	if rawItem.get("announceName", ANNOUNCE_VALUES[0]) != ANNOUNCE_VALUES[0]:
+		normalizedItem["announceName"] = rawItem["announceName"]
 	return normalizedItem
 
 
@@ -82,7 +89,7 @@ def _validateConfig(rawConfig):
 		raise ValueError("Unsupported config version")
 	_validateSettings(rawConfig.get("settings", {}))
 	names = set()
-	gestures = set()
+	gestures = {}
 	for item in rawConfig["items"]:
 		if not isinstance(item, dict):
 			raise ValueError("Invalid item")
@@ -91,14 +98,24 @@ def _validateConfig(rawConfig):
 				raise ValueError(f"Invalid item {field}")
 		name = item.get("name", "").strip()
 		gesture = item.get("gesture", "").strip().lower()
-		appName = item.get("appName", "").strip().lower()
-		if not name or not gesture or name in names or (gestureKey(gesture), appName) in gestures:
+		appName = item.get("appName", "")
+		sameGesture = gestures.setdefault(gestureKey(gesture), [])
+		if (
+			not name
+			or not gesture
+			or name in names
+			or any(appNamesConflict(appName, other) for other in sameGesture)
+		):
 			raise ValueError("Missing or duplicate item name/gesture")
 		names.add(name)
-		gestures.add((gestureKey(gesture), appName))
+		sameGesture.append(appName)
 		parseDelay(item.get("interval", 0))
 		if not isinstance(item.get("stopOnError", True), bool):
 			raise ValueError("Invalid stopOnError")
+		if not isinstance(item.get("enabled", True), bool):
+			raise ValueError("Invalid enabled")
+		if item.get("announceName", ANNOUNCE_VALUES[0]) not in ANNOUNCE_VALUES:
+			raise ValueError("Invalid announceName")
 		actions = item.get("actions")
 		if not isinstance(actions, list) or not actions:
 			raise ValueError("At least one action is required")
@@ -116,6 +133,8 @@ def _validateConfig(rawConfig):
 			for optionalField in ("arguments", "commandLabel"):
 				if optionalField in data and not isinstance(data[optionalField], str):
 					raise ValueError(f"Invalid action {optionalField}")
+			if not isinstance(data.get("runAsAdmin", False), bool):
+				raise ValueError("Invalid action runAsAdmin")
 			if itemType == "TextSnippets" and data.get("action", "type") not in TEXT_SNIPPET_ACTION_VALUES:
 				raise ValueError("Invalid snippet action")
 			for timingField in ("typingDelay", "pressDelay"):
@@ -136,8 +155,9 @@ def _validateSettings(settings):
 	for key, choices in _SETTING_CHOICES.items():
 		if settings.get(key, DEFAULT_SETTINGS[key]) not in choices:
 			raise ValueError(f"Invalid {key}")
-	if not isinstance(settings.get("browseEnabled", False), bool):
-		raise ValueError("Invalid browseEnabled")
+	for key in ("browseEnabled", "announceName"):
+		if not isinstance(settings.get(key, False), bool):
+			raise ValueError(f"Invalid {key}")
 
 
 def _normalizeSettings(settings):

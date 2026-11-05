@@ -9,6 +9,7 @@ import wx
 
 from .config_io import DiskWriteDisabledError, loadConfigFromPathStrict
 from .constants import (
+	ANNOUNCE_VALUES,
 	ALL_FILES_WILDCARD,
 	BROWSE_FORMAT_LABELS,
 	BROWSE_FORMAT_VALUES,
@@ -38,6 +39,13 @@ def _showSaveError(error, message):
 		# Translators: Error shown when NVDA runs from the launcher or in secure mode, where settings cannot be saved.
 		message = _("NVDA is running from the launcher or in secure mode, so settings cannot be saved.")
 	gui.messageBox(message, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+
+
+def _getItemListName(item):
+	if item.get("enabled", True):
+		return item["name"]
+	# Translators: An item name in the settings list when the item is turned off.
+	return _("{name} (disabled)").format(name=item["name"])
 
 
 def _getItemTypeLabel(item):
@@ -73,6 +81,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 	def makeSettings(self, settingsSizer):
 		sHelper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
+		# Translators: Label of the field that narrows the item list by name.
+		self.filterCtrl = sHelper.addLabeledControl(_("&Filter"), wx.TextCtrl)
 		self.listCtrl = nvdaControls.AutoWidthColumnListCtrl(
 			self,
 			style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.BORDER_SUNKEN,
@@ -111,6 +121,10 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			wx.Choice,
 			choices=[VERBOSITY_BEGINNER, VERBOSITY_ADVANCED],
 		)
+		self.announceNameCheckBox = sHelper.addItem(
+			# Translators: Checkbox for speaking an item's name when it runs; items can override it.
+			wx.CheckBox(self, label=_("Announce the item &name when it runs")),
+		)
 		self.browseCheckBox = sHelper.addItem(
 			# Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
 			wx.CheckBox(self, label=_("Enable &browsing items in the instant Access layer")),
@@ -137,6 +151,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		self.testButton.Bind(wx.EVT_BUTTON, self.onTest)
 		self.exportButton.Bind(wx.EVT_BUTTON, self.onExportSettings)
 		self.importButton.Bind(wx.EVT_BUTTON, self.onImportSettings)
+		self.filterCtrl.Bind(wx.EVT_TEXT, lambda event: self.refreshList())
 		self.listCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectionChange)
 		self.listCtrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onSelectionChange)
 		self.listCtrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onEdit)
@@ -149,12 +164,33 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		keyCode = event.GetKeyCode()
 		if keyCode == wx.WXK_DELETE:
 			self.onDelete(event)
+		elif event.ControlDown() and keyCode == wx.WXK_UP:
+			self._moveSelectedItem(-1)
+		elif event.ControlDown() and keyCode == wx.WXK_DOWN:
+			self._moveSelectedItem(1)
 		else:
 			event.Skip()
+
+	def _moveSelectedItem(self, step):
+		item = self.getSelectedItem()
+		# The filtered list does not show the real neighbours.
+		if not item or self.filterCtrl.GetValue().strip():
+			return
+		try:
+			moved = self.configManager.moveItem(item["name"], step)
+		except (OSError, ValueError) as error:
+			# Translators: Error shown when the new order of the items could not be saved.
+			_showSaveError(error, _("Could not save the order of the items."))
+			return
+		if moved:
+			self.refreshList(selectName=item["name"])
+			if self.onConfigChanged:
+				self.onConfigChanged()
 
 	def loadSettingsControls(self):
 		settings = self.configManager.getSettings() if self.configManager else {}
 		self.verbosityChoice.SetSelection(VERBOSITY_VALUES.index(settings.get("verbosity", VERBOSITY_VALUES[0])))
+		self.announceNameCheckBox.SetValue(bool(settings.get("announceName", True)))
 		self.browseCheckBox.SetValue(bool(settings.get("browseEnabled", False)))
 		self.browseFormatChoice.SetSelection(
 			BROWSE_FORMAT_VALUES.index(settings.get("browseFormat", BROWSE_FORMAT_VALUES[0])),
@@ -174,6 +210,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		try:
 			self.configManager.updateSettings(
 				verbosity=verbosityValue,
+				announceName=self.announceNameCheckBox.GetValue(),
 				browseEnabled=self.browseCheckBox.GetValue(),
 				browseFormat=BROWSE_FORMAT_VALUES[self.browseFormatChoice.GetSelection()],
 				browseOrder=BROWSE_ORDER_VALUES[self.browseOrderChoice.GetSelection()],
@@ -197,12 +234,14 @@ class InstantAccessSettingsPanel(SettingsPanel):
 
 	def refreshList(self, selectName=None):
 		self.listCtrl.DeleteAllItems()
-		self.items = self.configManager.getItems() if self.configManager else []
+		query = self.filterCtrl.GetValue().strip().casefold()
+		allItems = self.configManager.getItems() if self.configManager else []
+		self.items = [item for item in allItems if query in item["name"].casefold()]
 		selectedIndex = -1
 		for index, item in enumerate(self.items):
 			typeLabel = _getItemTypeLabel(item)
 			gestureText = ", ".join(gestureDisplayText(g) for g in item.get("gestures", []))
-			self.listCtrl.InsertItem(index, item["name"])
+			self.listCtrl.InsertItem(index, _getItemListName(item))
 			self.listCtrl.SetItem(index, 1, typeLabel)
 			self.listCtrl.SetItem(index, 2, gestureText)
 			self.listCtrl.SetItem(index, 3, _getItemDetails(item))
@@ -212,6 +251,10 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			self.listCtrl.Select(selectedIndex)
 			self.listCtrl.Focus(selectedIndex)
 			self.listCtrl.SetFocus()
+		elif query and self.items:
+			# Focus stays in the filter field; Tab then lands on the first match.
+			self.listCtrl.Select(0)
+			self.listCtrl.Focus(0)
 		self.updateButtons()
 
 	def getSelectedItem(self):
@@ -234,6 +277,8 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				result.get("interval", 0.0),
 				result.get("appName", ""),
 				result.get("stopOnError", True),
+				result.get("enabled", True),
+				result.get("announceName", ANNOUNCE_VALUES[0]),
 			)
 		except (OSError, ValueError) as error:
 			_showSaveError(
@@ -347,16 +392,6 @@ class InstantAccessSettingsPanel(SettingsPanel):
 	def onImportSettings(self, event):
 		if not self.configManager:
 			return
-		if (
-			gui.messageBox(
-				# Translators: Warning message before importing settings which will overwrite current configuration.
-				_("Importing settings will replace your current items. Are you sure you want to continue?"),
-				CONFIRM_CAPTION,
-				wx.YES_NO | wx.ICON_QUESTION,
-			)
-			!= wx.YES
-		):
-			return
 		dialog = wx.FileDialog(
 			self,
 			# Translators: Title of the file dialog for importing settings.
@@ -364,22 +399,49 @@ class InstantAccessSettingsPanel(SettingsPanel):
 			wildcard=ALL_FILES_WILDCARD,
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
 		)
-		if dialog.ShowModal() == wx.ID_OK:
-			sourcePath = dialog.GetPath()
+		sourcePath = dialog.GetPath() if dialog.ShowModal() == wx.ID_OK else ""
+		dialog.Destroy()
+		if sourcePath:
 			try:
-				testConfig = loadConfigFromPathStrict(sourcePath)
-				self.configManager.replaceConfig(testConfig)
-				self.refreshList()
-				currentVerbosity = self.configManager.getVerbosityLevel()
-				self.loadSettingsControls()
-				if self.onConfigChanged:
-					self.onConfigChanged()
-				if self.onVerbosityChanged:
-					self.onVerbosityChanged(currentVerbosity)
-				# Translators: Message shown when settings are successfully imported.
-				gui.messageBox(_("Settings imported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
+				importedConfig = loadConfigFromPathStrict(sourcePath)
+				answer = self._askImportMode()
+				if answer == wx.ID_YES:
+					self.configManager.replaceConfig(importedConfig)
+					# Translators: Message shown when settings are successfully imported.
+					message = _("Settings imported successfully.")
+				elif answer == wx.ID_NO:
+					added, skipped = self.configManager.mergeItems(importedConfig)
+					# Translators: Result of merging imported items into the current ones.
+					message = _("{added} items added, {skipped} skipped.").format(added=added, skipped=skipped)
+				else:
+					message = ""
+				if message:
+					self._refreshAfterImport()
+					gui.messageBox(message, self.title, wx.OK | wx.ICON_INFORMATION)
 			except Exception as error:
 				# Translators: Error shown when a settings file could not be imported.
 				_showSaveError(error, _("Could not import settings."))
-		dialog.Destroy()
 		self.listCtrl.SetFocus()
+
+	def _askImportMode(self):
+		dialog = wx.MessageDialog(
+			self,
+			# Translators: Question after a settings file was chosen for import.
+			_("Replace all your items and settings with this file, or add its new items to your current ones?"),
+			CONFIRM_CAPTION,
+			wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION,
+		)
+		# Translators: Buttons of the import question: replace everything, add new items, or stop.
+		dialog.SetYesNoCancelLabels(_("&Replace"), _("&Merge"), _("&Cancel"))
+		answer = dialog.ShowModal()
+		dialog.Destroy()
+		return answer
+
+	def _refreshAfterImport(self):
+		self.refreshList()
+		currentVerbosity = self.configManager.getVerbosityLevel()
+		self.loadSettingsControls()
+		if self.onConfigChanged:
+			self.onConfigChanged()
+		if self.onVerbosityChanged:
+			self.onVerbosityChanged(currentVerbosity)

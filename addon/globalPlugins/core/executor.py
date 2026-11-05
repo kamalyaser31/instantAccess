@@ -27,6 +27,10 @@ except Exception:
 
 
 
+PASTE_SETTLE_SECONDS = 0.3
+ERROR_CANCELLED = 1223
+
+
 def _isCancelled(cancelEvent):
 	return cancelEvent is not None and cancelEvent.is_set()
 
@@ -49,7 +53,7 @@ class ExecutionQueue:
 		self._lock = threading.Lock()
 		self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantAccess")
 
-	def submit(self, item, preDelay=0):
+	def submit(self, item, preDelay=0, announce=True):
 		with self._lock:
 			if self.cancelEvent.is_set():
 				return None
@@ -58,7 +62,7 @@ class ExecutionQueue:
 				queueMessage(_("Too many items are waiting. Please try again later."))
 				return None
 			try:
-				future = self._executor.submit(self._run, copy.deepcopy(item), parseDelay(preDelay))
+				future = self._executor.submit(self._run, copy.deepcopy(item), parseDelay(preDelay), announce)
 			except Exception:
 				self._slots.release()
 				raise
@@ -76,10 +80,10 @@ class ExecutionQueue:
 					# Translators: Announced when an item stopped because of an unexpected error.
 					queueMessage(_("Error: Could not run the item"))
 
-	def _run(self, item, preDelay):
+	def _run(self, item, preDelay, announce=True):
 		if not _wait(preDelay, self.cancelEvent):
 			return False
-		if item.get("name"):
+		if announce and item.get("name"):
 			queueMessage(item["name"])
 		return executeInstantItem(item, self.cancelEvent)
 
@@ -152,6 +156,24 @@ def setClipboardText(text):
 		return False
 
 
+def isValidKeystroke(keystroke):
+	if keyboard is None:
+		return False
+	try:
+		keyboard.parse_hotkey(keystroke)
+		return True
+	except Exception:
+		return False
+
+
+def _getClipboardText():
+	try:
+		return api.getClipData()
+	except Exception as e:
+		log.error("instantAccess: Error reading clipboard text: %s", e)
+		return ""
+
+
 def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 	"""Execute a text snippet action (type, copy, or paste). Returns True on success."""
 	text = path or ""
@@ -177,24 +199,31 @@ def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 		return True
 
 	if action == "paste":
-		if not setClipboardText(text):
-			# Translators: Announced when the snippet text could not be copied before pasting.
-			queueMessage(_("Error: Could not copy text snippet"))
-			return False
 		if keyboard is None:
 			# Translators: Announced when simulated key presses are unavailable.
 			queueMessage(_("Error: Keyboard library is not available"))
+			return False
+		previousText = _getClipboardText()
+		if not setClipboardText(text):
+			# Translators: Announced when the snippet text could not be copied before pasting.
+			queueMessage(_("Error: Could not copy text snippet"))
 			return False
 		try:
 			if _isCancelled(cancelEvent):
 				return False
 			keyboard.send("ctrl+v")
+			if previousText:
+				# The target app reads the clipboard after the key press returns.
+				_wait(PASTE_SETTLE_SECONDS, cancelEvent)
 			return True
 		except Exception as e:
 			log.error("instantAccess: Error pasting text snippet: %s", e)
 			# Translators: Announced when pasting a snippet failed.
 			queueMessage(_("Error: Could not paste text snippet"))
 			return False
+		finally:
+			if previousText:
+				setClipboardText(previousText)
 
 	if keyboard is None:
 		# Translators: Announced when simulated typing is unavailable.
@@ -272,6 +301,7 @@ def executeInstantAction(action, cancelEvent=None):
 	itemType = action.get("type", "")
 	path = action.get("path", "")
 	arguments = action.get("arguments", "")
+	runAsAdmin = action.get("runAsAdmin", False)
 	textAction = action.get("textAction", "type")
 	typingDelay = action.get("typingDelay", 0.05)
 	pressDelay = action.get("pressDelay", 0.05)
@@ -351,7 +381,9 @@ def executeInstantAction(action, cancelEvent=None):
 			argumentsText = (arguments or "").strip()
 			workingDir = os.path.dirname(resolvedPath) or None
 			is_batch = resolvedPath.lower().endswith((".bat", ".cmd"))
-			if is_batch:
+			if runAsAdmin:
+				os.startfile(resolvedPath, "runas", argumentsText, workingDir)
+			elif is_batch:
 				# cmd.exe needs its own outer quoting; arguments remain a command-line string.
 				systemRoot = os.environ.get("SystemRoot", os.environ.get("windir", r"C:\Windows"))
 				interpreter = os.path.join(systemRoot, "System32", "cmd.exe")
@@ -367,6 +399,10 @@ def executeInstantAction(action, cancelEvent=None):
 				subprocess.Popen([resolvedPath], cwd=workingDir)
 			return True
 		except Exception as e:
+			if getattr(e, "winerror", None) == ERROR_CANCELLED:
+				# Translators: Announced when the user declines the Windows administrator prompt.
+				queueMessage(_("Cancelled"))
+				return True
 			log.error("instantAccess: Error starting program: %s", e)
 			# Translators: Announced when a program failed to start.
 			queueMessage(_("Error: Could not start the program"))

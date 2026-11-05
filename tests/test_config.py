@@ -168,6 +168,97 @@ class ConfigTests(unittest.TestCase):
 			with self.subTest(value=value), self.assertRaises((ValueError, OverflowError)):
 				io.parseDelay(value)
 
+	def test_move_item_swaps_neighbours_and_stops_at_the_ends(self):
+		def item(name):
+			return {
+				"name": name,
+				"gesture": "kb:" + name,
+				"actions": [{"type": "Websites", "data": {"url": "https://example.invalid"}}],
+			}
+
+		self.write({"version": 3, "items": [item("a"), item("b"), item("c")]})
+		manager = cm.ConfigManager(self.path)
+		self.assertTrue(manager.moveItem("b", -1))
+		self.assertFalse(manager.moveItem("b", -1))
+		self.assertFalse(manager.moveItem("c", 1))
+		self.assertFalse(manager.moveItem("missing", 1))
+		self.assertEqual([entry["name"] for entry in manager.getItems()], ["b", "a", "c"])
+		self.assertEqual([entry["name"] for entry in cm.ConfigManager(self.path).getItems()], ["b", "a", "c"])
+
+	def test_run_as_admin_is_stored_only_when_ticked(self):
+		manager = cm.ConfigManager(self.path)
+		manager.saveItem("", "admin", "kb:x", [{"type": "Programs", "path": "cmd", "runAsAdmin": True}])
+		manager.saveItem("", "plain", "kb:y", [{"type": "Programs", "path": "cmd"}])
+		items = {entry["name"]: entry for entry in cm.ConfigManager(self.path).getItems()}
+		self.assertTrue(items["admin"]["actions"][0]["runAsAdmin"])
+		self.assertFalse(items["plain"]["actions"][0]["runAsAdmin"])
+		stored = json.loads(Path(self.path).read_text(encoding="utf-8"))["items"]
+		self.assertNotIn("runAsAdmin", [i for i in stored if i["name"] == "plain"][0]["actions"][0]["data"])
+
+	def test_enabled_and_announce_name_are_stored_only_when_changed(self):
+		manager = cm.ConfigManager(self.path)
+		action = {"type": "Websites", "path": "https://example.invalid"}
+		manager.saveItem("", "off", "kb:x", [action], enabled=False, announceName="off")
+		manager.saveItem("", "plain", "kb:y", [action])
+		items = {entry["name"]: entry for entry in cm.ConfigManager(self.path).getItems()}
+		self.assertEqual((items["off"]["enabled"], items["off"]["announceName"]), (False, "off"))
+		self.assertEqual((items["plain"]["enabled"], items["plain"]["announceName"]), (True, "default"))
+		stored = json.loads(Path(self.path).read_text(encoding="utf-8"))["items"]
+		plain = [item for item in stored if item["name"] == "plain"][0]
+		self.assertNotIn("enabled", plain)
+		self.assertNotIn("announceName", plain)
+
+	def test_a_disabled_item_still_conflicts_on_its_shortcut(self):
+		manager = cm.ConfigManager(self.path)
+		action = {"type": "Websites", "path": "https://example.invalid"}
+		manager.saveItem("", "off", "kb:x", [action], enabled=False)
+		self.assertEqual(manager.findGestureConflict("kb:x")["name"], "off")
+
+	def test_invalid_enabled_and_announce_values_are_refused(self):
+		for field, value in (("enabled", "no"), ("announceName", "maybe")):
+			with self.subTest(field=field):
+				config = copy.deepcopy(self.config)
+				config["items"][0][field] = value
+				with self.assertRaises(ValueError):
+					io._validateConfig(config)
+
+	def test_several_apps_share_a_conflict_check(self):
+		manager = cm.ConfigManager(self.path)
+		action = {"type": "Websites", "path": "https://example.invalid"}
+		manager.saveItem("", "editors", "kb:x", [action], appName="Notepad, winword")
+		self.assertEqual(manager.findGestureConflict("kb:x", "excel, WINWORD")["name"], "editors")
+		self.assertIsNone(manager.findGestureConflict("kb:x", "excel"))
+		self.assertIsNone(manager.findGestureConflict("kb:x", ""))
+		self.assertEqual(cm.ConfigManager(self.path).getItems()[-1]["appName"], "notepad, winword")
+		with self.assertRaises(ValueError):
+			manager.saveItem("", "other", "kb:x", [action], appName="winword")
+
+	def test_merge_adds_new_items_and_keeps_settings(self):
+		def item(name, gesture, appName=""):
+			entry = {
+				"name": name,
+				"gesture": gesture,
+				"actions": [{"type": "Websites", "data": {"url": "https://example.invalid"}}],
+			}
+			if appName:
+				entry["appName"] = appName
+			return entry
+
+		self.write({"version": 3, "settings": {"verbosity": "advanced"}, "items": [item("a", "kb:a", "notepad")]})
+		manager = cm.ConfigManager(self.path)
+		imported = {
+			"settings": {"verbosity": "beginner"},
+			"items": [
+				item("a", "kb:n"),
+				item("clash", "kb:a", "notepad, excel"),
+				item("elsewhere", "kb:a", "excel"),
+				item("new", "kb:b"),
+			],
+		}
+		self.assertEqual(manager.mergeItems(imported), (2, 2))
+		self.assertEqual([entry["name"] for entry in manager.getItems()], ["a", "elsewhere", "new"])
+		self.assertEqual(manager.getVerbosityLevel(), "advanced")
+
 	def test_edit_keeps_item_position(self):
 		def item(name):
 			return {

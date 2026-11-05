@@ -356,6 +356,48 @@ class ExecutionTests(unittest.TestCase):
 		list(env["get_event_names"](1, 1, 0, ()))
 		self.assertEqual(calls, [(32, 32)])
 
+	def _paste(self, previousText, sendError=None, cancelEvent=None):
+		clipboard = []
+		with (
+			patch.object(ex.api, "getClipData", return_value=previousText, create=True),
+			patch.object(ex.api, "copyToClip", side_effect=lambda text, notify: clipboard.append(text) or True),
+			patch.object(ex.keyboard, "send", side_effect=sendError),
+			patch.object(ex, "PASTE_SETTLE_SECONDS", 0),
+		):
+			result = ex.executeInstantAction(
+				{"type": "TextSnippets", "path": "snippet", "textAction": "paste"}, cancelEvent
+			)
+		return result, clipboard
+
+	def test_paste_restores_the_previous_clipboard_text(self):
+		self.assertEqual(self._paste("old"), (True, ["snippet", "old"]))
+
+	def test_paste_leaves_the_snippet_when_the_clipboard_had_no_text(self):
+		self.assertEqual(self._paste(""), (True, ["snippet"]))
+
+	def test_paste_failure_still_restores_the_clipboard(self):
+		self.assertEqual(self._paste("old", sendError=OSError("blocked")), (False, ["snippet", "old"]))
+
+	def test_run_as_admin_uses_runas_and_a_declined_prompt_is_not_an_error(self):
+		declined = OSError("declined")
+		declined.winerror = ex.ERROR_CANCELLED
+		failed = OSError("failed")
+		action = {"type": "Programs", "path": "tool.exe", "arguments": "-x", "runAsAdmin": True}
+		with (
+			patch.object(ex.os.path, "exists", return_value=True),
+			patch.object(ex, "queueMessage") as message,
+			patch.object(ex.subprocess, "Popen") as popen,
+			patch.object(ex.os, "startfile", create=True) as startfile,
+		):
+			self.assertTrue(ex.executeInstantAction(action))
+			startfile.assert_called_once_with("tool.exe", "runas", "-x", None)
+			startfile.side_effect = declined
+			self.assertTrue(ex.executeInstantAction(action))
+			startfile.side_effect = failed
+			self.assertFalse(ex.executeInstantAction(action))
+		popen.assert_not_called()
+		self.assertEqual(message.call_count, 2)
+
 	def test_navigation_keys_are_sent_as_extended_keys(self):
 		tree = ast.parse(
 			(ROOT / "addon/globalPlugins/core/keyboard/_winkeyboard.py").read_text(encoding="utf-8")

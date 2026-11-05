@@ -103,6 +103,34 @@ class DialogTests(unittest.TestCase):
 		self.assertEqual(dialog._commandById, {command.identifier: command})
 		dialog.populateTree.assert_called_once_with("")
 
+	def test_settings_filter_narrows_the_list_and_selection_follows_it(self):
+		panelModule = sys.modules["auditcore.settings_panel"]
+		items = [{"name": "Open Mail"}, {"name": "Notes", "enabled": False}]
+		for query, expected in (("MAIL", ["Open Mail"]), ("", ["Open Mail", "Notes"]), ("zzz", [])):
+			with self.subTest(query=query):
+				panel = types.SimpleNamespace(
+					filterCtrl=Mock(GetValue=Mock(return_value=query)),
+					configManager=Mock(getItems=Mock(return_value=items)),
+					listCtrl=Mock(),
+					updateButtons=Mock(),
+				)
+				panelModule.InstantAccessSettingsPanel.refreshList(panel)
+				self.assertEqual([item["name"] for item in panel.items], expected)
+				if query and expected:
+					panel.listCtrl.Select.assert_called_once_with(0)
+				else:
+					panel.listCtrl.Select.assert_not_called()
+
+	def test_filtered_list_does_not_reorder(self):
+		panelModule = sys.modules["auditcore.settings_panel"]
+		panel = types.SimpleNamespace(
+			getSelectedItem=Mock(return_value={"name": "a"}),
+			filterCtrl=Mock(GetValue=Mock(return_value="a")),
+			configManager=Mock(),
+		)
+		panelModule.InstantAccessSettingsPanel._moveSelectedItem(panel, 1)
+		panel.configManager.moveItem.assert_not_called()
+
 	def test_settings_test_button_waits_before_typing_items(self):
 		panelModule = sys.modules["auditcore.settings_panel"]
 		for actions, answer, expected in (

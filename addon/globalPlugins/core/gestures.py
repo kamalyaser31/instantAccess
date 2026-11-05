@@ -4,10 +4,42 @@ from logHandler import log
 
 import inputCore
 import keyboardHandler
+import re
 import wx
 
 from .constants import CATEGORY_LABEL
 
+
+
+# Captured key names that the keyboard library spells differently.
+_KEYSTROKE_NAMES = {
+	"leftarrow": "left",
+	"rightarrow": "right",
+	"uparrow": "up",
+	"downarrow": "down",
+	"pageup": "page up",
+	"pagedown": "page down",
+}
+
+
+def parseAppNames(value):
+	"""The app names in a stored or typed list, lower case, without repeats, in their order.
+
+	The Arabic comma counts too, because an Arabic keyboard layout types it.
+	"""
+	names = (name.strip().lower() for name in re.split("[,\u060c]", value or ""))
+	return list(dict.fromkeys(name for name in names if name))
+
+
+def appNamesConflict(first, second):
+	"""Two items with one shortcut clash when both are global or when they share an app."""
+	firstNames, secondNames = set(parseAppNames(first)), set(parseAppNames(second))
+	return bool(firstNames & secondNames) or not (firstNames or secondNames)
+
+
+def gestureToKeystroke(gestureName):
+	"""Turn a captured shortcut into the text the Keystrokes action sends."""
+	return "+".join(_KEYSTROKE_NAMES.get(part.lower(), part.lower()) for part in gestureName.split("+"))
 
 
 def formatGestureForDisplay(gesture):
