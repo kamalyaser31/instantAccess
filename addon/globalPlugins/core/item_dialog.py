@@ -529,7 +529,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		# Translators: Button that moves the selected action up.
 		self.moveUpActionButton = actionsButtons.addButton(self, label=_("Move &up"))
 		# Translators: Button that moves the selected action down.
-		self.moveDownActionButton = actionsButtons.addButton(self, label=_("Move &down"))
+		self.moveDownActionButton = actionsButtons.addButton(self, label=_("Move do&wn"))
 		sizerHelper.addItem(actionsButtons.sizer, flag=wx.EXPAND)
 
 		self.intervalCtrl = sizerHelper.addLabeledControl(

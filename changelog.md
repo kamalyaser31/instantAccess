@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button adds the key you press as a new line, so you do not need to type key names.
 
 ### Fixed
+- **Access keys in the item dialog**: Delete and Move down no longer share `Alt+D`. Move down now uses `Alt+W`.
 - **Editing keeps the item's place**: After you edit an item, it stays where it was in the list instead of moving to the end.
 - **Testing an item from the settings**: If an item types text or presses keys, the Test button in the settings now asks first and waits 3 seconds, so you can switch to the window you want. Before, the text went into the settings window.
 - **Correct number of commands**: When you turn on Instant Access mode, the number you hear counts only the items you can use in the current program.
