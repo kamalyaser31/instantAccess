@@ -398,6 +398,35 @@ class ExecutionTests(unittest.TestCase):
 		popen.assert_not_called()
 		self.assertEqual(message.call_count, 2)
 
+	def test_paste_waits_after_cancel_before_restoring(self):
+		cancelEvent = threading.Event()
+		events = []
+		with (
+			patch.object(ex.api, "getClipData", return_value="old", create=True),
+			patch.object(ex.api, "copyToClip", side_effect=lambda text, notify: events.append(text) or True),
+			patch.object(ex.keyboard, "send", side_effect=lambda keys: cancelEvent.set()),
+			patch.object(ex, "_wait", side_effect=lambda delay, event=None: events.append(("wait", event))),
+		):
+			ex.executeInstantAction({"type": "TextSnippets", "path": "s", "textAction": "paste"}, cancelEvent)
+		self.assertEqual(events, ["s", ("wait", None), "old"])
+
+	def test_failed_clipboard_restore_is_spoken(self):
+		results = iter([True, False])
+		with (
+			patch.object(ex.api, "getClipData", return_value="old", create=True),
+			patch.object(ex.api, "copyToClip", side_effect=lambda text, notify: next(results)),
+			patch.object(ex.keyboard, "send"),
+			patch.object(ex, "PASTE_SETTLE_SECONDS", 0),
+			patch.object(ex, "queueMessage") as message,
+		):
+			ex.executeInstantAction({"type": "TextSnippets", "path": "s", "textAction": "paste"})
+		message.assert_called_once()
+
+	def test_a_keystroke_that_would_read_as_a_comment_is_invalid(self):
+		with patch.object(ex.keyboard, "parse_hotkey"):
+			self.assertFalse(ex.isValidKeystroke("#"))
+			self.assertTrue(ex.isValidKeystroke("control+#"))
+
 	def test_navigation_keys_are_sent_as_extended_keys(self):
 		tree = ast.parse(
 			(ROOT / "addon/globalPlugins/core/keyboard/_winkeyboard.py").read_text(encoding="utf-8")

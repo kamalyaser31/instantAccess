@@ -19,6 +19,7 @@ _KEYSTROKE_NAMES = {
 	"downarrow": "down",
 	"pageup": "page up",
 	"pagedown": "page down",
+	",": "comma",
 }
 
 
@@ -39,7 +40,10 @@ def appNamesConflict(first, second):
 
 def gestureToKeystroke(gestureName):
 	"""Turn a captured shortcut into the text the Keystrokes action sends."""
-	return "+".join(_KEYSTROKE_NAMES.get(part.lower(), part.lower()) for part in gestureName.split("+"))
+	parts = [part for part in gestureName.split("+") if part]
+	if gestureName.endswith("+"):
+		parts.append("plus")
+	return "+".join(_KEYSTROKE_NAMES.get(part.lower(), part.lower()) for part in parts)
 
 
 def formatGestureForDisplay(gesture):

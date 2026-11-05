@@ -99,16 +99,16 @@ def _validateConfig(rawConfig):
 		name = item.get("name", "").strip()
 		gesture = item.get("gesture", "").strip().lower()
 		appName = item.get("appName", "")
-		sameGesture = gestures.setdefault(gestureKey(gesture), [])
+		appsWithGesture = gestures.setdefault(gestureKey(gesture), [])
 		if (
 			not name
 			or not gesture
 			or name in names
-			or any(appNamesConflict(appName, other) for other in sameGesture)
+			or any(appNamesConflict(appName, other) for other in appsWithGesture)
 		):
 			raise ValueError("Missing or duplicate item name/gesture")
 		names.add(name)
-		sameGesture.append(appName)
+		appsWithGesture.append(appName)
 		parseDelay(item.get("interval", 0))
 		if not isinstance(item.get("stopOnError", True), bool):
 			raise ValueError("Invalid stopOnError")

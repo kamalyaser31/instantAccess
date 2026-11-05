@@ -41,6 +41,14 @@ def _showSaveError(error, message):
 	gui.messageBox(message, ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 
 
+def _mergeResult(added, skipped):
+	# Translators: First part of the result of merging imported items; {count} is a number.
+	addedText = ngettext("{count} item added.", "{count} items added.", added).format(count=added)
+	# Translators: Second part of the result of merging imported items; {count} is a number.
+	skippedText = ngettext("{count} item skipped.", "{count} items skipped.", skipped).format(count=skipped)
+	return f"{addedText} {skippedText}"
+
+
 def _getItemListName(item):
 	if item.get("enabled", True):
 		return item["name"]
@@ -76,6 +84,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 	configManager = None
 	onConfigChanged = None
 	onRunItem = None
+	getPreviousAppName = None
 	onVerbosityChanged = None
 	executionQueue = None
 
@@ -235,6 +244,10 @@ class InstantAccessSettingsPanel(SettingsPanel):
 	def refreshList(self, selectName=None):
 		self.listCtrl.DeleteAllItems()
 		query = self.filterCtrl.GetValue().strip().casefold()
+		if selectName and query not in selectName.casefold():
+			# The item just saved would otherwise vanish with no message.
+			self.filterCtrl.ChangeValue("")
+			query = ""
 		allItems = self.configManager.getItems() if self.configManager else []
 		self.items = [item for item in allItems if query in item["name"].casefold()]
 		selectedIndex = -1
@@ -274,11 +287,11 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				result["name"],
 				result["gesture"],
 				result.get("actions", []),
-				result.get("interval", 0.0),
-				result.get("appName", ""),
-				result.get("stopOnError", True),
-				result.get("enabled", True),
-				result.get("announceName", ANNOUNCE_VALUES[0]),
+				interval=result.get("interval", 0.0),
+				appName=result.get("appName", ""),
+				stopOnError=result.get("stopOnError", True),
+				enabled=result.get("enabled", True),
+				announceName=result.get("announceName", ANNOUNCE_VALUES[0]),
 			)
 		except (OSError, ValueError) as error:
 			_showSaveError(
@@ -407,17 +420,15 @@ class InstantAccessSettingsPanel(SettingsPanel):
 				answer = self._askImportMode()
 				if answer == wx.ID_YES:
 					self.configManager.replaceConfig(importedConfig)
+					self._refreshAfterReplace()
 					# Translators: Message shown when settings are successfully imported.
-					message = _("Settings imported successfully.")
+					gui.messageBox(_("Settings imported successfully."), self.title, wx.OK | wx.ICON_INFORMATION)
 				elif answer == wx.ID_NO:
 					added, skipped = self.configManager.mergeItems(importedConfig)
-					# Translators: Result of merging imported items into the current ones.
-					message = _("{added} items added, {skipped} skipped.").format(added=added, skipped=skipped)
-				else:
-					message = ""
-				if message:
-					self._refreshAfterImport()
-					gui.messageBox(message, self.title, wx.OK | wx.ICON_INFORMATION)
+					self.refreshList()
+					if self.onConfigChanged:
+						self.onConfigChanged()
+					gui.messageBox(_mergeResult(added, skipped), self.title, wx.OK | wx.ICON_INFORMATION)
 			except Exception as error:
 				# Translators: Error shown when a settings file could not be imported.
 				_showSaveError(error, _("Could not import settings."))
@@ -437,7 +448,7 @@ class InstantAccessSettingsPanel(SettingsPanel):
 		dialog.Destroy()
 		return answer
 
-	def _refreshAfterImport(self):
+	def _refreshAfterReplace(self):
 		self.refreshList()
 		currentVerbosity = self.configManager.getVerbosityLevel()
 		self.loadSettingsControls()

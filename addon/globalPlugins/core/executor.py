@@ -157,7 +157,8 @@ def setClipboardText(text):
 
 
 def isValidKeystroke(keystroke):
-	if keyboard is None:
+	# The Keystrokes action skips lines that start with # as comments.
+	if keyboard is None or keystroke.startswith("#"):
 		return False
 	try:
 		keyboard.parse_hotkey(keystroke)
@@ -170,7 +171,8 @@ def _getClipboardText():
 	try:
 		return api.getClipData()
 	except Exception as e:
-		log.error("instantAccess: Error reading clipboard text: %s", e)
+		# The clipboard holds no text, which is normal for an image or an empty clipboard.
+		log.debugWarning("instantAccess: No clipboard text to restore: %s", e)
 		return ""
 
 
@@ -213,8 +215,8 @@ def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 				return False
 			keyboard.send("ctrl+v")
 			if previousText:
-				# The target app reads the clipboard after the key press returns.
-				_wait(PASTE_SETTLE_SECONDS, cancelEvent)
+				# The target app reads the clipboard after the key press returns, even when cancelled.
+				_wait(PASTE_SETTLE_SECONDS)
 			return True
 		except Exception as e:
 			log.error("instantAccess: Error pasting text snippet: %s", e)
@@ -222,8 +224,9 @@ def _executeTextSnippet(path, action, typingDelay=0.05, cancelEvent=None):
 			queueMessage(_("Error: Could not paste text snippet"))
 			return False
 		finally:
-			if previousText:
-				setClipboardText(previousText)
+			if previousText and not setClipboardText(previousText):
+				# Translators: Announced when the text copied before a paste could not be put back.
+				queueMessage(_("Error: Could not restore the clipboard"))
 
 	if keyboard is None:
 		# Translators: Announced when simulated typing is unavailable.

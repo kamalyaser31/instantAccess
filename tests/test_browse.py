@@ -133,6 +133,19 @@ class BrowseLayerTests(unittest.TestCase):
 		instance.activateInstantMode(speak=False)
 		return instance
 
+	def test_foreground_remembers_the_last_app_that_is_not_nvda(self):
+		instance = plugin.GlobalPlugin.__new__(plugin.GlobalPlugin)
+		instance.previousAppName = ""
+		nextHandler = Mock()
+		for appModule in (
+			types.SimpleNamespace(appName="Notepad"),
+			types.SimpleNamespace(appName="nvda"),
+			None,
+		):
+			instance.event_foreground(types.SimpleNamespace(appModule=appModule), nextHandler)
+		self.assertEqual(instance.getPreviousAppName(), "notepad")
+		self.assertEqual(nextHandler.call_count, 3)
+
 	def test_an_item_can_name_several_apps(self):
 		global_item = {"name": "global"}
 		editors = {"name": "editors", "appName": "notepad, winword"}
@@ -152,6 +165,9 @@ class BrowseLayerTests(unittest.TestCase):
 		self.assertEqual(gestureToKeystroke("control+shift+downArrow"), "control+shift+down")
 		self.assertEqual(gestureToKeystroke("pagedown"), "page down")
 		self.assertEqual(gestureToKeystroke("alt+f4"), "alt+f4")
+		self.assertEqual(gestureToKeystroke("control+,"), "control+comma")
+		self.assertEqual(gestureToKeystroke("control++"), "control+plus")
+		self.assertEqual(gestureToKeystroke("+"), "plus")
 
 	def test_item_choice_overrides_the_general_announce_setting(self):
 		from auditcore.browse import shouldAnnounceName

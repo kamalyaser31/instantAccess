@@ -121,6 +121,20 @@ class DialogTests(unittest.TestCase):
 				else:
 					panel.listCtrl.Select.assert_not_called()
 
+	def test_a_saved_item_clears_a_filter_that_would_hide_it(self):
+		panelModule = sys.modules["auditcore.settings_panel"]
+		items = [{"name": "Open Mail"}, {"name": "Notes"}]
+		panel = types.SimpleNamespace(
+			filterCtrl=Mock(GetValue=Mock(return_value="mail")),
+			configManager=Mock(getItems=Mock(return_value=items)),
+			listCtrl=Mock(),
+			updateButtons=Mock(),
+		)
+		panelModule.InstantAccessSettingsPanel.refreshList(panel, selectName="Notes")
+		panel.filterCtrl.ChangeValue.assert_called_once_with("")
+		self.assertEqual(len(panel.items), 2)
+		panel.listCtrl.Select.assert_called_once_with(1)
+
 	def test_filtered_list_does_not_reorder(self):
 		panelModule = sys.modules["auditcore.settings_panel"]
 		panel = types.SimpleNamespace(

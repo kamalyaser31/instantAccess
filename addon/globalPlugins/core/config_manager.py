@@ -198,22 +198,19 @@ class ConfigManager:
 
 	def mergeItems(self, imported):
 		"""Add imported items with a new name and a free shortcut; settings stay. Returns (added, skipped)."""
-		config = self._loadConfigForUpdate()
-		items = config.get("items", [])
-		added = 0
-		for item in imported.get("items", []):
-			names = [existing["name"] for existing in items]
-			clash = any(
-				gestureKey(existing["gesture"]) == gestureKey(item["gesture"])
-				and appNamesConflict(existing.get("appName", ""), item.get("appName", ""))
-				for existing in items
-			)
-			if item["name"] not in names and not clash:
-				items.append(item)
-				added += 1
-		if added:
+		# Imported items cannot clash with each other: the file passed validation.
+		names = self.getAllNames()
+		newItems = [
+			item
+			for item in imported.get("items", [])
+			if item["name"] not in names
+			and not self.findGestureConflict(item["gesture"], item.get("appName", ""))
+		]
+		if newItems:
+			config = self._loadConfigForUpdate()
+			config["items"] = config.get("items", []) + newItems
 			self.saveConfig(config)
-		return added, len(imported.get("items", [])) - added
+		return len(newItems), len(imported.get("items", [])) - len(newItems)
 
 	def moveItem(self, name, step):
 		"""Swap an item with its neighbour; False when it cannot move that way."""

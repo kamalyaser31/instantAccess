@@ -52,6 +52,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.browseGestureScripts = {}
 		self._resetBrowseState()
 		self._keepLayerOpen = False
+		self.previousAppName = ""
 		if globalVars.appArgs.secure:
 			self.clearGestureBindings()
 			return
@@ -63,6 +64,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		InstantAccessSettingsPanel.configManager = self.configManager
 		InstantAccessSettingsPanel.onConfigChanged = self.onConfigChanged
 		InstantAccessSettingsPanel.onRunItem = self.queueRunItemExecution
+		InstantAccessSettingsPanel.getPreviousAppName = self.getPreviousAppName
 		InstantAccessSettingsPanel.onVerbosityChanged = self.setVerbosityLevel
 		InstantAccessSettingsPanel.executionQueue = self.executionQueue
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(InstantAccessSettingsPanel)
@@ -82,11 +84,22 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 		InstantAccessSettingsPanel.configManager = None
 		InstantAccessSettingsPanel.onConfigChanged = None
+		InstantAccessSettingsPanel.getPreviousAppName = None
 		InstantAccessSettingsPanel.onRunItem = None
 		InstantAccessSettingsPanel.onVerbosityChanged = None
 		InstantAccessSettingsPanel.executionQueue = None
 		self.deactivateInstantMode(speak=False)
 		self.clearGestureBindings()
+
+	def event_foreground(self, obj, nextHandler):
+		# NVDA clears gui.mainFrame.prevFocus right after showing the settings dialog.
+		appName = (getattr(obj.appModule, "appName", "") or "").strip().lower()
+		if appName and appName != "nvda":
+			self.previousAppName = appName
+		nextHandler()
+
+	def getPreviousAppName(self):
+		return self.previousAppName
 
 	def onConfigChanged(self):
 		if self.instantMode:

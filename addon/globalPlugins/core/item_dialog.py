@@ -137,15 +137,6 @@ def confirmSwitchDelay():
 	return gui.messageBox(msg, CONFIRM_CAPTION, wx.YES_NO | wx.ICON_QUESTION) == wx.YES
 
 
-def previousAppName():
-	"""The app that had focus before NVDA's own settings opened, or "" if it is unknown."""
-	try:
-		appName = gui.mainFrame.prevFocus.appModule.appName.lower()
-	except Exception:
-		return ""
-	return "" if appName == "nvda" else appName
-
-
 class ShortcutCaptureDialog(wx.Dialog):
 	def __init__(self, parent):
 		# Translators: Title of the dialog that captures an item's shortcut.
@@ -381,6 +372,7 @@ class InstantAccessActionDialog(wx.Dialog):
 					text += "\n"
 				self.snippetCtrl.SetValue(text + keystroke)
 			else:
+				# Translators: Error shown when a captured key cannot be sent by a keystrokes action.
 				gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
 		dialog.Destroy()
 
@@ -501,6 +493,7 @@ class InstantAccessItemDialog(wx.Dialog):
 		wx.Dialog.__init__(self, parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self.configManager = configManager
 		self.executionQueue = getattr(parent, "executionQueue", None)
+		self.getPreviousAppName = getattr(parent, "getPreviousAppName", None)
 		self.existingItem = existingItem
 		self.gesture = ""
 		self.actions = []
@@ -671,8 +664,9 @@ class InstantAccessItemDialog(wx.Dialog):
 		self.Layout()
 
 	def onRestrictionToggle(self, event):
-		if self.restrictToAppsCheck.GetValue() and not self.appNameCtrl.GetValue().strip():
-			self.appNameCtrl.SetValue(previousAppName())
+		isEmpty = not self.appNameCtrl.GetValue().strip()
+		if self.restrictToAppsCheck.GetValue() and isEmpty and self.getPreviousAppName:
+			self.appNameCtrl.SetValue(self.getPreviousAppName())
 		self.updateRestrictionState()
 
 	def getSelectedActionIndex(self):
