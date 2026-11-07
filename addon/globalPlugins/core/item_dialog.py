@@ -2,6 +2,7 @@ import os
 
 import addonHandler
 import gui
+import ui
 from gui import guiHelper, nvdaControls
 import wx
 
@@ -21,7 +22,7 @@ from .constants import (
 	TYPE_SECTIONS,
 	TYPE_TO_LABEL,
 )
-from .executor import expandPath, isValidKeystroke
+from .executor import addRecordedKeystroke, expandPath, isValidKeystroke
 from .placeholders import actionNeedsContext, findOnPath
 from .timing import parseDelay
 from .gestures import (
@@ -161,6 +162,62 @@ class ShortcutCaptureDialog(wx.Dialog):
 			return
 		self.gestureName = gestureName
 		self.EndModal(wx.ID_OK)
+
+
+class KeystrokeRecordDialog(wx.Dialog):
+	"""Records keys as keystroke lines until Escape."""
+
+	def __init__(self, parent):
+		# Translators: Title of the dialog that records keys for a keystrokes action.
+		wx.Dialog.__init__(self, parent, title=_("Record keystrokes"), style=wx.DEFAULT_DIALOG_STYLE)
+		self.lines = []
+		# A modifier pressed alone; whether it was alone is known only at the next key.
+		self._pendingModifier = ""
+		mainSizer = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Instruction in the dialog that records keys for a keystrokes action.
+		label = wx.StaticText(self, wx.ID_ANY, _("Press the keys to record. Escape finishes."))
+		mainSizer.Add(label, 0, wx.ALL, 10)
+		self.SetSizerAndFit(mainSizer)
+		self.Bind(wx.EVT_CHAR_HOOK, self.onKeyDown)
+		self.CentreOnScreen()
+
+	def onKeyDown(self, event):
+		keyCode = event.GetKeyCode()
+		modifierNames = {wx.WXK_CONTROL: "control", wx.WXK_ALT: "alt", wx.WXK_SHIFT: "shift"}
+		heldModifiers = {
+			"control": event.ControlDown(),
+			"alt": event.AltDown(),
+			"shift": event.ShiftDown(),
+		}
+		pending = self._pendingModifier
+		self._pendingModifier = ""
+		spoken = []
+		# The pending modifier was alone unless it is still held for this key;
+		# a second press of the same modifier, not a held repeat, also ends it.
+		pressedAgain = modifierNames.get(keyCode) == pending and not event.IsAutoRepeat()
+		if pending and (pressedAgain or not heldModifiers[pending]):
+			spoken.append(self._record(pending))
+		if keyCode in modifierNames:
+			name = modifierNames[keyCode]
+			othersHeld = any(held for other, held in heldModifiers.items() if other != name)
+			if not othersHeld and not event.MetaDown():
+				self._pendingModifier = name
+		elif keyCode == wx.WXK_ESCAPE:
+			self.EndModal(wx.ID_OK if self.lines else wx.ID_CANCEL)
+			return
+		else:
+			gestureName = buildGestureNameFromEvent(event)
+			if gestureName:
+				spoken.append(self._record(gestureToKeystroke(gestureName)))
+		spoken = [text for text in spoken if text]
+		if spoken:
+			ui.message(", ".join(spoken))
+
+	def _record(self, keystroke):
+		if not isValidKeystroke(keystroke):
+			# Translators: Error shown when a captured key cannot be sent by a keystrokes action.
+			return _("Invalid shortcut key.")
+		return addRecordedKeystroke(self.lines, keystroke)
 
 
 class InstantAccessActionDialog(wx.Dialog):
@@ -410,17 +467,12 @@ class InstantAccessActionDialog(wx.Dialog):
 		dialog.Destroy()
 
 	def onAddKeystroke(self, event):
-		dialog = ShortcutCaptureDialog(self)
-		if dialog.ShowModal() == wx.ID_OK:
-			keystroke = gestureToKeystroke(dialog.gestureName)
-			if isValidKeystroke(keystroke):
-				text = self.snippetCtrl.GetValue()
-				if text and not text.endswith("\n"):
-					text += "\n"
-				self.snippetCtrl.SetValue(text + keystroke)
-			else:
-				# Translators: Error shown when a captured key cannot be sent by a keystrokes action.
-				gui.messageBox(_("Invalid shortcut key."), ERROR_CAPTION, wx.OK | wx.ICON_ERROR)
+		dialog = KeystrokeRecordDialog(self)
+		if dialog.ShowModal() == wx.ID_OK and dialog.lines:
+			text = self.snippetCtrl.GetValue()
+			if text and not text.endswith("\n"):
+				text += "\n"
+			self.snippetCtrl.SetValue(text + "\n".join(dialog.lines))
 		dialog.Destroy()
 
 	def onSelectCommand(self, event):

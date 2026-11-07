@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Find and run items from a list**: In Instant Access mode, `F1` or `H` now opens a list of your items. Type to filter it by name, shortcut, app or action, then press `Enter` to run the selected item.
 - **Stop a running item**: Press `NVDA+E` while an item or a test is running to stop it and drop any items waiting to run.
 - **Variables**: Text snippets, website addresses and program arguments can now use the date, the time, the clipboard text, the selected text, and the selected file or open folder in File Explorer. The new "Insert variable" button adds them for you. For a literal brace, type it twice.
-- **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button adds the key you press as a new line, so you do not need to type key names.
+- **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button records the keys you press, one line each, until you press Escape. A key pressed several times in a row becomes one line, such as `down 3`, so you do not need to type key names.
 
 ### Fixed
 - **Access keys in the item dialog**: Delete and Move down no longer share `Alt+D`. Move down now uses `Alt+W`.

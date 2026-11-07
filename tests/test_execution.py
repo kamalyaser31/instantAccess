@@ -537,6 +537,14 @@ class ExecutionTests(unittest.TestCase):
 		):
 			self.assertEqual(ph.findOnPath("notepad"), r"C:\Windows\notepad.exe")
 
+	def test_recorded_repeats_become_one_line_with_a_count(self):
+		import auditcore.executor as ex
+
+		lines = []
+		for key in ("down", "down", "down", "page down", "page down", "enter"):
+			ex.addRecordedKeystroke(lines, key)
+		self.assertEqual(lines, ["down 3", "page down 2", "enter"])
+
 	def test_a_drive_root_keeps_its_closing_quote(self):
 		import auditcore.placeholders as ph
 

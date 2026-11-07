@@ -160,7 +160,7 @@ In a document, copy the line you are on without selecting it by hand.
     2.  `shift+end`
     3.  `ctrl+c`
 
-Press the **Add keystroke** button to record a key instead of typing its name.
+Press the **Add keystroke** button to record the keys instead of typing their names.
 
 ### Open the Add-on Store
 
@@ -213,7 +213,7 @@ To add a second program to an item, go to that program and press `NVDA+Shift+E` 
 *   **Keystrokes:** Presses keys, one key or shortcut per line, such as `alt+f4` or `shift+f10`.
     *   To repeat a key, add a space and a number: `down 5`.
     *   A line that starts with `#` is skipped, so you can use it for a note.
-    *   **Add keystroke:** Press this button, then press a key, and it is added as a new line. Numeric keypad keys can't be recorded. `Escape` cancels, so type `esc` if you need it.
+    *   **Add keystroke:** Press this button, then press the keys you want, one after another, and press `Escape` to finish. Each key becomes a new line, and a key pressed several times in a row becomes one line, such as `down 3`. `Ctrl`, `Alt` or `Shift` pressed alone is recorded too, and you hear it when you press the next key. Numeric keypad keys can't be recorded, and `Escape` finishes, so type `esc` if you need it.
     *   **Delay between keystrokes (seconds):** The pause between keys.
 
 Every action also has:

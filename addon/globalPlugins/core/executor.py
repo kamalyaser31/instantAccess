@@ -256,6 +256,17 @@ def isValidKeystroke(keystroke):
 		return False
 
 
+def addRecordedKeystroke(lines, keystroke):
+	"""Append a recorded key; a repeat of the last line becomes a count such as "down 3". Returns that line."""
+	if lines:
+		hotkey, count = _parseKeystrokeLine(lines[-1])
+		if hotkey == keystroke:
+			lines[-1] = f"{keystroke} {count + 1}"
+			return lines[-1]
+	lines.append(keystroke)
+	return keystroke
+
+
 def _getClipboardText():
 	try:
 		return api.getClipData()
