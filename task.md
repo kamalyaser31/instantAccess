@@ -5,5 +5,5 @@ The full scope is in [plan-2026.7.md](plan-2026.7.md). M1 to M2d are done in the
 - [ ] Live checks left for M3 items: M3.2 dialog with typing in its filter, M3.6 cancellation, M3.8 placeholders including File Explorer, a real run as administrator, the full import flow through the file dialog, and Add keystroke under the Arabic layout; the rest passed in portable NVDA on 2026-11-05
 - [ ] M5 Live NVDA test (ask Kamal first: it closes his installed NVDA)
 - [ ] At release, set the real date in the `## [2026.7]` heading of changelog.md.
-- [ ] After M5, message the zh_CN translator (cary-rowen) about the new strings: Kamal agreed, and shows the text first.
+- [ ] zh_CN strings and guide: asked cary-rowen in issue #25 (2026-11-07); tell them if M5 changes any string.
 - [ ] In M5, try the eight examples in the guides, including `Copy line` under the Arabic layout: they have not been run live.
