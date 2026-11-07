@@ -4,5 +4,5 @@ The full scope is in [plan-2026.7.md](plan-2026.7.md). M1 to M2d are done in the
 
 - [ ] Merge and release wait for the zh_CN pull request (Kamal decided on 2026-11-07), then show the release to Kamal before publishing.
 - [ ] At release, set the real date in the `## [2026.7]` heading of changelog.md.
-- [ ] zh_CN strings and guide: asked cary-rowen in issue #25 (2026-11-07). Tell them about the two strings of the keystroke recorder (2026-11-08) after Kamal tests it.
+- [ ] zh_CN strings and guide: asked cary-rowen in issue #25 (2026-11-07). The two recorder strings were added in a comment on 2026-11-08.
 - [ ] Later release: stop keystrokes and typing when the foreground program changes (idea from nvdaMacroManager; compare process, not window, because Shift+F10 opens a menu window).
