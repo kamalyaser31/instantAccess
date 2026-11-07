@@ -5,7 +5,6 @@ import api
 from logHandler import log
 import os
 import re
-import shutil
 import subprocess
 import time
 import copy
@@ -19,6 +18,7 @@ from .nvda_commands import executeNvdaCommand
 from .timing import parseDelay
 from .placeholders import (
 	captureContextSnapshot,
+	findOnPath,
 	itemNeedsContext,
 	substitutePlaceholders,
 	validateItemContext,
@@ -464,7 +464,7 @@ def executeInstantAction(action, cancelEvent=None, context=None):
 
 	if itemType == "Programs":
 		if not os.path.exists(resolvedPath):
-			whichPath = shutil.which(resolvedPath)
+			whichPath = findOnPath(resolvedPath)
 			if whichPath:
 				resolvedPath = whichPath
 			else:

@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import addonHandler
 import gui
@@ -23,7 +22,7 @@ from .constants import (
 	TYPE_TO_LABEL,
 )
 from .executor import expandPath, isValidKeystroke
-from .placeholders import actionNeedsContext
+from .placeholders import actionNeedsContext, findOnPath
 from .timing import parseDelay
 from .gestures import (
 	gestureToKeystroke,
@@ -453,7 +452,7 @@ class InstantAccessActionDialog(wx.Dialog):
 			resolved = expandPath(path)
 			exists = os.path.exists(resolved)
 			if not exists and itemType == "Programs":
-				exists = bool(shutil.which(resolved))
+				exists = bool(findOnPath(resolved))
 			if not exists:
 				# Translators: Warning message shown when an action path does not exist on disk or in PATH.
 				warnMsg = _(

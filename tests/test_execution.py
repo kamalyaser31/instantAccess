@@ -525,6 +525,18 @@ class ExecutionTests(unittest.TestCase):
 		):
 			self.assertTrue(ph.validateItemContext(item)[0])
 
+	def test_a_program_is_found_after_another_add_on_replaced_the_path(self):
+		import auditcore.placeholders as ph
+
+		def whichOnlyWithSavedPath(name, path=None):
+			return r"C:\Windows\notepad.exe" if path else None
+
+		with (
+			patch.object(ph.shutil, "which", whichOnlyWithSavedPath),
+			patch.object(ph, "_registryPath", return_value=r"C:\Windows"),
+		):
+			self.assertEqual(ph.findOnPath("notepad"), r"C:\Windows\notepad.exe")
+
 	def test_a_drive_root_keeps_its_closing_quote(self):
 		import auditcore.placeholders as ph
 

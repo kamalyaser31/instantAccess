@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Shortcuts with the Windows key**: Items whose shortcut uses the Windows key together with another modifier, such as `Windows+Alt+X`, work reliably again. Before, they could stop working after NVDA restarted.
 - **Selecting with Shift in keystrokes**: Keystrokes such as `Shift+End`, `Shift+Home` or `Shift+Down` now select text as they do when you press them yourself. Before, the cursor moved but nothing was selected.
 - **Running NVDA without installing it**: When NVDA runs from the installer before it is installed, the add-on no longer creates a settings file. If you try to save, a message tells you why it cannot.
+- **Programs found by name**: Names such as `notepad` or `cmd` now work when another add-on has changed how NVDA finds programs. Before, the add-on said "File not found".
 - **Choosing an NVDA command**: The list of NVDA commands is now read in a safer way, which avoids rare errors while it opens.
 
 ### Changed

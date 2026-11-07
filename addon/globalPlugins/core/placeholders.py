@@ -45,10 +45,36 @@ def itemNeedsContext(item):
 	return any(actionNeedsContext(action) for action in item.get("actions", []))
 
 
+def _registryPath():
+	"""The PATH Windows stores, read fresh because add-ons can replace this process's PATH."""
+	try:
+		# Imported here because the tests also run on Linux, which has no winreg.
+		import winreg
+	except ImportError:
+		return ""
+	locations = (
+		(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"),
+		(winreg.HKEY_CURRENT_USER, "Environment"),
+	)
+	parts = []
+	for root, subKey in locations:
+		try:
+			with winreg.OpenKey(root, subKey) as key:
+				parts.append(os.path.expandvars(winreg.QueryValueEx(key, "Path")[0]))
+		except OSError:
+			continue
+	return os.pathsep.join(parts)
+
+
+def findOnPath(name):
+	"""Locate a program by name, like shutil.which, even after another add-on replaced PATH."""
+	return shutil.which(name) or shutil.which(name, path=_registryPath())
+
+
 def _isBatchFile(path):
 	"""Resolve the path as the executor does: a bare "npm" can be npm.cmd on the PATH."""
 	cleaned = os.path.expandvars(os.path.expanduser((path or "").strip().strip("'\"")))
-	resolved = cleaned if os.path.exists(cleaned) else (shutil.which(cleaned) or cleaned)
+	resolved = cleaned if os.path.exists(cleaned) else (findOnPath(cleaned) or cleaned)
 	return resolved.lower().endswith((".bat", ".cmd"))
 
 
