@@ -6,3 +6,4 @@ The full scope is in [plan-2026.7.md](plan-2026.7.md). M1 to M2d are done in the
 - [ ] M5 Live NVDA test (ask Kamal first: it closes his installed NVDA)
 - [ ] At release, set the real date in the `## [2026.7]` heading of changelog.md.
 - [ ] After M5, message the zh_CN translator (cary-rowen) about the new strings: Kamal agreed, and shows the text first.
+- [ ] In M5, try the eight examples in the guides, including `Copy line` under the Arabic layout: they have not been run live.

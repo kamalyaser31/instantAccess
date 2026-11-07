@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **App name filled in for you**: When you tick "Restrict this shortcut to work in certain apps", the app name field is filled with the program you were using before you opened the settings. You can still change it.
 - **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct now when a keyboard layout without Latin letters, such as Arabic, is active.
 - **Faster mode switching**: Turning on Instant Access mode no longer reads the settings file every time. If the settings file is damaged and you choose not to restore the backup, you are asked only once per session.
+- **New user guide**: The English and Arabic guides were rewritten. They now start with your first item, show eight practical examples, and say the same things in both languages.
 - **Smaller add-on**: Unused parts of the built-in keyboard library were removed, and its license notice was added.
 - **Translations**: The Simplified Chinese translation was improved, thanks to cary-rowen, and the Arabic translation is up to date. Every translatable message now has a note that explains it to translators.
 
