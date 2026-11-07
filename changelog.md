@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Filter the settings list**: Type in the new Filter field to find items by name.
 - **Several apps for one item**: The app field now takes several names separated by commas, such as `notepad, winword`.
 - **Merge when importing**: After you choose a settings file, you can replace everything or merge. Merging adds the items that have a new name and a free shortcut, keeps your settings, and tells you how many were added and skipped.
+- **Find and run items from a list**: In Instant Access mode, `F1` or `H` now opens a list of your items. Type to filter it by name, shortcut, app or action, then press `Enter` to run the selected item.
+- **Stop a running item**: Press `NVDA+E` while an item or a test is running to stop it and drop any items waiting to run.
+- **Variables**: Text snippets, website addresses and program arguments can now use the date, the time, the clipboard text, the selected text, and the selected file or open folder in File Explorer. The new "Insert variable" button adds them for you. For a literal brace, type it twice.
 - **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button adds the key you press as a new line, so you do not need to type key names.
 
 ### Fixed

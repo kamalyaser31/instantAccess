@@ -14,13 +14,13 @@ import ui
 import wx
 
 from .browse import (
-	buildHelpText,
 	formatItem,
 	getUsableItems,
 	resolveItem,
 	shouldAnnounceName,
 	sortItems,
 )
+from .help_dialog import HelpListDialog
 from .config_manager import ConfigManager
 from .constants import (
 	ADDON_SCRIPT_GESTURES,
@@ -37,6 +37,10 @@ from .settings_panel import InstantAccessSettingsPanel
 
 addonHandler.initTranslation()
 
+
+
+# Lets focus return to the target window before the chosen item types or presses keys.
+HELP_LIST_RUN_DELAY_SECONDS = 0.3
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -272,6 +276,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_toggleInstantMode(self, gesture):
 		if not self._enabled:
 			return
+		if hasattr(self, "executionQueue") and self.executionQueue.isBusy():
+			self.executionQueue.cancelCurrent()
+			if self.isAdvancedVerbosity():
+				self.queueTone(250, 50)
+			else:
+				# Translators: Announced when NVDA+E stops a running item.
+				ui.message(_("Cancelled"))
+			return
 		if self.instantMode:
 			self.deactivateInstantMode()
 		else:
@@ -332,9 +344,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.queueRunItemExecution(self.browseItems[self.browseIndex])
 
 	def script_browseHelp(self, gesture):
-		text = buildHelpText(self.getBrowseItems(), self.browseSettings.get("browseFormat"))
-		# Translators: Title of the window listing instant Access items available in the current application.
-		ui.browseableMessage(text, _("instant Access items"))
+		items = self.getBrowseItems()
+		if not items:
+			# Translators: Shown when no items can run in the current application.
+			ui.message(_("No items are available in this application."))
+			return
+		# The layer closes when this script ends; opened from here, it would catch every key typed in the dialog.
+		wx.CallAfter(self._showHelpList, items)
+
+	def _showHelpList(self, items):
+		dialog = HelpListDialog(gui.mainFrame, items, browseFormat=self.browseSettings.get("browseFormat"))
+		result = gui.message.displayDialogAsModal(dialog)
+		selectedItem = dialog.selectedItem
+		dialog.Destroy()
+		if result == wx.ID_OK and selectedItem:
+			self.queueRunItemExecution(selectedItem, preDelay=HELP_LIST_RUN_DELAY_SECONDS)
 
 	@scriptHandler.script(
 		category=CATEGORY_LABEL,

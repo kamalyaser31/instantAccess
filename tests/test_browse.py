@@ -5,7 +5,7 @@ import types
 import unittest
 from unittest.mock import Mock, patch
 
-from nvda_stubs import cm, io, normalizeGestureIdentifier, plugin
+from nvda_stubs import cm, io, normalizeGestureIdentifier, plugin, wx
 import auditcore.browse as browse
 import globalPluginHandler
 import ui
@@ -46,11 +46,6 @@ class BrowseHelperTests(unittest.TestCase):
 		self.assertEqual(browse.formatItem(gmail, "nameKey"), "Open Gmail, g")
 		self.assertEqual(browse.formatItem(gmail, "keyName"), "g, Open Gmail")
 		self.assertEqual(browse.formatItem(gmail, "name"), "Open Gmail")
-
-	def test_help_lists_items_after_usage(self):
-		text = browse.buildHelpText([item("Open Gmail", "kb:g")], "nameKey")
-		self.assertTrue(text.startswith("Up and down arrows"))
-		self.assertTrue(text.endswith("Open Gmail, g"))
 
 
 class BrowseSettingsTests(unittest.TestCase):
@@ -251,11 +246,31 @@ class BrowseLayerTests(unittest.TestCase):
 
 	def test_help_opens_list_and_closes_layer(self):
 		instance = self.makePlugin([storedItem("One", "kb:1"), storedItem("Word", "kb:w", "winword")])
-		self.press(instance, "browseHelp")
-		text = self.browseable.call_args.args[0]
-		self.assertIn("One, 1", text)
-		self.assertNotIn("Word", text)
-		self.assertFalse(instance.instantMode)
+		dialogMock = Mock()
+		dialogMock.selectedItem = {"name": "One", "actions": []}
+		queued = []
+		with (
+			patch("auditcore.plugin.HelpListDialog", return_value=dialogMock) as dialogCls,
+			patch.object(plugin.wx, "CallAfter", side_effect=lambda fn, *a: queued.append((fn, a))),
+			patch.object(plugin.gui, "message", create=True) as message,
+		):
+			message.displayDialogAsModal.return_value = wx.ID_OK
+			self.press(instance, "browseHelp")
+			# The dialog must open after the layer closes, or the layer catches what is typed in it.
+			dialogCls.assert_not_called()
+			self.assertFalse(instance.instantMode)
+			fn, args = queued[0]
+			fn(*args)
+			dialogCls.assert_called_once()
+			itemsArg = dialogCls.call_args.args[1]
+			self.assertEqual([i["name"] for i in itemsArg], ["One"])
+			instance.executionQueue.submit.assert_called_once()
+			self.assertEqual(instance.executionQueue.submit.call_args.args[0]["name"], "One")
+			self.assertEqual(
+				instance.executionQueue.submit.call_args.kwargs.get("preDelay"),
+				plugin.HELP_LIST_RUN_DELAY_SECONDS,
+			)
+			dialogMock.Destroy.assert_called_once()
 
 	def test_shortcut_text_comes_from_the_identifier_not_the_layout(self):
 		import auditcore.gestures as gestures
@@ -300,3 +315,90 @@ class BrowseLayerTests(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class BrowseFilterTests(unittest.TestCase):
+	def setUp(self):
+		self.sampleItem = {
+			"name": "Search Python",
+			"gestures": ["kb:p"],
+			"appName": "firefox, chrome",
+			"actions": [
+				{"type": "Websites", "path": "https://www.python.org", "arguments": ""},
+				{"type": "Keystrokes", "path": "ctrl+f", "arguments": ""},
+				{"type": "Programs", "path": "python.exe", "arguments": "--version"},
+				{"type": "NvdaCommands", "path": "sayAll", "commandLabel": "Read all"},
+				{"type": "TextSnippets", "path": "print('hello')", "textAction": "type"},
+			],
+		}
+
+	def test_matching_by_individual_fields(self):
+		# item name
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "search"))
+		# shortcut
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "p"))
+		# app name
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "firefox"))
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "chrome"))
+		# action type and localized label
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "Websites"))
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "Keystrokes"))
+		# URL/path
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "python.org"))
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "python.exe"))
+		# arguments
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "--version"))
+		# command label
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "Read all"))
+		# snippet text
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "print('hello')"))
+
+	def test_multi_word_query_across_different_fields(self):
+		# name + action path
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "search python.org"))
+		# app + shortcut
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "firefox p"))
+		# action type + command label
+		self.assertTrue(browse.matchesFilter(self.sampleItem, "NvdaCommands read"))
+
+	def test_non_matching_query(self):
+		self.assertFalse(browse.matchesFilter(self.sampleItem, "notepad"))
+		self.assertFalse(browse.matchesFilter(self.sampleItem, "search notepad"))
+
+	def test_the_default_snippet_action_does_not_match_other_items(self):
+		website = {"name": "w", "actions": [{"type": "Websites", "path": "x", "textAction": "type"}]}
+		self.assertFalse(browse.matchesFilter(website, "type"))
+
+	def test_help_dialog_filter_and_selection(self):
+		from auditcore.help_dialog import HelpListDialog
+
+		dialog = HelpListDialog.__new__(HelpListDialog)
+		dialog.allItems = [self.sampleItem]
+		dialog.filteredItems = [self.sampleItem]
+		dialog.browseFormat = "nameKey"
+		dialog.selectedItem = None
+		dialog.filterCtrl = Mock()
+		dialog.listBox = Mock()
+		dialog.runButton = Mock()
+		dialog.EndModal = Mock()
+
+		# Filter matches
+		dialog.filterCtrl.GetValue.return_value = "python"
+		dialog.onFilterChange(None)
+		self.assertEqual(len(dialog.filteredItems), 1)
+		dialog.listBox.Set.assert_called()
+		dialog.listBox.SetSelection.assert_called_with(0)
+		dialog.runButton.Enable.assert_called_with(True)
+
+		# Filter does not match
+		dialog.filterCtrl.GetValue.return_value = "unmatched"
+		dialog.onFilterChange(None)
+		self.assertEqual(len(dialog.filteredItems), 0)
+		dialog.runButton.Enable.assert_called_with(False)
+
+		# Run selected item
+		dialog.filteredItems = [self.sampleItem]
+		dialog.listBox.GetSelection.return_value = 0
+		dialog.onRun(None)
+		self.assertEqual(dialog.selectedItem, self.sampleItem)
+		dialog.EndModal.assert_called_with(wx.ID_OK)

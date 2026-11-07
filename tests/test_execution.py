@@ -220,7 +220,7 @@ class ExecutionTests(unittest.TestCase):
 	def test_queue_limit_rejects_excess_work(self):
 		started, release = threading.Event(), threading.Event()
 
-		def execute(item, cancel):
+		def execute(item, cancel, context=None):
 			started.set()
 			release.wait(2)
 			return True
@@ -313,7 +313,7 @@ class ExecutionTests(unittest.TestCase):
 		started = threading.Event()
 		seen = []
 
-		def execute(item, token):
+		def execute(item, token, context=None):
 			started.set()
 			cancel.wait(1)
 			seen.append(item["actions"][0]["path"])
@@ -334,6 +334,203 @@ class ExecutionTests(unittest.TestCase):
 			self.assertIsNone(instance.getScript(object()))
 			instance.script_toggleInstantMode(None)
 			instance.terminate()
+
+	def test_is_busy_tracks_execution(self):
+		runner = self.runner()
+		self.assertFalse(runner.isBusy())
+		started = threading.Event()
+		proceed = threading.Event()
+
+		def blockingAction(*a, **kw):
+			started.set()
+			proceed.wait(1)
+			return True
+
+		with patch.object(ex, "executeInstantItem", side_effect=blockingAction):
+			future = runner.submit({"actions": [{"type": "TextSnippets", "path": "test"}]})
+			self.assertTrue(started.wait(1))
+			self.assertTrue(runner.isBusy())
+			proceed.set()
+			future.result(timeout=1)
+			self.assertFalse(runner.isBusy())
+
+	def test_cancel_current_stops_running_task_and_drops_queued_work(self):
+		runner = self.runner()
+		started = threading.Event()
+
+		def longWait(delay, cancelEvent=None):
+			started.set()
+			if cancelEvent:
+				cancelEvent.wait(5)
+			return False
+
+		with patch.object(ex, "_wait", side_effect=longWait):
+			first = runner.submit({"actions": [{"type": "TextSnippets", "path": "long"}]})
+			self.assertTrue(started.wait(1))
+			self.assertTrue(runner.isBusy())
+
+			second = runner.submit({"actions": [{"type": "TextSnippets", "path": "queued"}]})
+			self.assertTrue(runner.cancelCurrent())
+			self.assertFalse(first.result(timeout=1))
+			self.assertTrue(second.cancelled())
+			self.assertFalse(runner.isBusy())
+
+	def test_nvda_e_cancels_running_task_without_opening_layer(self):
+		instance = plugin.GlobalPlugin.__new__(plugin.GlobalPlugin)
+		instance._enabled = True
+		instance.instantMode = False
+		instance.verbosityLevel = "beginner"
+		instance.queueTone = Mock()
+		instance.activateInstantMode = Mock()
+		instance.deactivateInstantMode = Mock()
+		instance.executionQueue = Mock()
+		instance.executionQueue.isBusy.return_value = True
+
+		# Beginner verbosity announces speech
+		with patch("ui.message") as msg:
+			instance.script_toggleInstantMode(None)
+			instance.executionQueue.cancelCurrent.assert_called_once()
+			msg.assert_called_with("Cancelled")
+			instance.activateInstantMode.assert_not_called()
+			instance.deactivateInstantMode.assert_not_called()
+
+		# Advanced verbosity emits tone
+		instance.verbosityLevel = "advanced"
+		instance.script_toggleInstantMode(None)
+		instance.queueTone.assert_called_with(250, 50)
+
+	def test_placeholder_substitution_and_escaping(self):
+		import auditcore.placeholders as ph
+
+		context = {
+			"selection": "sel text",
+			"file": r"C:\path\file.txt",
+			"folder": r"C:\path",
+			"fileList": [r"C:\path\file.txt"],
+		}
+		# Raw snippet substitution
+		text = "Date: {date}, Clip: {clipboard}, Sel: {selection}, Esc: {{date}}, Unknown: {foo}"
+		res = ph.substitutePlaceholders(text, context=context, getClipboardFn=lambda: "clip text")
+		self.assertIn("Clip: clip text", res)
+		self.assertIn("Sel: sel text", res)
+		self.assertIn("Esc: {date}", res)
+		self.assertIn("Unknown: {foo}", res)
+
+		# URL encoding
+		url = "https://www.google.com/search?q={clipboard}"
+		resUrl = ph.substitutePlaceholders(
+			url, context=context, getClipboardFn=lambda: "hello world & more", encoding="url"
+		)
+		self.assertEqual(resUrl, "https://www.google.com/search?q=hello%20world%20%26%20more")
+
+		# Arguments quoting
+		args = "--path {file}"
+		resArgs = ph.substitutePlaceholders(
+			args, context=context, getClipboardFn=lambda: "", encoding="argument"
+		)
+		self.assertEqual(resArgs, r'--path "C:\path\file.txt"')
+
+	def test_multi_file_placeholder_in_arguments(self):
+		import auditcore.placeholders as ph
+
+		context = {
+			"file": r'"C:\path\one.txt" "C:\path\two.txt"',
+			"fileList": [r"C:\path\one.txt", r"C:\path\two.txt"],
+		}
+		args = "--files {file}"
+		res = ph.substitutePlaceholders(args, context=context, encoding="argument")
+		self.assertEqual(res, r'--files "C:\path\one.txt" "C:\path\two.txt"')
+
+	def test_batch_file_arguments_refuse_variables(self):
+		import auditcore.placeholders as ph
+
+		for var in ("{clipboard}", "{file}", "{folder}", "{selection}"):
+			with self.subTest(var=var):
+				item = {
+					"actions": [
+						{"type": "Programs", "path": "script.bat", "arguments": f"--opt {var}"}
+					]
+				}
+				valid, msg = ph.validateItemContext(item)
+				self.assertFalse(valid)
+				self.assertIn("batch file arguments", msg)
+
+	def test_empty_context_variables_stop_item_execution(self):
+		import auditcore.placeholders as ph
+
+		for var, expectedError in (
+			("{selection}", "No text is selected."),
+			("{file}", "No file is selected in File Explorer."),
+			("{folder}", "No folder is open in File Explorer."),
+		):
+			with self.subTest(var=var):
+				item = {
+					"actions": [
+						{"type": "TextSnippets", "path": f"Insert: {var}"}
+					]
+				}
+				valid, msg = ph.validateItemContext(item, context={})
+				self.assertFalse(valid)
+				self.assertEqual(msg, expectedError)
+
+	def test_execution_stops_before_running_when_context_variable_empty(self):
+		item = {
+			"actions": [
+				{"type": "TextSnippets", "path": "Selected: {selection}"}
+			]
+		}
+		runner = self.runner()
+		with (
+			patch.object(ex, "executeInstantAction") as actionMock,
+			patch.object(ex, "_captureContextOnMainThread", return_value={"selection": ""}),
+		):
+			future = runner.submit(item)
+			self.assertFalse(future.result(timeout=1))
+			actionMock.assert_not_called()
+		self.assertIn("No text is selected.", self.messages[-1])
+
+	def test_context_is_read_only_for_items_that_use_it(self):
+		runner = self.runner()
+		with (
+			patch.object(ex, "executeInstantAction", return_value=True) as actionMock,
+			patch.object(ex, "_captureContextOnMainThread", return_value={"selection": "S"}) as capture,
+		):
+			runner.submit({"actions": [{"type": "TextSnippets", "path": "plain {date}"}]}).result(timeout=1)
+			capture.assert_not_called()
+			runner.submit({"actions": [{"type": "TextSnippets", "path": "{selection}"}]}).result(timeout=1)
+			capture.assert_called_once()
+		self.assertEqual(actionMock.call_args.kwargs["context"], {"selection": "S"})
+
+	def test_context_snapshot_waits_for_the_main_thread_and_stops_on_cancel(self):
+		cancelEvent = threading.Event()
+		cancelEvent.set()
+		with patch.object(ex.wx, "CallAfter", side_effect=lambda fn: fn()):
+			with patch.object(ex, "captureContextSnapshot", return_value={"file": "F"}):
+				self.assertEqual(ex._captureContextOnMainThread(None), {"file": "F"})
+		with patch.object(ex.wx, "CallAfter"):
+			self.assertEqual(ex._captureContextOnMainThread(cancelEvent), {})
+
+	def test_a_batch_file_found_on_the_path_also_refuses_variables(self):
+		import auditcore.placeholders as ph
+
+		item = {"actions": [{"type": "Programs", "path": "npm", "arguments": "{clipboard}"}]}
+		with (
+			patch.object(ph.os.path, "exists", return_value=False),
+			patch.object(ph.shutil, "which", return_value=r"C:\tools\npm.cmd"),
+		):
+			self.assertFalse(ph.validateItemContext(item)[0])
+		with (
+			patch.object(ph.os.path, "exists", return_value=False),
+			patch.object(ph.shutil, "which", return_value=r"C:\tools\npm.exe"),
+		):
+			self.assertTrue(ph.validateItemContext(item)[0])
+
+	def test_a_drive_root_keeps_its_closing_quote(self):
+		import auditcore.placeholders as ph
+
+		res = ph.substitutePlaceholders("{folder}", context={"folder": "C:\\"}, encoding="argument")
+		self.assertEqual(res, '"C:\\\\"')
+		self.assertEqual(ex.subprocess.list2cmdline(["C:\\"]), "C:\\")
 
 	def test_win32_buffer_capacity_matches_allocation(self):
 		tree = ast.parse(

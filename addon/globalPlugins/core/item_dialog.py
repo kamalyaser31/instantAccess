@@ -23,6 +23,7 @@ from .constants import (
 	TYPE_TO_LABEL,
 )
 from .executor import expandPath, isValidKeystroke
+from .placeholders import actionNeedsContext
 from .timing import parseDelay
 from .gestures import (
 	gestureToKeystroke,
@@ -118,8 +119,10 @@ SWITCH_DELAY_SECONDS = 3
 
 
 def actionsNeedSwitchDelay(actions):
-	"""True when an action types or sends keys, so the user needs time to reach the target window."""
+	"""True when an action types, sends keys or reads the target window, so the user must reach it first."""
 	for action in actions:
+		if actionNeedsContext(action):
+			return True
 		itemType = action.get("type", "")
 		if itemType == "Keystrokes":
 			return True
@@ -183,6 +186,9 @@ class InstantAccessActionDialog(wx.Dialog):
 			# Translators: Button that opens a file or folder chooser for the action path.
 			lambda: wx.Button(self, wx.ID_ANY, _("Browse")),
 		)
+		# Translators: Button to open a menu of variables to insert into the path or URL field.
+		self.pathInsertVarButton = wx.Button(self, wx.ID_ANY, _("Insert &variable…"))
+		self.pathRow.Add(self.pathInsertVarButton, 0)
 		sizerHelper.addItem(self.pathRow, flag=wx.EXPAND)
 
 		self.argumentsRow, self.argumentsLabel, self.argumentsCtrl, _unused = _labeledRow(
@@ -191,6 +197,9 @@ class InstantAccessActionDialog(wx.Dialog):
 			_("Arguments (optional)"),
 			lambda: wx.TextCtrl(self, wx.ID_ANY),
 		)
+		# Translators: Button to open a menu of variables to insert into the arguments field.
+		self.argsInsertVarButton = wx.Button(self, wx.ID_ANY, _("Insert &variable…"))
+		self.argumentsRow.Add(self.argsInsertVarButton, 0)
 		sizerHelper.addItem(self.argumentsRow, flag=wx.EXPAND)
 
 		# Translators: Checkbox that starts a program with administrator rights.
@@ -217,6 +226,9 @@ class InstantAccessActionDialog(wx.Dialog):
 			labelFlag=wx.ALIGN_TOP,
 			controlFlag=wx.EXPAND,
 		)
+		# Translators: Button to open a menu of variables to insert into the snippet field.
+		self.snippetInsertVarButton = wx.Button(self, wx.ID_ANY, _("Insert &variable…"))
+		self.snippetRow.Add(self.snippetInsertVarButton, 0)
 		sizerHelper.addItem(self.snippetRow, flag=wx.EXPAND)
 
 		self.snippetActionRow, self.snippetActionLabel, self.snippetActionChoice, _unused = _labeledRow(
@@ -263,6 +275,9 @@ class InstantAccessActionDialog(wx.Dialog):
 		self.browseButton.Bind(wx.EVT_BUTTON, self.onBrowse)
 		self.commandButton.Bind(wx.EVT_BUTTON, self.onSelectCommand)
 		self.addKeystrokeButton.Bind(wx.EVT_BUTTON, self.onAddKeystroke)
+		self.pathInsertVarButton.Bind(wx.EVT_BUTTON, lambda evt: self.onInsertVariable(self.pathCtrl))
+		self.argsInsertVarButton.Bind(wx.EVT_BUTTON, lambda evt: self.onInsertVariable(self.argumentsCtrl))
+		self.snippetInsertVarButton.Bind(wx.EVT_BUTTON, lambda evt: self.onInsertVariable(self.snippetCtrl))
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
 		self.testButton.Bind(wx.EVT_BUTTON, self.onTestAction)
 
@@ -326,15 +341,48 @@ class InstantAccessActionDialog(wx.Dialog):
 			self.typingDelayLabel.SetLabel(_("Typing delay"))
 
 		self._setRowVisible(self.pathRow, showPath)
+		self.browseButton.Show(itemType in ("Programs", "Folders", "Files"))
+		self.pathInsertVarButton.Show(itemType == "Websites")
 		self._setRowVisible(self.argumentsRow, showArguments)
+		self.argsInsertVarButton.Show(showArguments)
 		self.runAsAdminCheck.Show(showArguments)
 		self._setRowVisible(self.commandRow, showCommand)
 		self._setRowVisible(self.snippetRow, showSnippetArea)
 		self.addKeystrokeButton.Show(itemType == "Keystrokes")
+		self.snippetInsertVarButton.Show(itemType == "TextSnippets")
 		self._setRowVisible(self.snippetActionRow, showSnippetActionChoice)
 		self._setRowVisible(self.typingDelayRow, showDelayField)
-		self.browseButton.Enable(itemType in ("Programs", "Folders", "Files"))
 		self.Layout()
+
+	def onInsertVariable(self, targetCtrl):
+		menu = wx.Menu()
+		entries = [
+			# Translators: Menu item to insert the {date} variable into the text field.
+			(_("&Date"), "{date}"),
+			# Translators: Menu item to insert the {time} variable into the text field.
+			(_("&Time"), "{time}"),
+			# Translators: Menu item to insert the {clipboard} variable into the text field.
+			(_("&Clipboard text"), "{clipboard}"),
+			# Translators: Menu item to insert the {selection} variable into the text field.
+			(_("&Selected text"), "{selection}"),
+			# Translators: Menu item to insert the {file} variable into the text field.
+			(_("Selected &file (File Explorer)"), "{file}"),
+			# Translators: Menu item to insert the {folder} variable into the text field.
+			(_("Open f&older (File Explorer)"), "{folder}"),
+		]
+		for label, placeholder in entries:
+			item = menu.Append(wx.ID_ANY, label)
+			self.Bind(
+				wx.EVT_MENU,
+				lambda evt, p=placeholder, c=targetCtrl: self._insertPlaceholder(c, p),
+				item,
+			)
+		self.PopupMenu(menu)
+		menu.Destroy()
+
+	def _insertPlaceholder(self, targetCtrl, placeholder):
+		targetCtrl.WriteText(placeholder)
+		targetCtrl.SetFocus()
 
 	def onTypeChange(self, event):
 		self.updateTypeState()

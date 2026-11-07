@@ -164,3 +164,19 @@ class DialogTests(unittest.TestCase):
 					panel.onRunItem.assert_not_called()
 				else:
 					panel.onRunItem.assert_called_once_with(item, preDelay=expected)
+
+
+	def test_insert_variable_menu_and_actions(self):
+		dialog = dialogs.InstantAccessActionDialog.__new__(dialogs.InstantAccessActionDialog)
+		targetCtrl = Mock()
+		targetCtrl.WriteText = Mock()
+		targetCtrl.SetFocus = Mock()
+		dialog.PopupMenu = Mock()
+		dialog.Bind = Mock()
+
+		dialog.onInsertVariable(targetCtrl)
+		dialog.PopupMenu.assert_called_once()
+		# Check that selecting placeholder writes text and focuses control
+		dialog._insertPlaceholder(targetCtrl, "{date}")
+		targetCtrl.WriteText.assert_called_once_with("{date}")
+		targetCtrl.SetFocus.assert_called_once()

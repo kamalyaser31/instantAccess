@@ -3,7 +3,7 @@
 
 import addonHandler
 
-from .constants import ANNOUNCE_VALUES
+from .constants import ANNOUNCE_VALUES, TEXT_SNIPPET_ACTION_TO_LABEL, TYPE_TO_LABEL
 from .gestures import formatGestureForDisplay, gestureDisplayText, gestureKey, parseAppNames
 
 addonHandler.initTranslation()
@@ -67,16 +67,30 @@ def formatItem(item, browseFormat):
 	return _("{name}, {key}").format(name=name, key=key)
 
 
-def buildHelpText(items, browseFormat):
-	lines = [
-		# Translators: Usage line at the top of the instant Access browse help.
-		_(
-			"Up and down arrows or Tab and Shift+Tab: browse items. Enter: run the browsed item. Escape: exit."
-		),
-		"",
+def getItemSearchTokens(item):
+	"""Extract searchable text tokens from an item across all its fields."""
+	tokens = [
+		item.get("name", ""),
+		getKeyLabel(item),
+		item.get("appName", ""),
 	]
-	if not items:
-		# Translators: Shown in the browse help when no items can run in the current application.
-		lines.append(_("No items are available in this application."))
-	lines.extend(formatItem(item, browseFormat) for item in items)
-	return "\n".join(lines)
+	for action in item.get("actions", []):
+		actionType = action.get("type", "")
+		if actionType:
+			tokens.append(actionType)
+			tokens.append(TYPE_TO_LABEL.get(actionType, "").replace("&", ""))
+		tokens.append(action.get("path", ""))
+		tokens.append(action.get("arguments", ""))
+		tokens.append(action.get("commandLabel", ""))
+		if actionType == "TextSnippets":
+			tokens.append(TEXT_SNIPPET_ACTION_TO_LABEL.get(action.get("textAction", ""), ""))
+	return " ".join(t for t in tokens if t)
+
+
+def matchesFilter(item, query):
+	"""Multi-word filter matching all words against item tokens, case-insensitively."""
+	words = [w.strip().casefold() for w in (query or "").split(" ") if w.strip()]
+	if not words:
+		return True
+	haystack = getItemSearchTokens(item).casefold()
+	return all(word in haystack for word in words)

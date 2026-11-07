@@ -17,6 +17,12 @@ import wx
 
 from .nvda_commands import executeNvdaCommand
 from .timing import parseDelay
+from .placeholders import (
+	captureContextSnapshot,
+	itemNeedsContext,
+	substitutePlaceholders,
+	validateItemContext,
+)
 
 addonHandler.initTranslation()
 
@@ -29,6 +35,7 @@ except Exception:
 
 PASTE_SETTLE_SECONDS = 0.3
 ERROR_CANCELLED = 1223
+CONTEXT_TIMEOUT_SECONDS = 5
 
 
 def _isCancelled(cancelEvent):
@@ -44,14 +51,77 @@ def _wait(delay, cancelEvent=None):
 	return True
 
 
+def _captureContextOnMainThread(cancelEvent, timeout=CONTEXT_TIMEOUT_SECONDS):
+	"""NVDA objects and COM belong to the main thread, so the worker waits for the snapshot."""
+	done = threading.Event()
+	snapshot = {}
+
+	def capture():
+		try:
+			snapshot.update(captureContextSnapshot())
+		finally:
+			done.set()
+
+	wx.CallAfter(capture)
+	deadline = time.monotonic() + timeout
+	while not done.wait(0.05):
+		if _isCancelled(cancelEvent) or time.monotonic() >= deadline:
+			break
+	return snapshot
+
+
+class _RunCancelWatcher:
+	"""Combines shutdown cancel event and per-run cancel event into an Event-like object."""
+
+	def __init__(self, shutdownEvent, runEvent):
+		self.shutdownEvent = shutdownEvent
+		self.runEvent = runEvent
+
+	def is_set(self):
+		return self.shutdownEvent.is_set() or self.runEvent.is_set()
+
+	def wait(self, timeout=None):
+		if timeout is None:
+			while not self.is_set():
+				time.sleep(0.01)
+			return True
+		end = time.monotonic() + timeout
+		while time.monotonic() < end:
+			if self.is_set():
+				return True
+			remaining = end - time.monotonic()
+			if self.runEvent.wait(min(remaining, 0.05)) or self.shutdownEvent.is_set():
+				return True
+		return self.is_set()
+
+
 class ExecutionQueue:
 	"""Serialize complete items and action tests, with bounded, cancellable work."""
 
 	def __init__(self):
 		self.cancelEvent = threading.Event()
+		self._runCancelEvent = threading.Event()
 		self._slots = threading.BoundedSemaphore(32)
-		self._lock = threading.Lock()
+		self._lock = threading.RLock()
 		self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="instantAccess")
+		self._busyCount = 0
+		self._pendingFutures = []
+
+	def isBusy(self):
+		with self._lock:
+			return self._busyCount > 0
+
+	def cancelCurrent(self):
+		with self._lock:
+			if self._busyCount == 0:
+				return False
+			self._runCancelEvent.set()
+			pending = list(self._pendingFutures)
+			self._pendingFutures.clear()
+			for f in pending:
+				f.cancel()
+			self._runCancelEvent = threading.Event()
+			return True
 
 	def submit(self, item, preDelay=0, announce=True):
 		with self._lock:
@@ -61,35 +131,54 @@ class ExecutionQueue:
 				# Translators: Announced when too many items are queued to run.
 				queueMessage(_("Too many items are waiting. Please try again later."))
 				return None
+			self._busyCount += 1
+			runCancel = self._runCancelEvent
 			try:
-				future = self._executor.submit(self._run, copy.deepcopy(item), parseDelay(preDelay), announce)
+				future = self._executor.submit(
+					self._run, copy.deepcopy(item), parseDelay(preDelay), announce, runCancel
+				)
 			except Exception:
+				self._busyCount -= 1
 				self._slots.release()
 				raise
-			future.add_done_callback(self._onDone)
+			self._pendingFutures.append(future)
+			future.add_done_callback(lambda f: self._onDone(f, runCancel))
 			return future
 
-	def _onDone(self, future):
+	def _onDone(self, future, runCancel):
+		with self._lock:
+			self._busyCount = max(0, self._busyCount - 1)
+			if future in self._pendingFutures:
+				self._pendingFutures.remove(future)
 		self._slots.release()
 		if not future.cancelled():
 			try:
 				future.result()
 			except Exception:
 				log.exception("instantAccess: Item execution failed")
-				if not self.cancelEvent.is_set():
+				if not self.cancelEvent.is_set() and not runCancel.is_set():
 					# Translators: Announced when an item stopped because of an unexpected error.
 					queueMessage(_("Error: Could not run the item"))
 
-	def _run(self, item, preDelay, announce=True):
-		if not _wait(preDelay, self.cancelEvent):
+	def _run(self, item, preDelay, announce=True, runCancel=None):
+		cancelEvent = (
+			_RunCancelWatcher(self.cancelEvent, runCancel)
+			if runCancel is not None
+			else self.cancelEvent
+		)
+		if not _wait(preDelay, cancelEvent):
+			return False
+		context = _captureContextOnMainThread(cancelEvent) if itemNeedsContext(item) else {}
+		if _isCancelled(cancelEvent):
 			return False
 		if announce and item.get("name"):
 			queueMessage(item["name"])
-		return executeInstantItem(item, self.cancelEvent)
+		return executeInstantItem(item, cancelEvent, context=context)
 
 	def shutdown(self):
 		with self._lock:
 			self.cancelEvent.set()
+			self._runCancelEvent.set()
 			self._executor.shutdown(wait=False, cancel_futures=True)
 
 
@@ -294,7 +383,7 @@ def _sendKeystrokeSequence(keys_text, pressDelay, cancelEvent=None):
 	return True
 
 
-def executeInstantAction(action, cancelEvent=None):
+def executeInstantAction(action, cancelEvent=None, context=None):
 	"""Execute a single instant action based on its type. Returns True on success, False on failure.
 
 	*action* is a dict with keys: type, path, arguments, textAction, typingDelay, pressDelay.
@@ -310,7 +399,8 @@ def executeInstantAction(action, cancelEvent=None):
 	pressDelay = action.get("pressDelay", 0.05)
 
 	if itemType == "Websites":
-		url = (path or "").strip().strip("'\"")
+		rawUrl = (path or "").strip().strip("'\"")
+		url = substitutePlaceholders(rawUrl, context=context, getClipboardFn=_getClipboardText, encoding="url")
 		if not url:
 			# Translators: Announced when a website action has no address.
 			queueMessage(_("Error: URL is empty"))
@@ -333,7 +423,8 @@ def executeInstantAction(action, cancelEvent=None):
 		return _executeNvdaAction((path or "").strip(), cancelEvent)
 
 	if itemType == "TextSnippets":
-		return _executeTextSnippet(path, textAction, typingDelay=typingDelay, cancelEvent=cancelEvent)
+		snippet = substitutePlaceholders(path, context=context, getClipboardFn=_getClipboardText, encoding="raw")
+		return _executeTextSnippet(snippet, textAction, typingDelay=typingDelay, cancelEvent=cancelEvent)
 
 	if itemType == "Keystrokes":
 		if keyboard is None:
@@ -381,7 +472,10 @@ def executeInstantAction(action, cancelEvent=None):
 				queueMessage(_("Error: File not found"))
 				return False
 		try:
-			argumentsText = (arguments or "").strip()
+			rawArgs = (arguments or "").strip()
+			argumentsText = substitutePlaceholders(
+				rawArgs, context=context, getClipboardFn=_getClipboardText, encoding="argument"
+			)
 			workingDir = os.path.dirname(resolvedPath) or None
 			is_batch = resolvedPath.lower().endswith((".bat", ".cmd"))
 			if runAsAdmin:
@@ -414,9 +508,14 @@ def executeInstantAction(action, cancelEvent=None):
 	return False
 
 
-def executeInstantItem(item, cancelEvent=None):
+def executeInstantItem(item, cancelEvent=None, context=None):
 	"""Execute all actions within an instant item."""
 	if not item:
+		return False
+	valid, errorMsg = validateItemContext(item, context=context)
+	if not valid:
+		if errorMsg:
+			queueMessage(errorMsg)
 		return False
 	actions = item.get("actions", [])
 	stopOnError = bool(item.get("stopOnError", True))
@@ -433,7 +532,7 @@ def executeInstantItem(item, cancelEvent=None):
 		try:
 			if not _wait(action.get("delay", 0.0), cancelEvent):
 				return False
-			success = executeInstantAction(action, cancelEvent)
+			success = executeInstantAction(action, cancelEvent, context=context)
 		except TimeoutError:
 			return False
 		except Exception:

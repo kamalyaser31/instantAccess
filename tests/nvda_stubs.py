@@ -21,9 +21,40 @@ def stub(name, **attrs):
 
 
 stub("addonHandler", initTranslation=lambda: None)
+class _StubMenu:
+	def __init__(self, *a, **kw):
+		pass
+	def Append(self, *a, **kw):
+		return Mock()
+	def Destroy(self):
+		pass
+
+
+class _StubDialog:
+	def __init__(self, *a, **kw):
+		pass
+	def SetMinSize(self, *a):
+		pass
+	def SetSizerAndFit(self, *a):
+		pass
+	def Bind(self, *a, **kw):
+		pass
+	def ShowModal(self):
+		return 5100
+	def EndModal(self, code):
+		pass
+	def Destroy(self):
+		pass
+	def PopupMenu(self, *a, **kw):
+		pass
+
 wx = stub(
 	"wx",
-	Dialog=object,
+	Dialog=_StubDialog,
+	BoxSizer=lambda *a, **kw: Mock(),
+	StaticText=lambda *a, **kw: Mock(),
+	TextCtrl=lambda *a, **kw: Mock(),
+	ListBox=lambda *a, **kw: Mock(),
 	IsMainThread=lambda: True,
 	YES=1,
 	NO=0,
@@ -31,10 +62,28 @@ wx = stub(
 	ICON_QUESTION=4,
 	OK=8,
 	ICON_ERROR=16,
+	ID_ANY=-1,
+	ID_OK=5100,
+	ID_CANCEL=5101,
+	NOT_FOUND=-1,
+	DEFAULT_DIALOG_STYLE=0,
+	RESIZE_BORDER=0,
+	VERTICAL=1,
+	HORIZONTAL=2,
+	EXPAND=4,
+	ALL=8,
+	ALIGN_CENTER=16,
+	LB_SINGLE=0,
+	EVT_TEXT=None,
+	EVT_LISTBOX_DCLICK=None,
+	EVT_BUTTON=None,
+	EVT_MENU=None,
+	Menu=_StubMenu,
+	Button=lambda *a, **kw: Mock(),
 )
 pending = []
 wx.CallAfter = lambda fn, *a, **kw: pending.append((fn, a, kw))
-gui = stub("gui", messageBox=lambda *a, **kw: wx.NO, guiHelper=Mock(), nvdaControls=Mock())
+gui = stub("gui", messageBox=lambda *a, **kw: wx.NO, guiHelper=Mock(), nvdaControls=Mock(), mainFrame=Mock())
 stub("gui.settingsDialogs", SettingsPanel=object)
 gui.settingsDialogs = types.SimpleNamespace(NVDASettingsDialog=types.SimpleNamespace(categoryClasses=[]))
 api = stub("api", copyToClip=lambda *a, **kw: True)
@@ -92,3 +141,5 @@ cm = importlib.import_module("auditcore.config_manager")
 ex = importlib.import_module("auditcore.executor")
 dialogs = importlib.import_module("auditcore.item_dialog")
 plugin = importlib.import_module("auditcore.plugin")
+
+stub("textInfos", POSITION_SELECTION=1)
