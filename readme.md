@@ -11,7 +11,7 @@ Instant Access gives you one key that opens your own private keyboard. Press `NV
 ## What it solves
 
 *   **Too many shortcuts to remember.** All your work sits behind `NVDA+E`, and one key can mean different things in different programs.
-*   **Forgetting a key.** Open a list of your items, type a word to find one, and press `Enter`.
+*   **Forgetting a key.** Open a list of your items, type a word to find one, and press `Enter`. This list is off until you turn on browsing in the settings, as explained below.
 *   **Doing the same steps again and again.** One item can open a folder, start a program, wait, and open a website.
 *   **Copying text from one place to another.** An item can use the selected text, the clipboard, or the selected file. For example, one key can search Google for the words you selected.
 *   **Keys that have no shortcut.** An item can press keys for you, such as opening a menu and moving down five times.
