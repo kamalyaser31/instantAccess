@@ -4,7 +4,7 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2026.7] - 2026-11-07
 
 ### Added
 - **Run as administrator**: A program action can now start the program with administrator rights. Windows shows its usual prompt, and if you decline it, the add-on says "Cancelled".
@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct now when a keyboard layout without Latin letters, such as Arabic, is active.
 - **Faster mode switching**: Turning on Instant Access mode no longer reads the settings file every time. If the settings file is damaged and you choose not to restore the backup, you are asked only once per session.
 - **Smaller add-on**: Unused parts of the built-in keyboard library were removed, and its license notice was added.
-- **Translations**: The Simplified Chinese translation is up to date, thanks to cary-rowen. Every translatable message now has a note that explains it to translators.
+- **Translations**: The Simplified Chinese translation was improved, thanks to cary-rowen, and the Arabic translation is up to date. Every translatable message now has a note that explains it to translators.
 
 ## [2026.6] - 2026-09-30
 

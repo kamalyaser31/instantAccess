@@ -1,10 +1,10 @@
-Instant Access 2026.6
+Instant Access 2026.7
 
 Instant Access for NVDA
 =======================
 
 *   **Author:** Kamal Yaser
-*   **Version:** 2026.6
+*   **Version:** 2026.7
 *   **Compatibility:** NVDA 2024.1 and later
 
 Overview
@@ -18,31 +18,37 @@ Key Features
 ------------
 
 *   **Multi-Action Items:** Assign a sequence of actions to a single shortcut.
+*   **Variables:** Put the date, the time, the clipboard text, the selected text, or the file or folder from File Explorer into text snippets, website addresses and program arguments.
+*   **Find and Run Items:** Open a list of your items, type to filter it, and press `Enter` to run the one you want.
+*   **Stop a Running Item:** Press `NVDA+E` to stop a long item or a test.
 *   **Browse Items Without Remembering Shortcuts:** Optionally move through the items available in the current application with the arrow keys or Tab inside Instant Access mode, press `Enter` to run one, or open a list of all of them.
 *   **Reliable, One-at-a-Time Execution:** Items and action tests run one after another, never at the same time, so they can't mix up your clipboard or keystrokes. If something fails, keys like `Shift` or `Ctrl` are released automatically.
 *   **Item Duplication:** Clone any configured item with a single click, preserving all actions and settings.
 *   **Action Testing:** Test individual actions directly within the action dialog, with a 3-second preparation delay for keystroke and text snippet actions.
 *   **Stop on Error:** Optional setting to abort the rest of an item's action sequence if any action fails to execute.
 *   **Timing Control:** Set a custom delay before each action and a shared interval between all actions in an item.
-*   **App-Specific Shortcuts:** Make a shortcut global or restrict it to a specific application.
+*   **App-Specific Shortcuts:** Make a shortcut global or restrict it to one or more applications.
+*   **Turn Items Off:** Disable an item without deleting it, and bring it back later.
+*   **Name Announcement:** Choose whether items speak their name when they run, for all items or for each one.
 *   **Keyboard Ergonomics:**
     *   Press `Enter` to edit the selected item.
     *   Press `Delete` to delete the selected item or action (with confirmation).
     *   Press `Ctrl+Up` / `Ctrl+Down` in the item dialog to reorder actions.
+    *   Press `Ctrl+Up` / `Ctrl+Down` in the settings list to reorder items.
 *   **Wide Range of Actions:**
     *   Launch websites, custom URL protocols (`mailto:`, `ms-settings:`), programs, folders, files, batch scripts (`.bat`, `.cmd`), and system PATH commands.
     *   Execute NVDA commands from a filterable list.
     *   Insert, copy, or paste reusable text snippets.
     *   Simulate keystroke sequences with adjustable delay.
 *   **Centralized Management:** A comprehensive settings panel to add, edit, duplicate, test, and organize your items.
-*   **Safe Import & Export:** Back up and share your configuration in JSON format with confirmation before overwrite and success notifications.
+*   **Safe Import & Export:** Back up and share your configuration in JSON format. When importing, replace everything or merge the new items into your own.
 *   **Safe Saving & Recovery:** Your configuration is saved in a way that can't leave a half-written file, and a backup (`config.json.bak`) is kept. If the configuration is ever damaged, the add-on offers to restore the backup.
 *   **Adjustable Verbosity:** Choose between detailed feedback (Beginner) or concise tones (Advanced).
 
 Built-In Shortcuts
 ------------------
 
-*   `NVDA+E`: Toggle Instant Access mode on or off.
+*   `NVDA+E`: Toggle Instant Access mode on or off. While an item or a test is running, it stops the item instead and drops any items waiting to run.
 *   `NVDA+Shift+E`: Announce the name of the currently focused application. This is useful for creating app-specific shortcuts.
 *   `NVDA+Shift+E` (pressed twice quickly): Copy the app name to the clipboard.
 *   `Escape` (while Instant Access mode is active): Deactivate the mode without running a command.
@@ -57,9 +63,15 @@ While Instant Access mode is active:
 *   `Down Arrow` or `Tab`: Move to and announce the next item.
 *   `Up Arrow` or `Shift+Tab`: Move to and announce the previous item.
 *   `Enter`: Run the item you last moved to, then leave the mode. If you haven't moved to an item yet, `Enter` leaves the mode without running anything.
-*   `F1` or `H`: Open a window listing every item available here, with its shortcut. Instant Access mode closes when the window opens.
+*   `F1` or `H`: Open a list of every item available here. Instant Access mode closes when the list opens.
 
 The list wraps around, so moving past the last item takes you back to the first. Only items that can run in the focused application are included: global items, plus the items restricted to that application.
+
+In the list opened by `F1` or `H`:
+
+*   Type in the **Filter** field to narrow the list. It searches item names, shortcuts, app names, action types and what each action does, such as a website address or a file path. If you type several words, an item must match all of them.
+*   Press `Tab` to reach the list, and use the arrow keys to move through it.
+*   Press `Enter` to run the selected item, or `Escape` to close the list.
 
 Two settings control how browsing sounds:
 
@@ -79,6 +91,10 @@ You can configure the add-on from the NVDA settings panel:
 
 The main settings panel lists all your configured items, showing their name, type, shortcut, and a summary of their actions. From here, you can **Add**, **Edit**, **Duplicate**, **Delete**, and **Test** your items, or **Export** and **Import** your configuration.
 
+*   **Filter:** Type here to narrow the list by item name. `Ctrl+Up` and `Ctrl+Down` do nothing while the filter is in use.
+*   **Reordering:** Press `Ctrl+Up` or `Ctrl+Down` in the list to move the selected item. The new order is saved at once.
+*   **Announce the item name when it runs:** Turn this off if you don't want to hear an item's name each time it runs. Each item can override this setting.
+
 Understanding Items and Actions
 -------------------------------
 
@@ -95,8 +111,10 @@ When you add or edit an item, a dialog appears with the following options:
 *   **Actions List:** A list of all the actions this item will perform. You can **Add**, **Edit**, **Delete**, **Move up**, and **Move down** actions to define the sequence (or use `Delete` and `Ctrl+Up`/`Ctrl+Down`).
 *   **Stop executing subsequent actions if an error occurs:** A checkbox to prevent subsequent actions from running if an error occurs.
 *   **Interval between actions (seconds):** A pause (in seconds) that occurs _after_ each action in the sequence (except the last one).
+*   **Announce the name when this item runs:** Choose **Use the general setting**, **Announce** or **Do not announce**. Errors are always spoken.
+*   **Enabled:** Untick this to turn the item off without deleting it. A disabled item doesn't run and doesn't appear in the mode, and the settings list marks it as disabled. Its shortcut stays reserved, so it can't clash when you turn the item back on.
 *   **Restrict this shortcut...:** A checkbox to make the shortcut app-specific.
-    *   **App name:** If the restriction is checked, you must provide the exact app name (use `NVDA+Shift+E` to find it).
+    *   **App names:** If the restriction is checked, enter one or more exact app names, separated by commas, such as `notepad, winword`. If the field is empty when you tick the box, it is filled with the program you were using before you opened the settings. Use `NVDA+Shift+E` to find an app's name.
 *   **Shortcut:** A button to capture the key combination for this item.
 
 ### Action Types
@@ -104,20 +122,40 @@ When you add or edit an item, a dialog appears with the following options:
 When you add or edit an action, you can choose from several types:
 
 *   **Website:** Opens a URL in your default browser.
-*   **Program:** Launches an executable file (`.exe`). You can also provide optional **Arguments**.
+*   **Program:** Launches an executable file (`.exe`). You can also provide optional **Arguments**, and tick **Run as administrator** to start the program with administrator rights. Windows then shows its usual prompt, and if you decline it, the add-on says "Cancelled".
 *   **Folder:** Opens a folder in File Explorer.
 *   **File:** Opens any file using its default associated application.
 *   **NVDA Command:** Executes an NVDA script. A dialog appears allowing you to filter and select from all available NVDA and add-on commands.
 *   **Text Snippet:** Inserts reusable text. This action has three modes:
     *   **Type:** Simulates typing the text. You can set a custom **Typing delay** (in seconds) between characters.
     *   **Copy:** Puts the text on the clipboard.
-    *   **Paste:** Puts the text on the clipboard and then simulates a `Ctrl+V` paste.
+    *   **Paste:** Puts the text on the clipboard and then simulates a `Ctrl+V` paste. The text you had copied before comes back to the clipboard afterwards. Only text can be restored.
 *   **Keystrokes:** Simulates a sequence of keyboard keys or shortcut combinations (one per line).
     *   **Syntax:** Write the shortcut name (e.g., `ctrl+alt+del` or `shift+f10`).
     *   **Repetition:** You can repeat a key by appending a space and a count (e.g., `down 5` to press the Down Arrow 5 times).
+    *   **Add keystroke:** Press this button, then press a key or shortcut, and it is added as a new line. Numeric keypad keys can't be recorded, and neither can `Escape`, which cancels. Type `esc` yourself if you need it.
     *   **Delay between keystrokes:** You can set a custom pause (in seconds) to occur between each keystroke.
 *   **Delay before executing this action:** A pause (in seconds) that occurs _before_ this specific action runs.
-*   **Test Button:** Allows you to test the current action in isolation without having to save the item or run the entire sequence. For Keystroke and Text Snippet actions, a 3-second preparation countdown allows you to switch (via `Alt+Tab`) to the intended target window before typing starts.
+*   **Test Button:** Allows you to test the current action in isolation without having to save the item or run the entire sequence. For Keystroke and Text Snippet actions, and for actions that read the selected text or File Explorer, a 3-second preparation countdown allows you to switch (via `Alt+Tab`) to the intended target window first.
+
+### Variables
+
+Text snippets, website addresses and program arguments can include values that change each time the item runs. Press the **Insert variable** button next to the field and choose one from the menu:
+
+*   **Date** (`{date}`) and **Time** (`{time}`): The current date and time, in your Windows format.
+*   **Clipboard text** (`{clipboard}`): The text on the clipboard.
+*   **Selected text** (`{selection}`): The text selected when the item starts.
+*   **Selected file** (`{file}`): The file selected in File Explorer. If several are selected, all of them are used.
+*   **Open folder** (`{folder}`): The folder open in File Explorer.
+
+For example, this website address searches for the text on your clipboard: `https://www.google.com/search?q={clipboard}`
+
+Some things to know:
+
+*   If an item needs the selected text, a selected file or an open folder and there is none, the item stops before doing anything and tells you why.
+*   If a File Explorer window has several tabs, the file or folder may come from a different tab than the one you see.
+*   `{clipboard}`, `{selection}`, `{file}` and `{folder}` can't be used in the arguments of `.bat` and `.cmd` files, because the text could run as commands.
+*   To type a brace, double it: `{{` gives `{` and `}}` gives `}`. This matters if a text snippet you already have contains double braces.
 
 Examples of Use
 ---------------
@@ -328,10 +366,10 @@ You can make a shortcut behave differently depending on the application you are 
 
 To create an app-specific shortcut:
 
-1.  Check the "Restrict this shortcut..." box in the item dialog.
-2.  Go to the target application.
-3.  Press `NVDA+Shift+E` twice quickly to copy its name to the clipboard.
-4.  Paste the name into the "App name" field.
+1.  Go to the target application, then open the settings.
+2.  Check the "Restrict this shortcut..." box in the item dialog. The "App names" field is filled with that application.
+
+To add another application, go to it and press `NVDA+Shift+E` twice quickly to copy its name. Then paste it into the "App names" field after a comma.
 
 If a global shortcut and an app-specific shortcut use the same gesture, the **app-specific one will always take priority** when its app is active.
 
@@ -347,7 +385,10 @@ Import and Export
 -----------------
 
 You can back up your entire configuration or move it to another computer using the **Import settings** and **Export settings** buttons. The configuration is stored in a `config.json` file.
-**Note:** Importing a configuration will overwrite your existing settings.
+After you choose a file to import, the add-on asks what to do with it:
+
+*   **Replace:** All your items and settings are replaced by the ones in the file.
+*   **Merge:** The items in the file that have a new name and a free shortcut are added. Your settings stay as they are, and the add-on tells you how many items were added and skipped.
 
 Super User Recipes (Argument-Driven Workflows)
 ----------------------------------------------
@@ -762,3 +803,5 @@ License
 
 Copyright (C) 2026 Kamal Yaser.
 This add-on is licensed under the GNU General Public License (GPL) Version 2 or any later version.
+
+It includes a trimmed copy of the [keyboard](https://github.com/boppreh/keyboard) library by BoppreH, under the MIT License. The license text is in `globalPlugins/core/keyboard/LICENSE.txt`.

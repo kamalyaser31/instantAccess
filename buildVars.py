@@ -14,9 +14,19 @@ addon_info = AddonInfo(
 		"""A powerful productivity tool to launch websites, files, folders, and programs quickly using a dedicated layer.
 	Features include background execution, verbosity levels, command line arguments, and settings import/export."""
 	),
-	addon_version="2026.6",
+	addon_version="2026.7",
 	addon_changelog=_(
 		"""
+- Version 2026.7:
+  - Find and run items: F1 or H in Instant Access mode opens a list you can filter. Press Enter to run the selected item.
+  - Stop a running item: Press NVDA+E while an item or a test is running.
+  - Variables: Use the date, the time, the clipboard, the selected text, or the file or folder from File Explorer in snippets, website addresses and program arguments.
+  - Several apps for one item, and the app name is filled in for you.
+  - Reorder items with Ctrl+Up and Ctrl+Down, filter the settings list, and turn items off without deleting them.
+  - Choose whether items speak their name when they run.
+  - Run programs as administrator, and record keystrokes with a button.
+  - Importing can merge new items into your own, and pasting a snippet keeps what you had copied.
+  - Fixed: Keystrokes such as Shift+End now select text, editing keeps an item in its place, and shortcuts with the Windows key work after NVDA restarts.
 - Version 2026.6:
   - Browse your items: In Instant Access mode, use the arrow keys or Tab to hear your items and Enter to run one; F1 or H lists them all. Turn it on in the add-on settings.
   - Safer settings: A damaged or missing settings file can be restored from the backup, and your items are no longer lost when something goes wrong.
