@@ -6,38 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2026.7] - 2026-11-07
 
-### Added
-- **Run as administrator**: A program action can now start the program with administrator rights. Windows shows its usual prompt, and if you decline it, the add-on says "Cancelled".
-- **Reorder your items**: In the settings list, press `Ctrl+Up` or `Ctrl+Down` to move the selected item.
-- **Announce the item name or not**: A new option in the settings turns off speaking an item's name when it runs, for all items. Each item can also follow this option, always announce, or never announce.
-- **Turn an item off**: Untick "Enabled" in an item to stop using it without deleting it. The settings list marks it as disabled.
-- **Filter the settings list**: Type in the new Filter field to find items by name.
-- **Several apps for one item**: The app field now takes several names separated by commas, such as `notepad, winword`.
-- **Merge when importing**: After you choose a settings file, you can replace everything or merge. Merging adds the items that have a new name and a free shortcut, keeps your settings, and tells you how many were added and skipped.
-- **Find and run items from a list**: In Instant Access mode, `F1` or `H` now opens a list of your items. Type to filter it by name, shortcut, app or action, then press `Enter` to run the selected item.
-- **Stop a running item**: Press `NVDA+E` while an item or a test is running to stop it and drop any items waiting to run.
-- **Variables**: Text snippets, website addresses and program arguments can now use the date, the time, the clipboard text, the selected text, and the selected file or open folder in File Explorer. The new "Insert variable" button adds them for you. For a literal brace, type it twice.
-- **Record keystrokes**: In a keystrokes action, the new "Add keystroke" button records the keys you press, one line each, until you press Escape. A key pressed several times in a row becomes one line, such as `down 3`, so you do not need to type key names.
+### Before you update
+- **Text with braces**: Text snippets, website addresses and program arguments now understand variables. If one of your items contains `{date}`, `{time}`, `{clipboard}`, `{selection}`, `{file}` or `{folder}`, that word is now replaced when the item runs, and `{{` now gives `{`. Check such items after updating.
 
-### Fixed
-- **Access keys in the item dialog**: Delete and Move down no longer share `Alt+D`. Move down now uses `Alt+W`.
-- **Editing keeps the item's place**: After you edit an item, it stays where it was in the list instead of moving to the end.
-- **Testing an item from the settings**: If an item types text or presses keys, the Test button in the settings now asks first and waits 3 seconds, so you can switch to the window you want. Before, the text went into the settings window.
-- **Correct number of commands**: When you turn on Instant Access mode, the number you hear counts only the items you can use in the current program.
-- **Shortcuts with the Windows key**: Items whose shortcut uses the Windows key together with another modifier, such as `Windows+Alt+X`, work reliably again. Before, they could stop working after NVDA restarted.
-- **Selecting with Shift in keystrokes**: Keystrokes such as `Shift+End`, `Shift+Home` or `Shift+Down` now select text as they do when you press them yourself. Before, the cursor moved but nothing was selected.
-- **Running NVDA without installing it**: When NVDA runs from the installer before it is installed, the add-on no longer creates a settings file. If you try to save, a message tells you why it cannot.
-- **Programs found by name**: Names such as `notepad` or `cmd` now work when another add-on has changed how NVDA finds programs. Before, the add-on said "File not found".
-- **Choosing an NVDA command**: The list of NVDA commands is now read in a safer way, which avoids rare errors while it opens.
+### Added
+- **Variables**: Text snippets, website addresses and program arguments can use the date, the time, the clipboard text, the selected text, and the selected file or open folder in File Explorer. The new "Insert variable" button adds them for you. For example, one key can search Google for the words you selected.
+- **Find and run items from the list**: The list that `F1` or `H` opens in Instant Access mode now has a filter. Type a word to find an item by name, shortcut, app or action, then press `Enter` to run it. This list needs browsing turned on in the add-on settings.
+- **Stop a running item**: Press `NVDA+E` while an item or a test is running to stop it and drop any items waiting to run.
+- **Record keystrokes**: In a keystrokes action, the "Add keystroke" button records the keys you press, one line each, until you press `Escape`. A key pressed several times in a row becomes one line, such as `down 3`, and `Ctrl`, `Alt` or `Shift` pressed alone is recorded too.
+- **Several apps for one item**: The app field takes several names separated by commas, such as `notepad, winword`.
+- **Merge when importing**: After you choose a settings file, you can replace everything or merge. Merging adds the items that have a new name and a free shortcut, keeps your settings, and tells you how many were added and skipped.
+- **Turn an item off**: Untick "Enabled" in an item to stop using it without deleting it. The settings list marks it as disabled.
+- **Reorder your items**: In the settings list, press `Ctrl+Up` or `Ctrl+Down` to move the selected item.
+- **Filter the settings list**: Type in the new Filter field to find items by name.
+- **Announce the item name or not**: A new option turns off speaking an item's name when it runs, for all items. Each item can also follow this option, always announce, or never announce.
+- **Run as administrator**: A program action can start the program with administrator rights. Windows shows its usual prompt, and if you decline it, the add-on says "Cancelled".
 
 ### Changed
 - **Your clipboard is kept**: After a text snippet is pasted, the text you had copied before comes back to the clipboard. Only text can be restored.
 - **App name filled in for you**: When you tick "Restrict this shortcut to work in certain apps", the app name field is filled with the program you were using before you opened the settings. You can still change it.
-- **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct now when a keyboard layout without Latin letters, such as Arabic, is active.
-- **Faster mode switching**: Turning on Instant Access mode no longer reads the settings file every time. If the settings file is damaged and you choose not to restore the backup, you are asked only once per session.
-- **New user guide**: The English and Arabic guides were rewritten. They now start with your first item, show eight practical examples, and say the same things in both languages.
-- **Smaller add-on**: Unused parts of the built-in keyboard library were removed, and its license notice was added.
-- **Translations**: The Simplified Chinese translation was improved, thanks to cary-rowen, and the Arabic translation is up to date. Every translatable message now has a note that explains it to translators.
+- **Shortcut names**: Shortcuts in the settings list, on the Shortcut button and while browsing use the same key names as NVDA's Input Gestures dialog, in your language. They are also correct when a keyboard layout without Latin letters, such as Arabic, is active.
+- **Damaged settings file**: If the settings file is damaged and you choose not to restore the backup, you are asked only once until NVDA restarts.
+- **New user guide**: The English and Arabic guides were rewritten. They start with your first item, show eight practical examples, and say the same things in both languages.
+- **Translations**: The Arabic translation is up to date.
+
+### Fixed
+- **Programs found by name**: Names such as `notepad` or `cmd` work again when another add-on, such as the Acapela voices, has changed how NVDA finds programs. Before, the add-on said "File not found".
+- **Selecting with Shift in keystrokes**: Keystrokes such as `Shift+End`, `Shift+Home` or `Shift+Down` now select text as they do when you press them yourself. Before, the cursor moved but nothing was selected.
+- **Shortcuts with the Windows key**: Items whose shortcut uses the Windows key together with another modifier, such as `Windows+Alt+X`, work reliably again. Before, they could stop working after NVDA restarted.
+- **Editing keeps the item's place**: After you edit an item, it stays where it was in the list instead of moving to the end.
+- **Testing an item from the settings**: If an item types text or presses keys, the Test button in the settings now asks first and waits 3 seconds, so you can switch to the window you want. Before, the text went into the settings window.
+- **Correct number of commands**: When you turn on Instant Access mode, the number you hear counts only the items you can use in the current program.
+- **Access keys in the item dialog**: Delete and Move down no longer share `Alt+D`. Move down now uses `Alt+W`.
+- **Running NVDA without installing it**: When NVDA runs from the installer before it is installed, the add-on no longer creates a settings file. If you try to save, a message tells you why it cannot.
 
 ## [2026.6] - 2026-09-30
 
