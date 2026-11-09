@@ -4,7 +4,7 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2026.7] - 2026-11-07
+## [2026.7] - 2026-11-09
 
 ### Before you update
 - **Text with braces**: Text snippets, website addresses and program arguments now understand variables. If one of your items contains `{date}`, `{time}`, `{clipboard}`, `{selection}`, `{file}` or `{folder}`, that word is now replaced when the item runs, and `{{` now gives `{`. Check such items after updating.

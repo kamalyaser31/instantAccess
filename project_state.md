@@ -3,7 +3,7 @@
 ## Overview
 - **Name:** instantAccess
 - **Type:** NVDA Add-on
-- **Version:** 2026.7 (prepared on `feat/2026.7`; the published version is 2026.6)
+- **Version:** 2026.7 (released 2026-11-09)
 - **Repository:** https://github.com/kamalyaser31/instantAccess
 - **Target NVDA Versions:** Minimum 2024.1.0, Last Tested 2026.1
 
