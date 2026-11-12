@@ -10,7 +10,6 @@ import wx
 from .constants import CATEGORY_LABEL
 
 
-
 # Captured key names that the keyboard library spells differently.
 _KEYSTROKE_NAMES = {
 	"leftarrow": "left",
@@ -19,8 +18,18 @@ _KEYSTROKE_NAMES = {
 	"downarrow": "down",
 	"pageup": "page up",
 	"pagedown": "page down",
+	"numpad1": "numpadend",
+	"numpad2": "numpaddown",
+	"numpad3": "numpadpagedown",
+	"numpad4": "numpadleft",
+	"numpad5": "numpadclear",
+	"numpad6": "numpadright",
+	"numpad7": "numpadhome",
+	"numpad8": "numpadup",
+	"numpad9": "numpadpageup",
 	",": "comma",
 }
+_KEYSTROKE_NAMES.update((f"numlocknumpad{digit}", f"numpad{digit}") for digit in range(10))
 
 
 def parseAppNames(value):
@@ -123,7 +132,7 @@ def getKeyNameFromEvent(event):
 	if wx.WXK_F1 <= keyCode <= wx.WXK_F24:
 		return f"f{keyCode - wx.WXK_F1 + 1}"
 	if wx.WXK_NUMPAD0 <= keyCode <= wx.WXK_NUMPAD9:
-		return f"numpad{keyCode - wx.WXK_NUMPAD0}"
+		return f"numLockNumpad{keyCode - wx.WXK_NUMPAD0}"
 	keyMap = {
 		wx.WXK_RETURN: "enter",
 		wx.WXK_ESCAPE: "escape",
@@ -144,8 +153,23 @@ def getKeyNameFromEvent(event):
 		wx.WXK_SUBTRACT: "numpadMinus",
 		wx.WXK_MULTIPLY: "numpadMultiply",
 		wx.WXK_DIVIDE: "numpadDivide",
+		wx.WXK_NUMPAD_ADD: "numpadPlus",
+		wx.WXK_NUMPAD_SUBTRACT: "numpadMinus",
+		wx.WXK_NUMPAD_MULTIPLY: "numpadMultiply",
+		wx.WXK_NUMPAD_DIVIDE: "numpadDivide",
 		wx.WXK_NUMPAD_DECIMAL: "numpadDecimal",
 		wx.WXK_NUMPAD_ENTER: "numpadEnter",
+		wx.WXK_NUMPAD_HOME: "numpad7",
+		wx.WXK_NUMPAD_END: "numpad1",
+		wx.WXK_NUMPAD_UP: "numpad8",
+		wx.WXK_NUMPAD_DOWN: "numpad2",
+		wx.WXK_NUMPAD_LEFT: "numpad4",
+		wx.WXK_NUMPAD_RIGHT: "numpad6",
+		wx.WXK_NUMPAD_PAGEUP: "numpad9",
+		wx.WXK_NUMPAD_PAGEDOWN: "numpad3",
+		wx.WXK_NUMPAD_INSERT: "numpadInsert",
+		wx.WXK_NUMPAD_DELETE: "numpadDelete",
+		wx.WXK_NUMPAD_BEGIN: "numpad5",
 	}
 	if keyCode in keyMap:
 		return keyMap[keyCode]
