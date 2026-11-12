@@ -28,29 +28,27 @@ def _is_str(x):
 	return isinstance(x, str)
 
 
-def key_to_scan_codes(key, error_if_missing=True):
+def key_to_events(key, error_if_missing=True):
 	"""
-	Returns a list of scan codes associated with this key (name or scan code).
+	Returns candidate key events for a key name, or the supplied raw scan code.
 	"""
 	if _is_number(key):
 		return (key,)
 	elif _is_list(key):
-		return sum((key_to_scan_codes(i) for i in key), ())
+		return sum((key_to_events(i) for i in key), ())
 	elif not _is_str(key):
 		raise ValueError("Unexpected key type " + str(type(key)) + ", value (" + repr(key) + ")")
 
 	normalized = normalize_name(key)
 	if normalized in sided_modifiers:
-		left_scan_codes = key_to_scan_codes("left " + normalized, False)
-		right_scan_codes = key_to_scan_codes("right " + normalized, False)
-		return left_scan_codes + tuple(c for c in right_scan_codes if c not in left_scan_codes)
+		left_keys = key_to_events("left " + normalized, False)
+		right_keys = key_to_events("right " + normalized, False)
+		return left_keys + tuple(c for c in right_keys if c not in left_keys)
 
 	try:
 		# Put items in ordered dict to remove duplicates.
 		t = tuple(
-			_collections.OrderedDict(
-				(scan_code, True) for scan_code, modifier in _os_keyboard.map_name(normalized)
-			),
+			_collections.OrderedDict((key, True) for key, modifier in _os_keyboard.map_name(normalized)),
 		)
 		e = None
 	except (KeyError, ValueError) as exception:
@@ -66,7 +64,7 @@ def key_to_scan_codes(key, error_if_missing=True):
 def parse_hotkey(hotkey):
 	"""
 	Parses a user-provided hotkey into nested tuples representing the
-	parsed structure, with the bottom values being lists of scan codes.
+	parsed structure, with the bottom values being lists of candidate key events.
 	Also accepts raw scan codes, which are then wrapped in the required
 	number of nestings.
 
@@ -79,13 +77,13 @@ def parse_hotkey(hotkey):
 	    # ((alt_codes, shift_codes, a_codes), (alt_codes, b_codes), (c_codes,))
 	"""
 	if _is_number(hotkey) or len(hotkey) == 1:
-		scan_codes = key_to_scan_codes(hotkey)
-		step = (scan_codes,)
+		keys = key_to_events(hotkey)
+		step = (keys,)
 		steps = (step,)
 		return steps
 	elif _is_list(hotkey):
 		if not any(map(_is_list, hotkey)):
-			step = tuple(key_to_scan_codes(k) for k in hotkey)
+			step = tuple(key_to_events(k) for k in hotkey)
 			steps = (step,)
 			return steps
 		return hotkey
@@ -93,7 +91,7 @@ def parse_hotkey(hotkey):
 	steps = []
 	for step in _re.split(r",\s?", hotkey):
 		keys = _re.split(r"\s?\+\s?", step)
-		steps.append(tuple(key_to_scan_codes(key) for key in keys))
+		steps.append(tuple(key_to_events(key) for key in keys))
 	return tuple(steps)
 
 
@@ -114,18 +112,18 @@ def send(hotkey, do_press=True, do_release=True):
 	try:
 		for step in parsed:
 			if do_press:
-				for scan_codes in step:
-					_os_keyboard.press(scan_codes[0])
-					pressed.append(scan_codes[0])
+				for keys in step:
+					_os_keyboard.press(keys[0])
+					pressed.append(keys[0])
 			if do_release:
-				for scan_codes in reversed(step):
-					_os_keyboard.release(scan_codes[0])
-					if scan_codes[0] in pressed:
-						pressed.remove(scan_codes[0])
+				for keys in reversed(step):
+					_os_keyboard.release(keys[0])
+					if keys[0] in pressed:
+						pressed.remove(keys[0])
 	except Exception:
-		for scan_code in reversed(pressed):
+		for key in reversed(pressed):
 			try:
-				_os_keyboard.release(scan_code)
+				_os_keyboard.release(key)
 			except Exception:
 				pass
 		raise
