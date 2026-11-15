@@ -4,6 +4,11 @@ All notable changes to the **instantAccess** add-on will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Keystrokes**: Right Ctrl and Right Alt are now sent as themselves, not as other keys, and keypad keys such as `numpad1` and `num 1` press the keypad key, not the number row. Keypad keys can now be recorded, and a shortcut taken from a keypad key gets the same name NVDA uses. Thanks to Cary Rowen.
+
 ## [2026.7] - 2026-11-09
 
 ### Before you update

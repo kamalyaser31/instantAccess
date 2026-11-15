@@ -4,3 +4,4 @@ The full scope is in [plan-2026.7.md](plan-2026.7.md). M1 to M2d are done in the
 
 - [ ] zh_CN strings and guide: 2026.7 shipped without them on 2026-11-09 because the translator was late. Their update (issue #25) goes into the next release, with a thank-you line in the changelog.
 - [ ] Later release: stop keystrokes and typing when the foreground program changes (idea from nvdaMacroManager; compare process, not window, because Shift+F10 opens a menu window).
+- [ ] Next release: ships PR #26 (Cary Rowen, keystroke key identity and keypad names), merged 2026-11-15 without a live NVDA test by Kamal's choice; its changelog line is under Unreleased.
