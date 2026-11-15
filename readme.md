@@ -209,7 +209,7 @@ To add a second program to an item, go to that program and press `NVDA+Shift+E` 
 *   **Text snippet:** Uses your own text in one of three ways:
     *   **Type the text:** Types it as if you pressed the keys. **Typing delay** sets the pause between characters.
     *   **Copy:** Puts it on the clipboard.
-    *   **Paste:** Pastes it, then puts your old text back on the clipboard. Only text can be restored.
+    *   **Paste:** Pastes it, then puts your old text back on the clipboard. Only text can be restored: if the clipboard holds an image, or files copied in File Explorer, they are lost. In that case, choose **Type the text** instead.
 *   **Keystrokes:** Presses keys, one key or shortcut per line, such as `alt+f4` or `shift+f10`.
     *   To repeat a key, add a space and a number: `down 5`.
     *   A line that starts with `#` is skipped, so you can use it for a note.
