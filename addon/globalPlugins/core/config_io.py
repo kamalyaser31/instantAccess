@@ -264,7 +264,7 @@ def loadConfigSafe(configPath):
 		log.debugWarning("instantAccess: no config file yet; using defaults")
 		return _defaultConfig()
 	try:
-		with open(configPath, "r", encoding="utf-8") as handle:
+		with open(configPath, "r", encoding="utf-8-sig") as handle:
 			rawConfig = json.load(handle)
 		return _normalizeConfig(rawConfig)
 	except Exception as e:
@@ -277,6 +277,6 @@ def loadConfigSafe(configPath):
 
 
 def loadConfigFromPathStrict(configPath):
-	with open(configPath, "r", encoding="utf-8") as handle:
+	with open(configPath, "r", encoding="utf-8-sig") as handle:
 		rawConfig = json.load(handle)
 	return _normalizeConfig(rawConfig)

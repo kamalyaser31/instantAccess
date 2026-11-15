@@ -416,7 +416,8 @@ def executeInstantAction(action, cancelEvent=None, context=None):
 			# Translators: Announced when a website action has no address.
 			queueMessage(_("Error: URL is empty"))
 			return False
-		if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", url):
+		# A number after the colon is a port, as in localhost:8080, not a scheme such as ms-settings:.
+		if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:(?!\d)", url):
 			url = "https://" + url
 		try:
 			if webbrowser.open(url):

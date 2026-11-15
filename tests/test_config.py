@@ -96,6 +96,10 @@ class ConfigTests(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					io.loadConfigFromPathStrict(self.path)
 
+	def test_a_file_saved_with_a_bom_still_loads(self):
+		Path(self.path).write_text(json.dumps(self.config), encoding="utf-8-sig")
+		self.assertEqual(io.loadConfigFromPathStrict(self.path)["items"][0]["name"], "original")
+
 	def test_invalid_items_are_not_silently_discarded(self):
 		for field, value in (("name", 123), ("gesture", None), ("actions", []), ("interval", "inf")):
 			with self.subTest(field=field):

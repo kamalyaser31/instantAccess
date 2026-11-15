@@ -16,6 +16,17 @@ import auditcore.nvda_commands as commands
 
 
 class ExecutionTests(unittest.TestCase):
+	def test_an_address_with_a_port_gets_https_but_a_scheme_does_not(self):
+		for typed, opened in (
+			("localhost:8080", "https://localhost:8080"),
+			("example.com:8080/page", "https://example.com:8080/page"),
+			("ms-settings:display", "ms-settings:display"),
+			("https://example.com", "https://example.com"),
+		):
+			with self.subTest(typed=typed), patch.object(ex.webbrowser, "open", return_value=True) as browserOpen:
+				self.assertTrue(ex.executeInstantAction({"type": "Websites", "path": typed}))
+				browserOpen.assert_called_once_with(opened)
+
 	def setUp(self):
 		self.mainQueue = queue.Queue()
 		self.scriptQueue = queue.Queue()

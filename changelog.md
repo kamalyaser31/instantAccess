@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Keystrokes**: Right Ctrl and Right Alt are now sent as themselves, not as other keys, and keypad keys such as `numpad1` and `num 1` press the keypad key, not the number row. Keypad keys can now be recorded, and a shortcut taken from a keypad key gets the same name NVDA uses. Thanks to Cary Rowen.
+- **Website addresses**: An address with a port, such as `localhost:8080`, now opens. Before, it was not treated as a website address.
+- **Settings files**: A settings file saved by an editor that adds a hidden mark (BOM) at its start now loads and imports. Before, it was treated as damaged.
 
 ## [2026.7] - 2026-11-09
 
