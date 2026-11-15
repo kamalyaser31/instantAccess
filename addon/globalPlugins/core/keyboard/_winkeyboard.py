@@ -415,8 +415,54 @@ keypad_keys = [
 	(83, 110, 0),
 	(83, 46, 0),
 ]
+# (scan code, virtual key, extended). Special keys must not compete with localized
+# GetKeyNameText results: for example, Windows can call Pause's E1 scan code "Right Ctrl".
+NAMED_KEYS = {
+	"enter": (0x1C, 0x0D, False),
+	"pause": (0x45, 0x13, False),
+	"page up": (0x49, 0x21, True),
+	"page down": (0x51, 0x22, True),
+	"end": (0x4F, 0x23, True),
+	"home": (0x47, 0x24, True),
+	"left": (0x4B, 0x25, True),
+	"up": (0x48, 0x26, True),
+	"right": (0x4D, 0x27, True),
+	"down": (0x50, 0x28, True),
+	"print screen": (0x37, 0x2C, True),
+	"insert": (0x52, 0x2D, True),
+	"delete": (0x53, 0x2E, True),
+	"left windows": (0x5B, 0x5B, True),
+	"right windows": (0x5C, 0x5C, True),
+	"menu": (0x5D, 0x5D, True),
+	"num lock": (0x45, 0x90, True),
+	"left shift": (0x2A, 0xA0, False),
+	"right shift": (0x36, 0xA1, False),
+	"left ctrl": (0x1D, 0xA2, False),
+	"right ctrl": (0x1D, 0xA3, True),
+	"left alt": (0x38, 0xA4, False),
+	"right alt": (0x38, 0xA5, True),
+	"numpadenter": (0x1C, 0x0D, True),
+	"numpadmultiply": (0x37, 0x6A, False),
+	"numpadplus": (0x4E, 0x6B, False),
+	"numpadminus": (0x4A, 0x6D, False),
+	"numpaddecimal": (0x53, 0x6E, False),
+	"numpaddivide": (0x35, 0x6F, True),
+	"numpadclear": (0x4C, 0x0C, False),
+}
+NAMED_KEYS.update(
+	(f"numpad{digit}", (scan, 0x60 + digit, False))
+	for digit, scan in enumerate((0x52, 0x4F, 0x50, 0x51, 0x4B, 0x4C, 0x4D, 0x47, 0x48, 0x49))
+)
+NAMED_KEYS.update(
+	("numpad" + name.replace(" ", ""), (*NAMED_KEYS[name][:2], False))
+	for name in ("home", "end", "up", "down", "left", "right", "page up", "page down", "insert", "delete")
+)
+
 
 def map_name(name):
+	if name in NAMED_KEYS:
+		yield NAMED_KEYS[name], ()
+		return
 	_setup_name_tables()
 
 	entries = from_name.get(name)
@@ -424,7 +470,10 @@ def map_name(name):
 		raise ValueError("Key name {} is not mapped to any known key.".format(repr(name)))
 	for i, entry in entries:
 		scan_code, vk, is_extended, modifiers = entry
-		yield scan_code or -vk, modifiers
+		if scan_code == 541:
+			yield scan_code, modifiers
+		else:
+			yield (scan_code & 0xFF, vk, bool(is_extended or scan_code >> 8 == 0xE0)), modifiers
 
 
 # Page Up/Down, End, Home, the arrows, Insert and Delete. Without the extended flag Windows
@@ -437,7 +486,11 @@ def _with_extended_flag(vk, event_type):
 
 
 def _send_event(code, event_type):
-	if code == 541:
+	if isinstance(code, tuple):
+		scan_code, vk, is_extended = code
+		flags = event_type | (KEYEVENTF_EXTENDEDKEY if is_extended else 0)
+		user32.keybd_event(vk, scan_code, flags, 0)
+	elif code == 541:
 		# Alt-gr is made of ctrl+alt. Just sending even 541 doesn't do anything.
 		user32.keybd_event(0x11, code, event_type, 0)
 		user32.keybd_event(0x12, code, event_type, 0)

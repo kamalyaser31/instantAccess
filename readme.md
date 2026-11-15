@@ -213,7 +213,7 @@ To add a second program to an item, go to that program and press `NVDA+Shift+E` 
 *   **Keystrokes:** Presses keys, one key or shortcut per line, such as `alt+f4` or `shift+f10`.
     *   To repeat a key, add a space and a number: `down 5`.
     *   A line that starts with `#` is skipped, so you can use it for a note.
-    *   **Add keystroke:** Press this button, then press the keys you want, one after another, and press `Escape` to finish. Each key becomes a new line, and a key pressed several times in a row becomes one line, such as `down 3`. `Ctrl`, `Alt` or `Shift` pressed alone is recorded too, and you hear it when you press the next key. Numeric keypad keys can't be recorded, and `Escape` finishes, so type `esc` if you need it.
+    *   **Add keystroke:** Press this button, then press the keys you want, one after another, and press `Escape` to finish. Each key becomes a new line, and a key pressed several times in a row becomes one line, such as `down 3`. `Ctrl`, `Alt` or `Shift` pressed alone is recorded too, and you hear it when you press the next key. Numeric keypad keys use separate names such as `numpad1`, `numpadEnter`, and `numpadDivide`; keypad navigation keys use names such as `numpadHome`. NVDA may handle a keypad key before the recorder receives it, especially with Num Lock off; in that case, type the key name yourself. `Escape` finishes recording, so type `esc` if you need it.
     *   **Delay between keystrokes (seconds):** The pause between keys.
 
 Every action also has:
