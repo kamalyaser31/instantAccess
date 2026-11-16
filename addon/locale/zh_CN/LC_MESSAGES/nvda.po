@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: instantAccess 2026.6\n"
+"Project-Id-Version: instantAccess 2026.7\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
 "POT-Creation-Date: 2026-11-08 00:14+0200\n"
-"PO-Revision-Date: 2026-10-01 00:17+0800\n"
+"PO-Revision-Date: 2026-11-17 00:00+0800\n"
 "Last-Translator: cary-rowen <manchen_0528@outlook.com>\n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -188,15 +188,15 @@ msgstr "按快捷键排序"
 #. Translators: Choices for whether one item speaks its name when it runs.
 #: addon\globalPlugins\core\constants.py:94
 msgid "Use the general setting"
-msgstr ""
+msgstr "使用常规设置"
 
 #: addon\globalPlugins\core\constants.py:94
 msgid "Announce"
-msgstr ""
+msgstr "朗读"
 
 #: addon\globalPlugins\core\constants.py:94
 msgid "Do not announce"
-msgstr ""
+msgstr "不朗读"
 
 #. Translators: Announced when too many items are queued to run.
 #: addon\globalPlugins\core\executor.py:132
@@ -248,9 +248,8 @@ msgstr "错误：无法粘贴文本片段"
 
 #. Translators: Announced when the text copied before a paste could not be put back.
 #: addon\globalPlugins\core\executor.py:329
-#, fuzzy
 msgid "Error: Could not restore the clipboard"
-msgstr "错误：无法启动程序"
+msgstr "错误：无法恢复剪贴板"
 
 #. Translators: Announced when typing a snippet failed.
 #: addon\globalPlugins\core\executor.py:340
@@ -303,9 +302,8 @@ msgstr "错误：无法打开文件"
 #. Translators: Announced when NVDA+E stops a running item.
 #: addon\globalPlugins\core\executor.py:512
 #: addon\globalPlugins\core\plugin.py:285
-#, fuzzy
 msgid "Cancelled"
-msgstr "取消(&C)"
+msgstr "已取消"
 
 #. Translators: Announced when a program failed to start.
 #: addon\globalPlugins\core\executor.py:516
@@ -330,19 +328,18 @@ msgstr "instantAccess 项目"
 
 #. Translators: Label for filter field in instant Access help dialog.
 #: addon\globalPlugins\core\help_dialog.py:29
-#, fuzzy
 msgid "&Filter:"
-msgstr "查找"
+msgstr "查找(&F)："
 
 #. Translators: Label for items list in instant Access help dialog.
 #: addon\globalPlugins\core\help_dialog.py:32
 msgid "&Items:"
-msgstr ""
+msgstr "项目(&I)："
 
 #. Translators: Button to run the selected instant Access item.
 #: addon\globalPlugins\core\help_dialog.py:39
 msgid "&Run"
-msgstr ""
+msgstr "运行(&R)"
 
 #. Translators: Summary of a text snippet action, e.g. "Paste: Hello".
 #: addon\globalPlugins\core\item_dialog.py:80
@@ -373,15 +370,13 @@ msgstr "请按下要设置的快捷键，按 Esc 取消。"
 
 #. Translators: Title of the dialog that records keys for a keystrokes action.
 #: addon\globalPlugins\core\item_dialog.py:172
-#, fuzzy
 msgid "Record keystrokes"
-msgstr "按键序列"
+msgstr "录制按键序列"
 
 #. Translators: Instruction in the dialog that records keys for a keystrokes action.
 #: addon\globalPlugins\core\item_dialog.py:178
-#, fuzzy
 msgid "Press the keys to record. Escape finishes."
-msgstr "请按下要设置的快捷键，按 Esc 取消。"
+msgstr "请按下要录制的按键，按 Escape 完成。"
 
 #. Translators: Error shown when a captured key cannot be sent by a keystrokes action.
 #. Translators: Error shown when the captured key is not a valid NVDA gesture.
@@ -418,7 +413,7 @@ msgstr "浏览"
 #: addon\globalPlugins\core\item_dialog.py:257
 #: addon\globalPlugins\core\item_dialog.py:286
 msgid "Insert &variable…"
-msgstr ""
+msgstr "插入变量(&V)…"
 
 #. Translators: Label of the optional command line arguments field.
 #: addon\globalPlugins\core\item_dialog.py:253
@@ -428,7 +423,7 @@ msgstr "参数（可选）"
 #. Translators: Checkbox that starts a program with administrator rights.
 #: addon\globalPlugins\core\item_dialog.py:262
 msgid "Run as &administrator"
-msgstr ""
+msgstr "以管理员身份运行(&A)"
 
 #. Translators: Button that opens the NVDA command picker.
 #: addon\globalPlugins\core\item_dialog.py:271
@@ -437,9 +432,8 @@ msgstr "选择命令"
 
 #. Translators: Button that captures a key press and adds it to the keystrokes field.
 #: addon\globalPlugins\core\item_dialog.py:281
-#, fuzzy
 msgid "Add keystroke"
-msgstr "按键序列"
+msgstr "添加按键"
 
 #. Translators: Label of the choice between typing, copying and pasting a snippet.
 #: addon\globalPlugins\core\item_dialog.py:293
@@ -477,32 +471,32 @@ msgstr "按键间隔（秒）"
 #. Translators: Menu item to insert the {date} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:417
 msgid "&Date"
-msgstr ""
+msgstr "日期(&D)"
 
 #. Translators: Menu item to insert the {time} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:419
 msgid "&Time"
-msgstr ""
+msgstr "时间(&T)"
 
 #. Translators: Menu item to insert the {clipboard} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:421
 msgid "&Clipboard text"
-msgstr ""
+msgstr "剪贴板文本(&C)"
 
 #. Translators: Menu item to insert the {selection} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:423
 msgid "&Selected text"
-msgstr ""
+msgstr "所选文本(&S)"
 
 #. Translators: Menu item to insert the {file} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:425
 msgid "Selected &file (File Explorer)"
-msgstr ""
+msgstr "所选文件（文件资源管理器）(&F)"
 
 #. Translators: Menu item to insert the {folder} variable into the text field.
 #: addon\globalPlugins\core\item_dialog.py:427
 msgid "Open f&older (File Explorer)"
-msgstr ""
+msgstr "打开的文件夹（文件资源管理器）(&O)"
 
 #. Translators: Title of the folder chooser.
 #: addon\globalPlugins\core\item_dialog.py:453
@@ -615,7 +609,6 @@ msgstr "上移(&U)"
 
 #. Translators: Button that moves the selected action down.
 #: addon\globalPlugins\core\item_dialog.py:631
-#, fuzzy
 msgid "Move do&wn"
 msgstr "下移(&W)"
 
@@ -632,12 +625,12 @@ msgstr "操作失败时停止执行剩余操作"
 #. Translators: Label of the choice whether this item speaks its name when it runs.
 #: addon\globalPlugins\core\item_dialog.py:652
 msgid "Announce the name when this item runs"
-msgstr ""
+msgstr "运行此项目时朗读名称"
 
 #. Translators: Checkbox that turns an item on or off without deleting it.
 #: addon\globalPlugins\core\item_dialog.py:659
 msgid "Enabled"
-msgstr ""
+msgstr "启用"
 
 #. Translators: Label of the button that sets the item's shortcut.
 #. Translators: Column label for shortcut in the list.
@@ -654,12 +647,12 @@ msgstr "仅在指定应用程序中启用此快捷键"
 #. Translators: Label of the field for the apps the item is limited to.
 #: addon\globalPlugins\core\item_dialog.py:715
 msgid "App names, separated by commas"
-msgstr ""
+msgstr "应用程序名称，以逗号分隔"
 
 #. Translators: Hint shown inside the empty app names field.
 #: addon\globalPlugins\core\item_dialog.py:718
 msgid "notepad, winword"
-msgstr ""
+msgstr "notepad, winword"
 
 #. Translators: Label of the shortcut button. {gesture} is the shortcut, for example g.
 #: addon\globalPlugins\core\item_dialog.py:753
@@ -757,22 +750,22 @@ msgstr "错误：该 NVDA 命令当前不可用"
 #. Translators: Announced when variables are used in arguments of a batch file.
 #: addon\globalPlugins\core\placeholders.py:197
 msgid "Error: Cannot use variables in batch file arguments."
-msgstr ""
+msgstr "错误：不能在批处理文件参数中使用变量。"
 
 #. Translators: Announced when {selection} is used but nothing is selected.
 #: addon\globalPlugins\core\placeholders.py:200
 msgid "No text is selected."
-msgstr ""
+msgstr "未选择文本。"
 
 #. Translators: Announced when {file} is used but no file is selected in File Explorer.
 #: addon\globalPlugins\core\placeholders.py:203
 msgid "No file is selected in File Explorer."
-msgstr ""
+msgstr "文件资源管理器中未选择文件。"
 
 #. Translators: Announced when {folder} is used but no folder is open in File Explorer.
 #: addon\globalPlugins\core\placeholders.py:206
 msgid "No folder is open in File Explorer."
-msgstr ""
+msgstr "文件资源管理器中没有打开的文件夹。"
 
 #. Translators: Announced when instant Access mode is turned on but no items exist.
 #: addon\globalPlugins\core\plugin.py:226
@@ -827,7 +820,7 @@ msgstr "应用程序名称已复制到剪贴板。"
 msgid ""
 "NVDA is running from the launcher or in secure mode, so settings cannot be "
 "saved."
-msgstr ""
+msgstr "NVDA 正在启动器或安全模式下运行，因此无法保存设置。"
 
 #. Translators: First part of the result of merging imported items; {count} is a number.
 #: addon\globalPlugins\core\settings_panel.py:46
@@ -847,7 +840,7 @@ msgstr[0] ""
 #: addon\globalPlugins\core\settings_panel.py:56
 #, python-brace-format
 msgid "{name} (disabled)"
-msgstr ""
+msgstr "{name}（已禁用）"
 
 #. Translators: Type label for shortcut items containing multiple actions.
 #: addon\globalPlugins\core\settings_panel.py:67
@@ -862,9 +855,8 @@ msgstr "{first}（另有 {count} 项操作）"
 
 #. Translators: Label of the field that narrows the item list by name.
 #: addon\globalPlugins\core\settings_panel.py:94
-#, fuzzy
 msgid "&Filter"
-msgstr "查找"
+msgstr "查找(&F)"
 
 #. Translators: Label for the Duplicate button in the settings panel.
 #: addon\globalPlugins\core\settings_panel.py:117
@@ -889,7 +881,7 @@ msgstr "详细程度"
 #. Translators: Checkbox for speaking an item's name when it runs; items can override it.
 #: addon\globalPlugins\core\settings_panel.py:135
 msgid "Announce the item &name when it runs"
-msgstr ""
+msgstr "运行项目时朗读名称(&N)"
 
 #. Translators: Checkbox enabling arrow/Tab browsing of items inside the instant Access layer.
 #: addon\globalPlugins\core\settings_panel.py:139
@@ -908,9 +900,8 @@ msgstr "浏览顺序(&O)"
 
 #. Translators: Error shown when the new order of the items could not be saved.
 #: addon\globalPlugins\core\settings_panel.py:192
-#, fuzzy
 msgid "Could not save the order of the items."
-msgstr "无法保存设置。"
+msgstr "无法保存项目顺序。"
 
 #. Translators: Error shown when the add-on settings could not be saved.
 #. Translators: Error shown when deleting an item could not be saved.
@@ -981,16 +972,16 @@ msgstr "无法导入设置。"
 msgid ""
 "Replace all your items and settings with this file, or add its new items to "
 "your current ones?"
-msgstr ""
+msgstr "要使用此文件替换所有项目和设置，还是将其中的新项目添加到当前配置？"
 
 #. Translators: Buttons of the import question: replace everything, add new items, or stop.
 #: addon\globalPlugins\core\settings_panel.py:446
 msgid "&Replace"
-msgstr ""
+msgstr "替换(&R)"
 
 #: addon\globalPlugins\core\settings_panel.py:446
 msgid "&Merge"
-msgstr ""
+msgstr "合并(&M)"
 
 #: buildVars.py:14
 msgid ""
@@ -1004,7 +995,6 @@ msgstr ""
 "\t支持后台执行和命令行参数，可调整反馈详细程度，并可导入或导出设置。"
 
 #: buildVars.py:19
-#, fuzzy
 msgid ""
 "\n"
 "- Version 2026.7:\n"
