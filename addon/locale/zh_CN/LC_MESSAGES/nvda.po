@@ -376,7 +376,7 @@ msgstr "录制按键序列"
 #. Translators: Instruction in the dialog that records keys for a keystrokes action.
 #: addon\globalPlugins\core\item_dialog.py:178
 msgid "Press the keys to record. Escape finishes."
-msgstr "请按下要录制的按键，按 Escape 完成。"
+msgstr "请按下要录制的按键，按 Esc 完成。"
 
 #. Translators: Error shown when a captured key cannot be sent by a keystrokes action.
 #. Translators: Error shown when the captured key is not a valid NVDA gesture.
@@ -820,21 +820,21 @@ msgstr "应用程序名称已复制到剪贴板。"
 msgid ""
 "NVDA is running from the launcher or in secure mode, so settings cannot be "
 "saved."
-msgstr "NVDA 正在启动器或安全模式下运行，因此无法保存设置。"
+msgstr "NVDA 正通过启动器运行或处于安全模式，因此无法保存设置。"
 
 #. Translators: First part of the result of merging imported items; {count} is a number.
 #: addon\globalPlugins\core\settings_panel.py:46
 #, python-brace-format
 msgid "{count} item added."
 msgid_plural "{count} items added."
-msgstr[0] ""
+msgstr[0] "已添加 {count} 个项目。"
 
 #. Translators: Second part of the result of merging imported items; {count} is a number.
 #: addon\globalPlugins\core\settings_panel.py:48
 #, python-brace-format
 msgid "{count} item skipped."
 msgid_plural "{count} items skipped."
-msgstr[0] ""
+msgstr[0] "已跳过 {count} 个项目。"
 
 #. Translators: An item name in the settings list when the item is turned off.
 #: addon\globalPlugins\core\settings_panel.py:56
@@ -1060,6 +1060,23 @@ msgid ""
 "performance."
 msgstr ""
 "\n"
+"- 版本 2026.7：\n"
+"  - 查找并运行项目：启用项目浏览后，按 F1 或 H 打开的列表现在支持查找。"
+"按 Enter 运行选中的项目。\n"
+"  - 停止正在运行的项目：项目或测试运行时，按 NVDA+E 可停止执行。\n"
+"  - 变量：可在文本片段、网址和程序参数中使用日期、时间、剪贴板文本、"
+"所选文本，以及文件资源管理器中的文件或文件夹。如果已有文本包含用花括号"
+"括起来的变量名，现在会被替换，请在更新后检查这些项目。\n"
+"  - 一个项目可限制在多个应用程序中使用，并可自动填写应用程序名称。\n"
+"  - 可按 Ctrl+Up 和 Ctrl+Down 调整项目顺序，查找设置列表中的项目，"
+"以及停用项目而不删除它们。\n"
+"  - 可选择项目运行时是否朗读名称。\n"
+"  - 可用管理员身份运行程序，并通过按钮录制按键序列。\n"
+"  - 导入配置时可将新项目合并到现有配置中；粘贴文本片段后会恢复之前"
+"复制的文本。\n"
+"  - 修复：Shift+End 等按键现在可以选中文本；编辑项目后保持原来的位置；"
+"NVDA 重启后，包含 Windows 键的快捷键仍可使用。其他插件改变 NVDA 查找"
+"程序的方式时，notepad 等程序也能正常启动；“下移”使用 Alt+W。\n"
 "- 版本 2026.6：\n"
 "  - 浏览项目：在 instantAccess 模式中，按方向键或 Tab 逐项浏览，插件会读出当"
 "前项目；按 Enter 运行当前项目，按 F1 或 H 列出所有可用项目。可在插件设置中启"
